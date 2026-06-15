@@ -16,6 +16,17 @@ const visualEditingEnabled =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 const base = import.meta.env.BASE_URL;
 const logoPath = base && base.endsWith('/') ? base + 'logo.svg' : (base ? base + '/logo.svg' : '/logo.svg');
+
+// Determine current request path for active nav highlighting
+const currentPath = canonicalURL ? new URL(canonicalURL).pathname.replace(/\/$/, '') : "/";
+function isActive(href: string) {
+  try {
+    const resolved = new URL(href, canonicalURL).pathname.replace(/\/$/, '');
+    return currentPath === resolved;
+  } catch {
+    return false;
+  }
+}
 ---
 
 <style>
@@ -74,17 +85,55 @@ const logoPath = base && base.endsWith('/') ? base + 'logo.svg' : (base ? base +
           </a>
         </div>
         <div class="flex items-center justify-center gap-12">
-          <a href={base || "/"} class="text-white font-medium hover:text-gray-300 transition">News</a>
-          <a href={`${base.replace(/\/$/, "")}/line-up`} class="text-white font-medium hover:text-gray-300 transition">Line-Up</a>
-          <a href={`${base.replace(/\/$/, "")}/historie`} class="text-white font-medium hover:text-gray-300 transition">Historie</a>
+          <a
+            href={base || "/"}
+            data-nav
+            class={`${isActive(base || "/") ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
+          >
+            News
+          </a>
+          <a
+            href={`${base.replace(/\/$/, "")}/line-up`}
+            data-nav
+            class={`${isActive(`${base.replace(/\/$/, "")}/line-up`) ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
+          >
+            Line-Up
+          </a>
+          <a
+            href={`${base.replace(/\/$/, "")}/historie`}
+            data-nav
+            class={`${isActive(`${base.replace(/\/$/, "")}/historie`) ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
+          >
+            Historie
+          </a>
         </div>
         <div />
       </div>
     </nav>
     <div class="mx-auto sm:max-w-4xl">
-      <main class="mt-[60px] sm:mt-0">
+      <main class="mt-[12px] min-h-screen pt-2 pb-[36rem] sm:pt-[1.25rem] sm:pb-[48rem]">
         <slot />
       </main>
     </div>
   </body>
+  <script>
+    (function(){
+      try {
+        const links = document.querySelectorAll('a[data-nav]');
+        const path = location.pathname.replace(/\/$/, '');
+        links.forEach((a) => {
+          try {
+            const href = new URL(a.getAttribute('href') || '/', location.origin).pathname.replace(/\/$/, '');
+            if (path === href) {
+              a.classList.remove('text-white');
+              a.classList.add('text-[#b91c1c]');
+            } else {
+              a.classList.remove('text-[#b91c1c]');
+              a.classList.add('text-white');
+            }
+          } catch (e) {}
+        });
+      } catch (e) {}
+    })();
+  </script>
 </html>

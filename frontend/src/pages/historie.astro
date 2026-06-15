@@ -8,8 +8,7 @@ const historie = await getHistorie();
 
 <Layout title="Historie | Metal im Dorf" description="Die Geschichte und Rückblicke des Metal im Dorf Festivals.">
   <section class="section">
-    <h1>METAL IM DORF</h1>
-    <h2>Historie & Rückblick</h2>
+    <h1>Historie & Rückblick</h1>
     {historie.length ? (
       <div class="historie-grid">
         {historie.map((item, index) => (

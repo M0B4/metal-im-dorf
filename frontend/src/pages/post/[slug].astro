@@ -5,7 +5,14 @@ import CodeBlock from "../../components/CodeBlock.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../utils";
 import { urlFor, buildSrcSet } from "../../utils/image";
-import { getPost } from "../../utils/sanity";
+import { getPost, getPosts } from "../../utils/sanity";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts
+    .filter((post) => post.slug?.current)
+    .map((post) => ({ params: { slug: post.slug.current } }));
+}
 
 const { slug } = Astro.params;
 const post = await getPost(slug!);

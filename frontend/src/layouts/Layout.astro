@@ -15,6 +15,7 @@ const canonicalURL = Astro.url;
 const visualEditingEnabled =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 const base = import.meta.env.BASE_URL;
+const logoPath = base && base.endsWith('/') ? base + 'logo.svg' : (base ? base + '/logo.svg' : '/logo.svg');
 ---
 
 <style>
@@ -66,13 +67,21 @@ const base = import.meta.env.BASE_URL;
   <body>
     <VisualEditing enabled={visualEditingEnabled} />
     <nav class="fixed left-0 right-0 top-0 z-10 border-b border-gray-700 bg-black">
-      <div class="mx-auto sm:max-w-3xl flex items-center justify-center gap-12 px-4 py-4">
-        <a href={`${base}news`} class="text-white font-medium hover:text-gray-300 transition">News</a>
-        <a href={`${base}line-up`} class="text-white font-medium hover:text-gray-300 transition">Line-Up</a>
-        <a href={`${base}historie`} class="text-white font-medium hover:text-gray-300 transition">Historie</a>
+      <div class="mx-auto sm:max-w-4xl grid grid-cols-3 items-center px-4 py-4">
+        <div class="flex items-center">
+          <a href={base} class="inline-block">
+            <img src={logoPath} alt="Metal im Dorf" class="h-8 w-auto" />
+          </a>
+        </div>
+        <div class="flex items-center justify-center gap-12">
+          <a href={base || "/"} class="text-white font-medium hover:text-gray-300 transition">News</a>
+          <a href={`${base.replace(/\/$/, "")}/line-up`} class="text-white font-medium hover:text-gray-300 transition">Line-Up</a>
+          <a href={`${base.replace(/\/$/, "")}/historie`} class="text-white font-medium hover:text-gray-300 transition">Historie</a>
+        </div>
+        <div />
       </div>
     </nav>
-    <div class="mx-auto sm:max-w-3xl">
+    <div class="mx-auto sm:max-w-4xl">
       <main class="mt-[60px] sm:mt-0">
         <slot />
       </main>

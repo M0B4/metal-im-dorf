@@ -1,92 +1,20 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { getNews } from "../utils/sanity";
-import { urlFor } from "../utils/image";
-
-const news = await getNews();
-const sortedNews = [...news].sort((a, b) =>
-  new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime()
-);
+const base = import.meta.env.BASE_URL;
 ---
 
-<Layout title="News | Metal im Dorf" description="Die aktuellsten News vom Metal im Dorf Festival.">
-  <section class="section">
-    <h1>METAL IM DORF</h1>
-    <h2>News</h2>
-    {sortedNews.length ? (
-      <div class="news-list">
-        {sortedNews.map((item) => (
-          <article class="news-item">
-            <div class="news-header">
-              <h3>{item.titel}</h3>
-              {item.datum && (
-                <span class="news-date">
-                  {new Date(item.datum).toLocaleDateString("de-DE", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                  })}
-                </span>
-              )}
-            </div>
-            <div class="news-body">
-              {item.inhalt && (() => {
-                const textBlocks = item.inhalt.filter((block) => block._type === "block");
-                const imageBlocks = item.inhalt.filter((block) => block._type === "image");
-                const extraImages = [
-                  ...(item.bild ? [item.bild] : []),
-                  ...(item.bilder ?? []),
-                ];
-                const allImages = [...imageBlocks, ...extraImages];
-                return (
-                  <>
-                    <div class="news-content">
-                      {/* Portable Text Content */}
-                      {textBlocks.map((block) => (
-                        <p key={block._key ?? Math.random()}>
-                          {block.children?.map((child) => child.text).join("")}
-                        </p>
-                      ))}
-                    </div>
-                    {allImages.length ? (
-                      <div class="news-gallery">
-                        {allImages.map((image, index) => {
-                          const imageAlt = image.caption || image.alt || `${item.titel} Bild ${index + 1}`;
-                          return (
-                            <div class="news-gallery-item" key={image._key ?? index}>
-                              <img
-                                src={urlFor(image).width(900).auto("format").quality(80).url()}
-                                alt={imageAlt}
-                                data-caption={image.caption ?? image.alt ?? `${item.titel} Bild ${index + 1}`}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </>
-                );
-              })()}
-            </div>
-          </article>
-        ))}
-      </div>
-    ) : (
-      <p class="placeholder">Keine News verfügbar.</p>
-    )}
-    <div id="news-lightbox" class="news-lightbox hidden" aria-hidden="true">
-      <div class="news-lightbox-inner">
-        <button id="news-lightbox-close" class="news-lightbox-close" aria-label="Schließen">×</button>
-        <div class="news-lightbox-image-wrapper">
-          <button id="news-lightbox-prev" class="news-lightbox-arrow news-lightbox-prev" aria-label="Vorheriges Bild">←</button>
-          <img id="news-lightbox-image" class="news-lightbox-image" src="" alt="" />
-          <button id="news-lightbox-next" class="news-lightbox-arrow news-lightbox-next" aria-label="Nächstes Bild">→</button>
-        </div>
-        <div id="news-lightbox-caption" class="news-lightbox-caption"></div>
-      </div>
-    </div>
-  </section>
-</Layout>
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${base}`} />
+    <meta name="robots" content="noindex" />
+    <title>Weiterleitung…</title>
+    <script>{`window.location.replace(${JSON.stringify(base)});`}</script>
+  </head>
+  <body>
+    <p>Wenn du nicht automatisch weitergeleitet wirst, <a href={base}>klicke hier</a>.</p>
+  </body>
+</html>
 
 <style>
   h1 {

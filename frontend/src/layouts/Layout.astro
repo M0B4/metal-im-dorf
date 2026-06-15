@@ -14,6 +14,7 @@ const canonicalURL = Astro.url;
 // Enable visual editing overlays when the env variable is set to "true"
 const visualEditingEnabled =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+const base = import.meta.env.BASE_URL;
 ---
 
 <style>
@@ -66,9 +67,9 @@ const visualEditingEnabled =
     <VisualEditing enabled={visualEditingEnabled} />
     <nav class="fixed left-0 right-0 top-0 z-10 border-b border-gray-700 bg-black">
       <div class="mx-auto sm:max-w-3xl flex items-center justify-center gap-12 px-4 py-4">
-        <a href="/news" class="text-white font-medium hover:text-gray-300 transition">News</a>
-        <a href="/line-up" class="text-white font-medium hover:text-gray-300 transition">Line-Up</a>
-        <a href="/historie" class="text-white font-medium hover:text-gray-300 transition">Historie</a>
+        <a href={`${base}news`} class="text-white font-medium hover:text-gray-300 transition">News</a>
+        <a href={`${base}line-up`} class="text-white font-medium hover:text-gray-300 transition">Line-Up</a>
+        <a href={`${base}historie`} class="text-white font-medium hover:text-gray-300 transition">Historie</a>
       </div>
     </nav>
     <div class="mx-auto sm:max-w-3xl">

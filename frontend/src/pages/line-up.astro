@@ -1,0 +1,123 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getBands } from "../utils/sanity";
+import { urlFor } from "../utils/image";
+
+const bands = await getBands();
+---
+
+<Layout title="Line-Up | Metal im Dorf" description="Das komplette Line-Up des Metal im Dorf Festivals.">
+  <section class="section">
+    <h1>METAL IM DORF</h1>
+    <h2>Line-Up</h2>
+    {bands.length ? (
+      <div class="band-grid">
+        {bands.map((band) => (
+          <div class="band-card">
+            {band.bild && (
+              <img src={urlFor(band.bild).width(300).auto("format").quality(80).url()} alt={band.name} class="band-image" />
+            )}
+            <div class="band-info">
+              <h3>{band.name}</h3>
+              {band.genre && <p class="genre">{band.genre}</p>}
+              <p class="spielzeit">{band.spielzeit || "TBA"}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p class="placeholder">Bands werden bald bekannt gegeben. 🤘</p>
+    )}
+  </section>
+</Layout>
+
+<style>
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #fff;
+    margin: 0 0 0.5rem;
+    border-left: 4px solid #b91c1c;
+    padding-left: 1rem;
+  }
+
+  .section {
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #b91c1c;
+    margin: 0 0 2rem;
+    padding-left: 1rem;
+  }
+
+  .band-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .band-card {
+    background: #111;
+    border: 2px solid #222;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .band-card:hover {
+    border-color: #b91c1c;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(185, 28, 28, 0.2);
+  }
+
+  .band-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .band-info {
+    padding: 1.5rem;
+  }
+
+  .band-card h3 {
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .genre {
+    color: #b91c1c;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .spielzeit {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  .placeholder {
+    color: #6b7280;
+    font-style: italic;
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+  }
+</style>

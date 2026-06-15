@@ -1,0 +1,507 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getNews } from "../utils/sanity";
+import { urlFor } from "../utils/image";
+
+const news = await getNews();
+const sortedNews = [...news].sort((a, b) =>
+  new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime()
+);
+---
+
+<Layout title="News | Metal im Dorf" description="Die aktuellsten News vom Metal im Dorf Festival.">
+  <section class="section">
+    <h1>METAL IM DORF</h1>
+    <h2>News</h2>
+    {sortedNews.length ? (
+      <div class="news-list">
+        {sortedNews.map((item) => (
+          <article class="news-item">
+            <div class="news-header">
+              <h3>{item.titel}</h3>
+              {item.datum && (
+                <span class="news-date">
+                  {new Date(item.datum).toLocaleDateString("de-DE", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                  })}
+                </span>
+              )}
+            </div>
+            <div class="news-body">
+              {item.inhalt && (() => {
+                const textBlocks = item.inhalt.filter((block) => block._type === "block");
+                const imageBlocks = item.inhalt.filter((block) => block._type === "image");
+                const extraImages = [
+                  ...(item.bild ? [item.bild] : []),
+                  ...(item.bilder ?? []),
+                ];
+                const allImages = [...imageBlocks, ...extraImages];
+                return (
+                  <>
+                    <div class="news-content">
+                      {/* Portable Text Content */}
+                      {textBlocks.map((block) => (
+                        <p key={block._key ?? Math.random()}>
+                          {block.children?.map((child) => child.text).join("")}
+                        </p>
+                      ))}
+                    </div>
+                    {allImages.length ? (
+                      <div class="news-gallery">
+                        {allImages.map((image, index) => {
+                          const imageAlt = image.caption || image.alt || `${item.titel} Bild ${index + 1}`;
+                          return (
+                            <div class="news-gallery-item" key={image._key ?? index}>
+                              <img
+                                src={urlFor(image).width(900).auto("format").quality(80).url()}
+                                alt={imageAlt}
+                                data-caption={image.caption ?? image.alt ?? `${item.titel} Bild ${index + 1}`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </>
+                );
+              })()}
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="placeholder">Keine News verfügbar.</p>
+    )}
+    <div id="news-lightbox" class="news-lightbox hidden" aria-hidden="true">
+      <div class="news-lightbox-inner">
+        <button id="news-lightbox-close" class="news-lightbox-close" aria-label="Schließen">×</button>
+        <div class="news-lightbox-image-wrapper">
+          <button id="news-lightbox-prev" class="news-lightbox-arrow news-lightbox-prev" aria-label="Vorheriges Bild">←</button>
+          <img id="news-lightbox-image" class="news-lightbox-image" src="" alt="" />
+          <button id="news-lightbox-next" class="news-lightbox-arrow news-lightbox-next" aria-label="Nächstes Bild">→</button>
+        </div>
+        <div id="news-lightbox-caption" class="news-lightbox-caption"></div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #fff;
+    margin: 0 0 0.5rem;
+    border-left: 4px solid #b91c1c;
+    padding-left: 1rem;
+  }
+
+  .section {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #b91c1c;
+    margin: 0 0 2rem;
+    padding-left: 1rem;
+  }
+
+  .news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .news-item {
+    background: #111;
+    border-left: 4px solid #b91c1c;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .news-item:hover {
+    box-shadow: 0 5px 20px rgba(185, 28, 28, 0.15);
+  }
+
+  .news-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .news-item h3 {
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.3rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .news-date {
+    color: #b91c1c;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .news-content {
+    color: #d1d5db;
+    line-height: 1.6;
+  }
+
+  .news-content p {
+    margin: 0 0 1rem;
+  }
+
+  .news-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .news-image-wrapper {
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 0.75rem;
+  }
+
+  .news-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    border-radius: 0.75rem;
+  }
+
+  .news-content-image {
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 0.75rem;
+  }
+
+  .news-content-image img,
+  .news-gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    border-radius: 0.75rem;
+  }
+
+  .news-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    .news-gallery {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .news-body {
+    position: relative;
+  }
+
+  .news-body.collapsed {
+    max-height: 5.4rem;
+    overflow: hidden;
+  }
+
+  .news-body.collapsed::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3rem;
+    background: linear-gradient(180deg, rgba(17,17,17,0) 0%, rgba(17,17,17,1) 100%);
+    pointer-events: none;
+  }
+
+  .news-body.collapsed .news-content {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .news-body.collapsed .news-gallery {
+    display: none;
+  }
+
+  .news-content {
+    color: #d1d5db;
+    line-height: 1.8;
+  }
+
+  .news-toggle {
+    display: inline-block;
+    margin-top: 3rem;
+    background-color: #b91c1c !important;
+    border: 1px solid #b91c1c !important;
+    color: #fff !important;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .news-lightbox {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    padding: 1rem;
+  }
+
+  .news-lightbox.hidden {
+    display: none;
+  }
+
+  .news-lightbox-inner {
+    position: relative;
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .news-lightbox-image-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 90vw;
+  }
+
+  .news-lightbox-image {
+    width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    display: block;
+    position: relative;
+    z-index: 1;
+  }
+
+  .news-lightbox-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid #fff;
+    color: #fff;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: grid;
+    place-items: center;
+    z-index: 2;
+  }
+
+  .news-lightbox-prev {
+    left: 0.75rem;
+  }
+
+  .news-lightbox-next {
+    right: 0.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .news-lightbox-image-wrapper {
+      max-width: 100%;
+    }
+
+    .news-lightbox-arrow {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1rem;
+    }
+  }
+
+  .news-lightbox-arrow:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .news-lightbox-caption {
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+    max-width: 90vw;
+  }
+
+  .news-lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+
+  .news-lightbox-caption {
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .news-toggle:hover {
+    background-color: #931517 !important;
+  }
+
+  .news-body.expanded {
+    max-height: none;
+  }
+
+  .placeholder {
+    color: #6b7280;
+    font-style: italic;
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+  }
+</style>
+
+<script type="module">
+  const COLLAPSE_HEIGHT = 96;
+
+  document.querySelectorAll('.news-item').forEach((item) => {
+    const body = item.querySelector('.news-body');
+    if (!body) return;
+    if (body.scrollHeight <= COLLAPSE_HEIGHT) return;
+
+    body.classList.add('collapsed');
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'news-toggle';
+    button.textContent = 'Zeige mehr';
+
+    button.style.backgroundColor = '#b91c1c';
+    button.style.border = '1px solid #b91c1c';
+    button.style.color = '#fff';
+    button.style.padding = '0.75rem 1rem';
+    button.style.textTransform = 'uppercase';
+    button.style.letterSpacing = '0.08em';
+    button.style.cursor = 'pointer';
+    button.style.transition = 'background-color 0.2s ease, color 0.2s ease';
+
+    button.addEventListener('click', () => {
+      const expanded = body.classList.toggle('expanded');
+      body.classList.toggle('collapsed', !expanded);
+      button.textContent = expanded ? 'Weniger anzeigen' : 'Zeige mehr';
+    });
+
+    item.append(button);
+  });
+
+  const lightbox = document.getElementById('news-lightbox');
+  const lightboxImage = document.getElementById('news-lightbox-image');
+  const lightboxCaption = document.getElementById('news-lightbox-caption');
+  const closeButton = document.getElementById('news-lightbox-close');
+  const prevButton = document.getElementById('news-lightbox-prev');
+  const nextButton = document.getElementById('news-lightbox-next');
+
+  let imageSources = [];
+  let currentIndex = 0;
+
+  function updateLightbox() {
+    const image = imageSources[currentIndex];
+    if (!image) return;
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt || image.caption || '';
+    lightboxCaption.textContent = image.caption || image.alt || '';
+  }
+
+  function openLightbox(index, images) {
+    imageSources = images;
+    currentIndex = index;
+    updateLightbox();
+    lightbox.classList.remove('hidden');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeLightbox() {
+    lightbox.classList.add('hidden');
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightboxImage.src = '';
+  }
+
+  document.querySelectorAll('.news-gallery-item img').forEach((img) => {
+    const gallery = img.closest('.news-gallery');
+    if (!gallery) return;
+
+    const galleryImages = Array.from(gallery.querySelectorAll('img')).map((image) => ({
+      src: image.src,
+      alt: image.alt,
+      caption: image.getAttribute('data-caption') || image.alt,
+    }));
+
+    img.addEventListener('click', () => {
+      const index = galleryImages.findIndex((image) => image.src === img.src && image.alt === img.alt);
+      if (index !== -1) {
+        openLightbox(index, galleryImages);
+      }
+    });
+  });
+
+  closeButton.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (event) => {
+    if (event.target === lightbox) {
+      closeLightbox();
+    }
+  });
+
+  prevButton.addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + imageSources.length) % imageSources.length;
+    updateLightbox();
+  });
+
+  nextButton.addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % imageSources.length;
+    updateLightbox();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (lightbox.classList.contains('hidden')) return;
+    if (event.key === 'Escape') {
+      closeLightbox();
+    }
+    if (event.key === 'ArrowLeft') {
+      currentIndex = (currentIndex - 1 + imageSources.length) % imageSources.length;
+      updateLightbox();
+    }
+    if (event.key === 'ArrowRight') {
+      currentIndex = (currentIndex + 1) % imageSources.length;
+      updateLightbox();
+    }
+  });
+</script>

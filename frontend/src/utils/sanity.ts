@@ -82,3 +82,60 @@ export interface Post {
   body: PortableTextBlock[];
   seo?: Seo;
 }
+export async function getBands(): Promise<Band[]> {
+  return loadQuery<Band[]>(
+    groq`*[_type == "band"] | order(spielzeit asc) {
+      _id,
+      name,
+      genre,
+      spielzeit,
+      bild ${imageProjection}
+    }`,
+  );
+}
+
+export async function getNews(): Promise<News[]> {
+  return loadQuery<News[]>(
+    groq`*[_type == "news"] | order(datum desc) {
+      _id,
+      titel,
+      datum,
+      bild ${imageProjection},
+      bilder[] ${imageProjection},
+      inhalt
+    }`,
+  );
+}
+
+export interface Band {
+  _id: string;
+  name: string;
+  genre?: string;
+  spielzeit?: string;
+  bild?: SanityImage;
+}
+
+export interface News {
+  _id: string;
+  titel: string;
+  datum?: string;
+  bild?: SanityImage;
+  bilder?: SanityImage[];
+  inhalt?: PortableTextBlock[];
+}
+
+export async function getHistorie(): Promise<Historie[]> {
+  return loadQuery<Historie[]>(
+    groq`*[_type == "historie"] | order(jahr desc) {
+      _id,
+      jahr,
+      plakat ${imageProjection}
+    }`,
+  );
+}
+
+export interface Historie {
+  _id: string;
+  jahr: number;
+  plakat?: SanityImage;
+}

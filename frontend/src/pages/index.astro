@@ -1,17 +1,133 @@
 ---
-import Card from "../components/Card.astro";
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
-import { getPosts } from "../utils/sanity";
+import { getBands, getNews } from "../utils/sanity";
 
-const posts = await getPosts();
+const bands = await getBands();
+const news = await getNews();
 ---
 
-<Layout
-  title="Astro + Sanity"
-  description="A blog built with Astro and Sanity."
->
-  <section>
-    {posts.length ? posts.map((post) => <Card post={post} />) : <Welcome />}
+<Layout title="Metal im Dorf" description="Das Metal-Festival mitten in Deutschland.">
+  
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>METAL IM DORF</h1>
+      <p class="subline">Das Festival. Das Dorf. Die Musik.</p>
+      <a href="#lineup" class="btn">Zum Line-up</a>
+    </div>
   </section>
+
+  <!-- NEWS -->
+  {news.length > 0 && (
+    <section class="section" id="news">
+      <h2>News</h2>
+      <div class="news-grid">
+        {news.map((n) => (
+          <div class="news-card">
+            <span class="news-date">{new Date(n.datum).toLocaleDateString("de-DE")}</span>
+            <h3>{n.titel}</h3>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- LINE-UP -->
+  <section class="section" id="lineup">
+    <h2>Line-up</h2>
+    {bands.length ? (
+      <div class="band-grid">
+        {bands.map((band) => (
+          <div class="band-card">
+            <h3>{band.name}</h3>
+            <p>{band.genre}</p>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p class="placeholder">Bands werden bald bekannt gegeben. 🤘</p>
+    )}
+  </section>
+
 </Layout>
+
+<style>
+  .hero {
+    background: #0a0a0a;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-bottom: 2px solid #b91c1c;
+  }
+  .hero-content h1 {
+    font-size: clamp(3rem, 10vw, 8rem);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    line-height: 1;
+  }
+  .subline {
+    color: #9ca3af;
+    font-size: 1.2rem;
+    margin: 1rem 0 2rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .btn {
+    display: inline-block;
+    background: #b91c1c;
+    color: #fff;
+    padding: 0.8rem 2rem;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: #991b1b; }
+  .section {
+    max-width: 1100px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+  h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #fff;
+    border-left: 4px solid #b91c1c;
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+  }
+  .band-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .band-card {
+    background: #111;
+    border: 1px solid #222;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .band-card:hover { border-color: #b91c1c; }
+  .band-card h3 {
+    color: #fff;
+    font-weight: 700;
+    margin: 0 0 0.3rem;
+  }
+  .band-card p { color: #6b7280; margin: 0; }
+  .news-grid { display: grid; gap: 1rem; }
+  .news-card {
+    background: #111;
+    border-left: 3px solid #b91c1c;
+    padding: 1rem 1.5rem;
+  }
+  .news-card h3 { color: #fff; margin: 0.3rem 0 0; }
+  .news-date { color: #b91c1c; font-size: 0.85rem; font-weight: 700; }
+  .placeholder { color: #6b7280; font-style: italic; }
+</style>

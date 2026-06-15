@@ -26,7 +26,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
     // Use static output for GitHub Pages
     output: "static",
-    base: '/metal-im-dorf',
+    base: import.meta.env.PROD ? '/metal-im-dorf' : '/',
     integrations: [
         sanity({
             projectId,

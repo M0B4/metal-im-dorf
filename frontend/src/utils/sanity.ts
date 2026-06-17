@@ -129,7 +129,10 @@ export async function getHistorie(): Promise<Historie[]> {
     groq`*[_type == "historie"] | order(jahr desc) {
       _id,
       jahr,
-      plakat ${imageProjection}
+      titel,
+      plakat ${imageProjection},
+      beschreibung,
+      bilder[] ${imageProjection}
     }`,
   );
 }
@@ -137,5 +140,8 @@ export async function getHistorie(): Promise<Historie[]> {
 export interface Historie {
   _id: string;
   jahr: number;
+  titel?: string;
   plakat?: SanityImage;
+  beschreibung?: PortableTextBlock[];
+  bilder?: SanityImage[];
 }

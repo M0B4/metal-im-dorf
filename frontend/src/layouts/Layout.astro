@@ -30,17 +30,94 @@ function isActive(href: string) {
 ---
 
 <style>
-  html {
-    background-color: #0a0a0a;
+  /* Hamburger Menu Styles */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 20px;
+    width: 26px;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    border: none;
+    z-index: 60;
   }
-  
-  body {
-    background-color: #0a0a0a;
+
+  .nav-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: #f4f4f5;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, background-color 0.3s ease;
+  }
+
+  .nav-toggle.active span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+  }
+
+  .nav-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-toggle.active span:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+  }
+
+  .nav-toggle:hover span {
+    background-color: var(--color-festival-red);
+  }
+
+  .nav-menu {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(9, 9, 11, 0.98);
+    z-index: 50;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    gap: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .nav-menu.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 768px) {
+    .nav-toggle {
+      display: flex;
+    }
+
+    .nav-links {
+      display: none;
+    }
+
+    .nav-menu a {
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      color: #f4f4f5;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: color 0.3s ease;
+    }
+
+    .nav-menu a:hover {
+      color: var(--color-festival-red);
+    }
   }
 </style>
 
 <!doctype html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -68,68 +145,184 @@ function isActive(href: string) {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@500;700;800&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@500;700&display=swap"
       rel="stylesheet"
     />
 
     <title>{title}</title>
-
   </head>
-  <body>
+  <body class="flex flex-col min-h-screen">
     <VisualEditing enabled={visualEditingEnabled} />
-    <nav class="fixed left-0 right-0 top-0 z-10 border-b border-gray-700 bg-black">
-      <div class="mx-auto sm:max-w-4xl grid grid-cols-3 items-center px-4 py-4">
+    <nav class="fixed left-0 right-0 top-0 z-50 border-b border-zinc-800/60 bg-zinc-950/70 backdrop-blur-md transition-all duration-300">
+      <div class="mx-auto max-w-6xl flex justify-between items-center px-4 py-4 md:px-6">
         <div class="flex items-center">
-          <a href={base} class="inline-block">
-            <img src={logoPath} alt="Metal im Dorf" class="h-8 w-auto" />
+          <a href={base} class="inline-block hover:opacity-85 transition duration-200">
+            <img src={logoPath} alt="Metal im Dorf" class="h-9 w-auto" />
           </a>
         </div>
-        <div class="flex items-center justify-center gap-12">
-          <a
-            href={base || "/"}
-            data-nav
-            class={`${isActive(base || "/") ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
+        <div class="flex items-center justify-end">
+          <!-- Hamburger Menu Button (mobile only) -->
+          <button 
+            class="nav-toggle"
+            id="navToggle"
+            aria-label="Hauptmenü"
+            aria-expanded="false"
           >
-            News
-          </a>
-          <a
-            href={`${base.replace(/\/$/, "")}/line-up`}
-            data-nav
-            class={`${isActive(`${base.replace(/\/$/, "")}/line-up`) ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
-          >
-            Line-Up
-          </a>
-          <a
-            href={`${base.replace(/\/$/, "")}/historie`}
-            data-nav
-            class={`${isActive(`${base.replace(/\/$/, "")}/historie`) ? 'text-[#b91c1c]' : 'text-white'} font-medium hover:text-gray-300 transition`}
-          >
-            Historie
-          </a>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <!-- Desktop Navigation Links -->
+          <div class="nav-links flex items-center gap-8">
+            <a
+              href={base || "/"}
+              data-nav
+              class={`${isActive(base || "/") ? 'text-festival-red' : 'text-zinc-300'} font-semibold hover:text-white transition duration-200 text-sm tracking-wider uppercase relative py-1 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-festival-red after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left`}
+            >
+              News
+            </a>
+            <a
+              href={`${base.replace(/\/$/, "")}/line-up`}
+              data-nav
+              class={`${isActive(`${base.replace(/\/$/, "")}/line-up`) ? 'text-festival-red' : 'text-zinc-300'} font-semibold hover:text-white transition duration-200 text-sm tracking-wider uppercase relative py-1 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-festival-red after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left`}
+            >
+              Line-Up
+            </a>
+            <a
+              href={`${base.replace(/\/$/, "")}/historie`}
+              data-nav
+              class={`${isActive(`${base.replace(/\/$/, "")}/historie`) ? 'text-festival-red' : 'text-zinc-300'} font-semibold hover:text-white transition duration-200 text-sm tracking-wider uppercase relative py-1 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-festival-red after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left`}
+            >
+              Historie
+            </a>
+          </div>
         </div>
-        <div />
+      </div>
+      <!-- Mobile Navigation Menu -->
+      <div class="nav-menu" id="navMenu">
+        <a
+          href={base || "/"}
+          data-nav
+          class="px-4 py-2"
+        >
+          News
+        </a>
+        <a
+          href={`${base.replace(/\/$/, "")}/line-up`}
+          data-nav
+          class="px-4 py-2"
+        >
+          Line-Up
+        </a>
+        <a
+          href={`${base.replace(/\/$/, "")}/historie`}
+          data-nav
+          class="px-4 py-2"
+        >
+          Historie
+        </a>
       </div>
     </nav>
-    <div class="mx-auto sm:max-w-4xl">
-      <main class="mt-[12px] min-h-screen pt-2 pb-[36rem] sm:pt-[1.25rem] sm:pb-[48rem]">
+
+    <div class="mx-auto w-full max-w-6xl px-4 md:px-6 flex-grow animate-slide-up">
+      <main class="min-h-screen pt-28 pb-16">
         <slot />
       </main>
     </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-zinc-800/60 bg-zinc-950/80 backdrop-blur-md py-12 text-zinc-400">
+      <div class="mx-auto max-w-6xl px-4 md:px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Info Column */}
+          <div class="space-y-4">
+            <div class="flex items-center">
+              <img src={logoPath} alt="Metal im Dorf" class="h-8 w-auto opacity-80" />
+            </div>
+            <p class="text-sm leading-relaxed max-w-xs text-zinc-500">
+              Das familiäre Metal-Festival im Herzen des Dorfes. Harte Riffs, kalte Getränke und die beste Community.
+            </p>
+          </div>
+          {/* Links Column */}
+          <div class="space-y-3">
+            <h4 class="text-sm font-bold uppercase tracking-wider text-zinc-200">Schnellzugriff</h4>
+            <div class="flex flex-col gap-2">
+              <a href={base || "/"} class="hover:text-festival-red transition duration-200 text-sm">News</a>
+              <a href={`${base.replace(/\/$/, "")}/line-up`} class="hover:text-festival-red transition duration-200 text-sm">Line-Up</a>
+              <a href={`${base.replace(/\/$/, "")}/historie`} class="hover:text-festival-red transition duration-200 text-sm">Historie</a>
+            </div>
+          </div>
+          {/* Newsletter / Social Column */}
+          <div class="space-y-4">
+            <h4 class="text-sm font-bold uppercase tracking-wider text-zinc-200">Folge uns</h4>
+            <div class="flex gap-4">
+              <a href="#" class="text-zinc-500 hover:text-festival-red transition duration-200" aria-label="Instagram">
+                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051c-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                </svg>
+              </a>
+              <a href="#" class="text-zinc-500 hover:text-festival-red transition duration-200" aria-label="Facebook">
+                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                </svg>
+              </a>
+              <a href="#" class="text-zinc-500 hover:text-festival-red transition duration-200" aria-label="YouTube">
+                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.107C19.535 3.54 12 3.54 12 3.54s-7.535 0-9.388.516A3.003 3.003 0 00.502 6.163C0 8.016 0 12 0 12s0 3.984.502 5.837a3.003 3.003 0 002.11 2.107c1.853.516 9.388.516 9.388.516s7.535 0 9.388-.516a3.003 3.003 0 002.11-2.107C24 15.984 24 12 24 12s0-3.984-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+            </div>
+            <div class="pt-2">
+              <form class="flex max-w-xs" onsubmit="event.preventDefault(); alert('Newsletter registriert (Demo)!');">
+                <input 
+                  type="email" 
+                  placeholder="Newsletter abonnieren..." 
+                  required
+                  class="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 rounded-l focus:outline-none focus:border-festival-red transition duration-200"
+                />
+                <button 
+                  type="submit" 
+                  class="px-4 bg-festival-red hover:bg-festival-red-hover text-white text-sm font-bold rounded-r transition duration-200"
+                >
+                  Go
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-zinc-900 mt-8 pt-6 text-center text-xs text-zinc-600">
+          <p>&copy; {new Date().getFullYear()} Metal im Dorf Festival. Alle Rechte vorbehalten. 🤘</p>
+        </div>
+      </div>
+    </footer>
   </body>
   <script>
     (function(){
       try {
+        // Hamburger Menu Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (navToggle && navMenu) {
+          navToggle.addEventListener('click', () => {
+            const isMenuExpanded = navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+            navToggle.setAttribute('aria-expanded', isMenuExpanded ? 'true' : 'false');
+          });
+        }
+
+        // Active Navigation Highlighting
         const links = document.querySelectorAll('a[data-nav]');
         const path = location.pathname.replace(/\/$/, '');
         links.forEach((a) => {
           try {
             const href = new URL(a.getAttribute('href') || '/', location.origin).pathname.replace(/\/$/, '');
             if (path === href) {
-              a.classList.remove('text-white');
-              a.classList.add('text-[#b91c1c]');
+              a.classList.remove('text-zinc-300');
+              a.classList.add('text-festival-red');
             } else {
-              a.classList.remove('text-[#b91c1c]');
-              a.classList.add('text-white');
+              a.classList.remove('text-festival-red');
+              a.classList.add('text-zinc-300');
             }
           } catch (e) {}
         });

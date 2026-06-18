@@ -1,0 +1,222 @@
+---
+import { Icon } from "astro-icon/components";
+import { siteConfig, sitePath } from "../utils/site";
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+const navItems = [
+  { label: "News", path: "" },
+  { label: "Line-Up", path: "/line-up" },
+  { label: "Historie", path: "/historie" },
+];
+
+function isActive(path = "") {
+  const target = sitePath(path).replace(/\/$/, "") || "/";
+  return currentPath === target;
+}
+---
+
+<header class="site-header">
+  <nav class="main-nav" aria-label="Hauptnavigation">
+    <div class="shell nav-inner">
+      <a href={sitePath()} class="brand" aria-label="Metal im Dorf Startseite">
+        <img src={sitePath("/logo.svg")} alt="Metal im Dorf" />
+      </a>
+
+      <button
+        class="nav-toggle"
+        id="navToggle"
+        type="button"
+        aria-label="Hauptmenü öffnen"
+        aria-expanded="false"
+        aria-controls="navMenu"
+      >
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-links" id="navMenu">
+        {navItems.map((item) => (
+          <a
+            href={sitePath(item.path)}
+            class:list={["nav-link", isActive(item.path) && "is-active"]}
+          >
+            {item.label}
+          </a>
+        ))}
+        <div class="header-socials" aria-label="Social Media">
+          <a
+            class="social-icon"
+            href={siteConfig.instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            title="Instagram"
+          >
+            <Icon name="simple-icons:instagram" size={20} />
+          </a>
+          <a
+            class="social-icon"
+            href={siteConfig.facebookUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Facebook"
+            title="Facebook"
+          >
+            <Icon name="simple-icons:facebook" size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("#navToggle");
+  const menu = document.querySelector<HTMLElement>("#navMenu");
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = menu?.classList.toggle("is-open") ?? false;
+    toggle.classList.toggle("is-open", isOpen);
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Hauptmenü schließen" : "Hauptmenü öffnen");
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(5, 5, 5, 0.88);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px);
+  }
+
+  .nav-inner {
+    display: flex;
+    min-height: 5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .brand img {
+    width: auto;
+    height: 3rem;
+  }
+
+  .nav-links,
+  .header-socials {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-links {
+    gap: 0.4rem;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    min-height: 2.6rem;
+    align-items: center;
+    padding: 0.7rem 0.95rem;
+    color: #d4d4d8;
+    border: 1px solid transparent;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .nav-link:hover,
+  .nav-link.is-active,
+  .social-icon:hover,
+  .social-icon:focus-visible {
+    color: #050505;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .header-socials {
+    gap: 0.4rem;
+    margin-left: 0.4rem;
+    padding-left: 0.8rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .social-icon {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    place-items: center;
+    color: #d4d4d8;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+  }
+
+  .nav-toggle {
+    display: none;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    padding: 0.7rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .nav-toggle span {
+    display: block;
+    width: 1.25rem;
+    height: 2px;
+    margin: 3px 0;
+    background: #fff;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .nav-toggle.is-open span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+  .nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.is-open span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+
+  @media (max-width: 760px) {
+    .nav-inner { min-height: 4.4rem; }
+    .brand img { height: 2.45rem; }
+    .nav-toggle { display: grid; }
+
+    .nav-links {
+      position: fixed;
+      top: 4.9rem;
+      right: 1rem;
+      left: 1rem;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0.75rem;
+      background: rgba(5, 5, 5, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-links.is-open { display: flex; }
+    .nav-link { justify-content: center; min-height: 3.1rem; }
+
+    .header-socials {
+      justify-content: center;
+      margin: 0.35rem 0 0;
+      padding: 0.75rem 0 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: 0;
+    }
+  }
+</style>

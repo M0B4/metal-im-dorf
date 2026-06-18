@@ -1,11 +1,13 @@
 ---
 import { PortableText } from "astro-portabletext";
 import { createDataAttribute } from "@sanity/visual-editing-csm";
+import { ArrowLeft, CalendarDays } from "@lucide/astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 import Layout from "../../layouts/Layout.astro";
-import { formatDate } from "../../utils";
+import { formatDate } from "../../utils/format";
 import { urlFor, buildSrcSet } from "../../utils/image";
 import { getPost, getPosts } from "../../utils/sanity";
+import { sitePath } from "../../utils/site";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -49,20 +51,17 @@ const ogImage = ogImageSource
   description={seoDescription}
   image={ogImage}
 >
-  <section class="max-w-4xl mx-auto space-y-6">
-    <a href={base || "/"} class="inline-flex items-center gap-2 text-zinc-400 hover:text-festival-red transition duration-200 font-semibold uppercase tracking-wider text-xs">
-      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
+  <article class="shell post-page">
+    <a href={sitePath()} class="back-link">
+      <ArrowLeft size={17} stroke-width={2.5} aria-hidden="true" />
       Zurück zu News
     </a>
 
     {
       post.mainImage ? (
-        <div class="overflow-hidden rounded-2xl border border-zinc-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div class="post-image panel">
           <img
-            class="w-full h-64 md:h-96 object-cover"
-            src={urlFor(post.mainImage).width(1200).height(630).fit("crop").auto("format").quality(85).url()}
+            src={urlFor(post.mainImage).width(1400).auto("format").quality(85).url()}
             srcset={buildSrcSet(post.mainImage, [375, 750, 1200], 85)}
             sizes="(max-width: 800px) 100vw, 1200px"
             width={post.mainImage.width}
@@ -76,30 +75,104 @@ const ogImage = ogImageSource
       ) : null
     }
 
-    <div class="space-y-4">
-      <span class="inline-flex items-center gap-1.5 text-zinc-400 text-xs font-semibold uppercase tracking-wider">
-        <svg class="h-4 w-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+    <div class="post-content">
+      <span class="post-date">
+        <CalendarDays size={16} stroke-width={2.3} aria-hidden="true" />
         {formatDate(post._createdAt)}
       </span>
-      <h1 class="text-3xl md:text-5xl font-black text-white uppercase tracking-wider leading-tight">{post.title}</h1>
+      <h1>{post.title}</h1>
       {post.excerpt && (
-        <p class="text-lg md:text-xl font-medium text-zinc-400 leading-relaxed border-l-2 border-festival-red pl-4" data-sanity={dataAttr?.scope("excerpt").toString()}>
+        <p class="post-excerpt" data-sanity={dataAttr?.scope("excerpt").toString()}>
           {post.excerpt}
         </p>
       )}
       
       <div 
-        class="prose prose-invert prose-rose max-w-none pt-6 
-               prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:text-base md:prose-p:text-lg
-               prose-a:text-festival-red hover:prose-a:text-festival-red-hover prose-a:transition prose-a:duration-200
-               prose-blockquote:border-festival-red prose-blockquote:bg-zinc-900/30 prose-blockquote:py-2 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg
-               prose-headings:uppercase prose-headings:tracking-wider prose-headings:font-extrabold prose-headings:text-white"
+        class="prose prose-invert max-w-none post-body"
         data-sanity={dataAttr?.scope("body").toString()}
       >
         <PortableText value={post.body} components={{ type: { code: CodeBlock } }} />
       </div>
     </div>
-  </section>
+  </article>
 </Layout>
+
+<style>
+  .post-page {
+    display: grid;
+    max-width: 920px;
+    gap: 1.5rem;
+  }
+
+  .back-link,
+  .post-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .back-link {
+    color: #a1a1aa;
+    text-decoration: none;
+  }
+
+  .back-link:hover,
+  .post-date {
+    color: var(--color-accent);
+  }
+
+  .post-image {
+    overflow: hidden;
+    background: #050505;
+  }
+
+  .post-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .post-content {
+    display: grid;
+    gap: 1rem;
+  }
+
+  h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(2.2rem, 7vw, 4.8rem);
+    font-weight: 950;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+
+  .post-excerpt {
+    margin: 0;
+    padding-left: 1rem;
+    color: #c8c8cf;
+    border-left: 3px solid var(--color-accent);
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    line-height: 1.65;
+  }
+
+  .post-body {
+    padding-top: 1rem;
+    color: #d4d4d8;
+  }
+
+  .post-body :global(a) {
+    color: var(--color-accent);
+  }
+
+  .post-body :global(blockquote) {
+    background: rgba(255, 255, 255, 0.035);
+    border-left-color: var(--color-accent);
+  }
+</style>

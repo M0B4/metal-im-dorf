@@ -35,6 +35,29 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'slug',
+      title: 'URL',
+      type: 'slug',
+      options: {
+        source: (document) => `${document.jahr || ''}-${document.titel || 'metal-im-dorf'}`,
+        maxLength: 96,
+      },
+    }),
+    defineField({
+      name: 'kategorie',
+      title: 'Kategorie',
+      type: 'string',
+      initialValue: 'hauptfestival',
+      options: {
+        layout: 'radio',
+        list: [
+          {title: 'Hauptfestival', value: 'hauptfestival'},
+          {title: 'Nebenveranstaltung', value: 'nebenveranstaltung'},
+        ],
+      },
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'plakat',
       title: 'Festival-Plakat',
       type: 'image',
@@ -57,13 +80,15 @@ export default defineType({
     select: {
       title: 'titel',
       subtitle: 'jahr',
+      category: 'kategorie',
       media: 'plakat',
     },
     prepare(selection) {
-      const {title, subtitle, media} = selection;
+      const {title, subtitle, category, media} = selection;
+      const categoryLabel = category === 'nebenveranstaltung' ? 'Nebenveranstaltung' : 'Hauptfestival';
       return {
         title: title || (subtitle ? `Festival ${subtitle}` : 'Kein Jahr angegeben'),
-        subtitle: subtitle ? subtitle.toString() : '',
+        subtitle: [subtitle?.toString(), categoryLabel].filter(Boolean).join(' · '),
         media,
       }
     },

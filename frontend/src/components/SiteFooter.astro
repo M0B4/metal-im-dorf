@@ -1,0 +1,135 @@
+---
+import { Icon } from "astro-icon/components";
+import { siteConfig, sitePath } from "../utils/site";
+---
+
+<footer class="site-footer">
+  <div class="shell footer-grid">
+    <div>
+      <img src={sitePath("/logo.svg")} alt="Metal im Dorf" class="footer-logo" />
+      <p>
+        Ein kleines, lautes Festival im Dorf: harte Riffs, kurze Wege und eine
+        Community, die vor der Bühne zuhause ist.
+      </p>
+    </div>
+    <div>
+      <h2>Navigation</h2>
+      <a href={sitePath()}>News</a>
+      <a href={sitePath("/line-up")}>Line-Up</a>
+      <a href={sitePath("/historie")}>Historie</a>
+      <a href={sitePath("/impressum")}>Impressum</a>
+    </div>
+    <div>
+      <h2>Kontakt</h2>
+      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+      {siteConfig.address.map((line) => <span>{line}</span>)}
+    </div>
+    <div>
+      <h2>Folge uns</h2>
+      <div class="footer-socials">
+        <a href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">
+          <Icon name="simple-icons:instagram" size={21} />
+          <span>Instagram</span>
+        </a>
+        <a href={siteConfig.facebookUrl} target="_blank" rel="noreferrer">
+          <Icon name="simple-icons:facebook" size={21} />
+          <span>Facebook</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="shell footer-bottom">
+    <span>© {new Date().getFullYear()} Metal im Dorf Festival</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 3rem 0 1.5rem;
+    background: rgba(5, 5, 5, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .footer-logo {
+    width: auto;
+    height: 2.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .site-footer p,
+  .site-footer a,
+  .site-footer span {
+    display: block;
+    color: #a1a1aa;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    text-decoration: none;
+  }
+
+  .site-footer a:hover { color: var(--color-accent); }
+
+  .site-footer h2 {
+    margin: 0 0 0.85rem;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .footer-socials {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .site-footer .footer-socials a {
+    display: flex;
+    min-height: 2.8rem;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.7rem;
+    color: #f4f4f5;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .site-footer .footer-socials a:hover {
+    color: #050505;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .site-footer .footer-socials span {
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .footer-bottom span {
+    color: #71717a;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 760px) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>

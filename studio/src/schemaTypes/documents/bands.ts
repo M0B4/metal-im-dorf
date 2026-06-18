@@ -9,7 +9,19 @@ export default defineType({
       name: 'name',
       title: 'Bandname',
       type: 'string',
-      validation: Rule => Rule.required(),
+      validation: Rule => Rule.custom((name, context) => {
+        const parent = context.parent as {platzhalter?: boolean} | undefined
+        if (parent?.platzhalter) return true
+        if (!name) return 'Bandname ist erforderlich'
+        return true
+      }),
+    }),
+    defineField({
+      name: 'platzhalter',
+      title: 'Platzhalter',
+      description: 'Band wird noch angekündigt – zeigt eine Platzhalter-Karte im Line-Up.',
+      type: 'boolean',
+      initialValue: false,
     }),
     defineField({
       name: 'genre',
@@ -28,4 +40,19 @@ export default defineType({
       options: {hotspot: true},
     }),
   ],
+  preview: {
+    select: {
+      name: 'name',
+      genre: 'genre',
+      platzhalter: 'platzhalter',
+      media: 'bild',
+    },
+    prepare({name, genre, platzhalter, media}) {
+      return {
+        title: platzhalter ? (name || 'Platzhalter – noch nicht angekündigt') : name,
+        subtitle: platzhalter ? 'Platzhalter' : genre,
+        media,
+      }
+    },
+  },
 })

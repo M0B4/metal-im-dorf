@@ -7,14 +7,15 @@ const visualEditingEnabled = import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLE
 const token = import.meta.env.SANITY_API_READ_TOKEN;
 
 // visualEditingEnabled=true: fetch draft content with stega encoding (local/staging with Presentation tool)
-// visualEditingEnabled=false: fetch published content from CDN (production)
+// Static builds must read the latest published content so newly added event pages
+// are included immediately instead of waiting for the API CDN cache to refresh.
 async function loadQuery<T>(query: string, params: Record<string, any> = {}): Promise<T> {
   return sanityClient.fetch<T>(
     query,
     params,
     {
       perspective: visualEditingEnabled ? 'drafts' : 'published',
-      useCdn: !visualEditingEnabled,
+      useCdn: false,
       ...(visualEditingEnabled && token ? { token, stega: true } : {}),
     }
   );
@@ -57,6 +58,7 @@ export interface SanityImage {
   hotspot?: { x: number; y: number; height: number; width: number };
   crop?: { top: number; bottom: number; left: number; right: number };
   alt?: string;
+  caption?: string;
   /** Original image width in pixels, from asset metadata */
   width: number;
   /** Original image height in pixels, from asset metadata */
@@ -89,6 +91,7 @@ export async function getBands(): Promise<Band[]> {
       name,
       genre,
       spielzeit,
+      platzhalter,
       bild ${imageProjection}
     }`,
   );
@@ -109,9 +112,10 @@ export async function getNews(): Promise<News[]> {
 
 export interface Band {
   _id: string;
-  name: string;
+  name?: string;
   genre?: string;
   spielzeit?: string;
+  platzhalter?: boolean;
   bild?: SanityImage;
 }
 
@@ -130,6 +134,8 @@ export async function getHistorie(): Promise<Historie[]> {
       _id,
       jahr,
       titel,
+      slug,
+      "kategorie": coalesce(kategorie, "hauptfestival"),
       plakat ${imageProjection},
       beschreibung,
       bilder[] ${imageProjection}
@@ -141,6 +147,8 @@ export interface Historie {
   _id: string;
   jahr: number;
   titel?: string;
+  slug?: Slug;
+  kategorie: "hauptfestival" | "nebenveranstaltung";
   plakat?: SanityImage;
   beschreibung?: PortableTextBlock[];
   bilder?: SanityImage[];

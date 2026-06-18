@@ -1,0 +1,56 @@
+---
+import { ExternalLink, LockKeyhole } from "@lucide/astro";
+import Layout from "../layouts/Layout.astro";
+import { siteConfig } from "../utils/site";
+---
+
+<Layout title="Verwaltung | Metal im Dorf" description="Zugang zur Festivalverwaltung." noindex>
+  <section class="shell admin-page">
+    <LockKeyhole size={34} stroke-width={1.8} aria-hidden="true" />
+    <span class="section-kicker">Verwaltung</span>
+    <h1>Redaktionsbereich</h1>
+    <p>Hier geht es zur Verwaltung der Festivalinhalte.</p>
+    <a class="metal-button" href={siteConfig.studioUrl} target="_blank" rel="noreferrer">
+      Sanity öffnen
+      <ExternalLink size={17} stroke-width={2} />
+    </a>
+  </section>
+</Layout>
+
+<style>
+  .admin-page {
+    display: grid;
+    min-height: 52vh;
+    align-content: center;
+    justify-items: start;
+    gap: 1rem;
+    max-width: 720px;
+  }
+
+  .admin-page > svg {
+    color: var(--color-accent);
+  }
+
+  .admin-page .section-kicker {
+    margin: 0;
+  }
+
+  .admin-page h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 950;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .admin-page p {
+    margin: 0 0 0.5rem;
+    color: #c8c8cf;
+    line-height: 1.7;
+  }
+
+  .metal-button {
+    gap: 0.6rem;
+  }
+</style>

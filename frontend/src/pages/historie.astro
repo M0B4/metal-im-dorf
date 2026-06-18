@@ -2,130 +2,231 @@
 import Layout from "../layouts/Layout.astro";
 import { getHistorie } from "../utils/sanity";
 import { urlFor } from "../utils/image";
+import { getHistoriePath, getKategorieLabel } from "../utils/historie";
+import { sitePath } from "../utils/site";
 
 const historie = await getHistorie();
-const base = import.meta.env.BASE_URL;
 ---
 
 <Layout title="Historie | Metal im Dorf" description="Die Geschichte und Rückblicke des Metal im Dorf Festivals.">
-  <section class="section space-y-10">
-    <div class="border-l-4 border-festival-red pl-4 py-1">
-      <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider text-white">Historie & Rückblick</h1>
-      <p class="text-zinc-500 mt-2 text-sm md:text-base">Eine Zeitreise durch die vergangenen Jahre unseres legendären Festivals.</p>
-    </div>
+  <div class="shell page">
+    <header class="page-header">
+      <span class="section-kicker">Archiv</span>
+      <h1 class="page-title">Historie</h1>
+      <p class="page-lede">
+        Poster, Rückblicke und Impressionen vergangener Festivals und
+        Nebenveranstaltungen.
+      </p>
+    </header>
 
     {historie.length ? (
-      <div class="historie-grid">
+      <>
+        <div class="category-filter" role="group" aria-label="Historie filtern">
+          <button class="filter-button is-active" type="button" data-filter="alle">Alle</button>
+          <button class="filter-button" type="button" data-filter="hauptfestival">Hauptfestival</button>
+          <button class="filter-button" type="button" data-filter="nebenveranstaltung">Nebenveranstaltungen</button>
+        </div>
+
+        <section class="history-grid" aria-label="Festival Historie">
         {historie.map((item) => (
-          <a href={`${base.replace(/\/$/, "")}/historie/${item.jahr}`} class="historie-card">
-            {item.plakat && (
-              <div class="poster-wrapper">
+          <a
+            href={sitePath(`historie/${getHistoriePath(item, historie)}`)}
+            class="history-card panel"
+            data-category={item.kategorie}
+          >
+            <div class="poster-wrapper">
+              {item.plakat ? (
                 <img
-                  src={urlFor(item.plakat).width(450).auto("format").quality(80).url()}
+                  src={urlFor(item.plakat).width(620).auto("format").quality(82).url()}
                   alt={`Festival Plakat ${item.jahr}`}
                   class="poster-image"
+                  loading="lazy"
                 />
-              </div>
-            )}
-            <div class="jahre-info">
-              <h3>{item.jahr}</h3>
+              ) : (
+                <div class="poster-placeholder">{item.jahr}</div>
+              )}
+            </div>
+            <div class="year-info">
+              <span>{getKategorieLabel(item.kategorie)}</span>
+              <h2>{item.jahr}</h2>
             </div>
           </a>
         ))}
-      </div>
+        </section>
+        <p class="filter-empty" hidden>In dieser Kategorie gibt es noch keine Einträge.</p>
+      </>
     ) : (
       <p class="placeholder">Keine Einträge in der Historie verfügbar.</p>
     )}
-  </section>
+  </div>
 </Layout>
 
 <style>
-  .section {
-    max-width: 1200px;
-    margin: 0 auto;
+  .page {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
   }
 
-  .historie-grid {
+  .page-header {
+    max-width: 760px;
+  }
+
+  .history-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2rem;
+    gap: 1rem;
   }
 
-  .historie-card {
-    background: rgba(23, 23, 23, 0.4);
-    border: 1px solid rgba(63, 63, 70, 0.4);
-    border-radius: 1rem;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
-    text-decoration: none;
+  .category-filter {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 0.55rem;
   }
 
-  .historie-card:hover {
-    border-color: rgba(225, 29, 72, 0.5);
-    transform: translateY(-6px);
-    box-shadow: 0 16px 36px rgba(225, 29, 72, 0.1);
+  .filter-button {
+    min-height: 2.7rem;
+    padding: 0.65rem 0.9rem;
+    color: #d4d4d8;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
   }
 
-  @media (max-width: 960px) {
-    .historie-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .filter-button:hover,
+  .filter-button.is-active {
+    color: #050505;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
-  @media (max-width: 640px) {
-    .historie-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-    }
-    .historie-card h3 {
-      font-size: 1.25rem !important;
-    }
-    .jahre-info {
-      padding: 0.75rem !important;
-    }
+  .history-card[hidden] {
+    display: none;
+  }
+
+  .history-card {
+    display: grid;
+    align-self: start;
+    min-width: 0;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .history-card:hover {
+    border-color: rgba(0, 168, 187, 0.5);
+    box-shadow: var(--shadow-panel);
+    transform: translateY(-3px);
   }
 
   .poster-wrapper {
-    width: 100%;
     overflow: hidden;
-    background: #09090b;
-    border-bottom: 1px solid rgba(63, 63, 70, 0.3);
+    background: #050505;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .poster-image {
     width: 100%;
     height: auto;
     display: block;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    object-fit: contain;
+    transition: transform 320ms ease, filter 320ms ease;
   }
 
-  .historie-card:hover .poster-image {
-    transform: scale(1.03);
+  .history-card:hover .poster-image {
+    filter: contrast(1.08);
   }
 
-  .jahre-info {
-    padding: 1.25rem;
-    text-align: center;
-    background: rgba(15, 15, 15, 0.3);
-    margin-top: auto;
+  .poster-placeholder {
+    display: grid;
+    width: 100%;
+    min-height: 18rem;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.46);
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 42%),
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 13px),
+      #101010;
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 900;
   }
 
-  .historie-card h3 {
-    color: #fff;
-    font-weight: 950;
-    font-size: 1.5rem;
+  .filter-empty {
     margin: 0;
-    letter-spacing: 0.05em;
+    padding: 1.5rem;
+    color: #a1a1aa;
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+    text-align: center;
   }
 
-  .placeholder {
-    color: #6b7280;
-    font-style: italic;
-    text-align: center;
-    padding: 3rem;
-    font-size: 1.2rem;
+  .year-info {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .year-info span {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .year-info h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.65rem, 4vw, 2.7rem);
+    font-weight: 950;
+    line-height: 0.9;
+  }
+
+  @media (max-width: 900px) {
+    .history-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .history-grid {
+      gap: 0.75rem;
+    }
+
+    .year-info {
+      display: grid;
+      gap: 0.4rem;
+      padding: 0.75rem;
+    }
   }
 </style>
+
+<script>
+  const filterButtons = document.querySelectorAll<HTMLButtonElement>(".filter-button");
+  const historyCards = document.querySelectorAll<HTMLElement>(".history-card");
+  const emptyState = document.querySelector<HTMLElement>(".filter-empty");
+
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.getAttribute("data-filter") || "alle";
+      let visibleCards = 0;
+
+      filterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+      historyCards.forEach((card) => {
+        const visible = filter === "alle" || card.getAttribute("data-category") === filter;
+        card.toggleAttribute("hidden", !visible);
+        if (visible) visibleCards += 1;
+      });
+
+      if (emptyState) emptyState.hidden = visibleCards > 0;
+    });
+  });
+</script>

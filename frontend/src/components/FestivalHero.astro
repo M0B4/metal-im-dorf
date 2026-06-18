@@ -1,0 +1,118 @@
+---
+import type { News } from "../utils/sanity";
+import { formatDate } from "../utils/format";
+import { sitePath } from "../utils/site";
+
+interface Props {
+  featured?: News;
+}
+
+const { featured } = Astro.props;
+const heroImagePath = sitePath("/hero-stage.jpg");
+---
+
+<section
+  class="hero"
+  style={`background-image: linear-gradient(90deg, rgba(3, 3, 3, 0.92) 0%, rgba(3, 3, 3, 0.7) 48%, rgba(3, 3, 3, 0.3) 100%), linear-gradient(180deg, rgba(3, 3, 3, 0.12), rgba(3, 3, 3, 0.52)), url("${heroImagePath}");`}
+>
+  <div class="hero-copy">
+    <span class="section-kicker">Small festival, heavy sound</span>
+    <h1 class="page-title">Metal im Dorf</h1>
+    <p class="page-lede">
+      Das kleine Metal-Festival am Opfermoor Niederdorla: direkt, laut und ohne
+      Umwege. Hier findest du aktuelle Ansagen, Bands und Rückblicke.
+    </p>
+    <div class="hero-actions">
+      <a class="metal-button" href="#news">News lesen</a>
+      <a class="metal-button metal-button--ghost" href={sitePath("/line-up")}>Line-Up ansehen</a>
+    </div>
+  </div>
+
+  <aside class="hero-board panel">
+    <span>Aktuelle Meldung</span>
+    <h2>{featured?.titel ?? "News folgen bald"}</h2>
+    <p>{featured ? formatDate(featured.datum) : "Bleib dran"}</p>
+  </aside>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    min-height: clamp(440px, 58vh, 620px);
+    align-items: end;
+    gap: 1.5rem;
+    padding: clamp(2rem, 6vw, 4.5rem);
+    overflow: hidden;
+    background-color: #050505;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .hero-copy,
+  .hero-board {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.6rem;
+  }
+
+  .metal-button--ghost {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .metal-button--ghost:hover {
+    color: #050505;
+    background: #fff;
+    border-color: #fff;
+  }
+
+  .hero-board {
+    padding: 1.4rem;
+    border-left: 4px solid var(--color-accent);
+  }
+
+  .hero-board span,
+  .hero-board p {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .hero-board h2 {
+    margin: 0.7rem 0 1rem;
+    color: #fff;
+    font-size: clamp(1.45rem, 3vw, 2.35rem);
+    font-weight: 950;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      background-size: cover;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: 1.4rem;
+    }
+  }
+</style>

@@ -15,6 +15,7 @@ const studioUrl = PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333";
 
 import sanity from "@sanity/astro";
 import react from "@astrojs/react";
+import icon from "astro-icon";
 
 // Change this depending on your hosting provider (Vercel, Netlify etc)
 // https://docs.astro.build/en/guides/server-side-rendering/#adding-an-adapter
@@ -28,6 +29,11 @@ export default defineConfig({
     output: "static",
     base: import.meta.env.PROD ? '/metal-im-dorf' : '/',
     integrations: [
+        icon({
+            include: {
+                "simple-icons": ["instagram", "facebook"],
+            },
+        }),
         sanity({
             projectId,
             dataset,

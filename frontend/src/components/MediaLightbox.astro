@@ -1,0 +1,130 @@
+<div
+  id="media-lightbox"
+  class="media-lightbox hidden"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Bildergalerie"
+>
+  <div class="media-lightbox-dialog">
+    <button class="media-lightbox-control media-lightbox-close" type="button" aria-label="Schließen">×</button>
+    <button class="media-lightbox-control media-lightbox-prev" type="button" aria-label="Vorheriges Bild">←</button>
+    <figure class="media-lightbox-stage">
+      <img class="media-lightbox-image" src="" alt="" />
+      <figcaption class="media-lightbox-caption">
+        <span class="media-lightbox-counter"></span>
+        <span class="media-lightbox-caption-text"></span>
+      </figcaption>
+    </figure>
+    <button class="media-lightbox-control media-lightbox-next" type="button" aria-label="Nächstes Bild">→</button>
+  </div>
+</div>
+
+<script>
+  interface LightboxItem {
+    src: string;
+    alt: string;
+    caption: string;
+  }
+
+  const lightbox = document.querySelector<HTMLElement>("#media-lightbox");
+  const image = lightbox?.querySelector<HTMLImageElement>(".media-lightbox-image");
+  const caption = lightbox?.querySelector<HTMLElement>(".media-lightbox-caption-text");
+  const counter = lightbox?.querySelector<HTMLElement>(".media-lightbox-counter");
+  const closeButton = lightbox?.querySelector<HTMLButtonElement>(".media-lightbox-close");
+  const prevButton = lightbox?.querySelector<HTMLButtonElement>(".media-lightbox-prev");
+  const nextButton = lightbox?.querySelector<HTMLButtonElement>(".media-lightbox-next");
+
+  let items: LightboxItem[] = [];
+  let currentIndex = 0;
+  let trigger: HTMLElement | null = null;
+
+  function getGroupItems(group: string) {
+    return Array.from(document.querySelectorAll<HTMLElement>("[data-lightbox-group]"))
+      .filter((element) => element.dataset.lightboxGroup === group)
+      .map((element) => {
+        const thumbnail = element.querySelector<HTMLImageElement>("img");
+        return {
+          src: element.dataset.fullSrc || thumbnail?.currentSrc || thumbnail?.src || "",
+          alt: element.dataset.alt || thumbnail?.alt || "",
+          caption: element.dataset.caption || element.dataset.alt || thumbnail?.alt || "",
+        };
+      })
+      .filter((item) => item.src);
+  }
+
+  function render() {
+    const item = items[currentIndex];
+    if (!item || !image || !caption || !counter) return;
+
+    image.src = item.src;
+    image.alt = item.alt || item.caption;
+    caption.textContent = item.caption;
+    counter.textContent = `${currentIndex + 1} / ${items.length}`;
+
+    const hasMultipleItems = items.length > 1;
+    if (prevButton) prevButton.hidden = !hasMultipleItems;
+    if (nextButton) nextButton.hidden = !hasMultipleItems;
+  }
+
+  function open(element: HTMLElement) {
+    const group = element.dataset.lightboxGroup;
+    if (!group || !lightbox) return;
+
+    items = getGroupItems(group);
+    const groupElements = Array.from(document.querySelectorAll<HTMLElement>("[data-lightbox-group]"))
+      .filter((item) => item.dataset.lightboxGroup === group);
+    currentIndex = Math.max(0, groupElements.indexOf(element));
+    trigger = element;
+
+    render();
+    lightbox.classList.remove("hidden");
+    lightbox.setAttribute("aria-hidden", "false");
+    document.body.classList.add("lightbox-open");
+    closeButton?.focus();
+  }
+
+  function close() {
+    if (!lightbox) return;
+    lightbox.classList.add("hidden");
+    lightbox.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("lightbox-open");
+    if (image) image.src = "";
+    trigger?.focus();
+  }
+
+  function move(offset: number) {
+    if (!items.length) return;
+    currentIndex = (currentIndex + offset + items.length) % items.length;
+    render();
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const item = target.closest<HTMLElement>("[data-lightbox-group]");
+    if (item) {
+      open(item);
+      return;
+    }
+
+    if (
+      !lightbox?.classList.contains("hidden") &&
+      !target.closest(".media-lightbox-stage, .media-lightbox-control")
+    ) {
+      close();
+    }
+  });
+
+  closeButton?.addEventListener("click", close);
+  prevButton?.addEventListener("click", () => move(-1));
+  nextButton?.addEventListener("click", () => move(1));
+
+  document.addEventListener("keydown", (event) => {
+    if (lightbox?.classList.contains("hidden")) return;
+    if (event.key === "Escape") close();
+    if (event.key === "ArrowLeft") move(-1);
+    if (event.key === "ArrowRight") move(1);
+  });
+</script>

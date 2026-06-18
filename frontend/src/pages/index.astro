@@ -1,521 +1,59 @@
 ---
+import FestivalHero from "../components/FestivalHero.astro";
+import MediaLightbox from "../components/MediaLightbox.astro";
+import NewsCard from "../components/NewsCard.astro";
 import Layout from "../layouts/Layout.astro";
 import { getNews } from "../utils/sanity";
-import { urlFor } from "../utils/image";
 
 const news = await getNews();
-const sortedNews = [...news].sort((a, b) =>
-  new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime()
+const sortedNews = [...news].sort(
+  (a, b) => new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime(),
 );
 ---
 
-<Layout title="News | Metal im Dorf" description="Die aktuellsten News vom Metal im Dorf Festival.">
-  <section class="section space-y-10">
-    <div class="border-l-4 border-festival-red pl-4 py-1">
-      <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider text-white">News</h1>
-      <p class="text-zinc-500 mt-2 text-sm md:text-base">Die aktuellsten Ankündigungen, Updates und Infos rund um das Festival.</p>
-    </div>
+<Layout title="Metal im Dorf" description="News und aktuelle Infos vom Metal im Dorf Festival.">
+  <div class="shell home">
+    <FestivalHero featured={sortedNews[0]} />
 
-    {sortedNews.length ? (
-      <div class="news-list">
-        {sortedNews.map((item) => (
-          <article class="news-item">
-            <div class="news-header">
-              <div class="news-date">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {item.datum && (
-                  <span>
-                    {new Date(item.datum).toLocaleDateString("de-DE", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric"
-                    })}
-                  </span>
-                )}
-              </div>
-              <h3>{item.titel}</h3>
-            </div>
-            <div class="news-body">
-              {item.inhalt && (() => {
-                const textBlocks = item.inhalt.filter((block) => block._type === "block");
-                const imageBlocks = item.inhalt.filter((block) => block._type === "image");
-                const extraImages = [
-                  ...(item.bild ? [item.bild] : []),
-                  ...(item.bilder ?? []),
-                ];
-                const allImages = [...imageBlocks, ...extraImages];
-                return (
-                  <>
-                    <div class="news-content">
-                      {/* Portable Text Content */}
-                      {textBlocks.map((block) => (
-                        <p key={block._key ?? Math.random()}>
-                          {block.children?.map((child) => child.text).join("")}
-                        </p>
-                      ))}
-                    </div>
-                    {allImages.length ? (
-                      <div class="news-gallery">
-                        {allImages.map((image, index) => {
-                          const imageAlt = image.caption || image.alt || `${item.titel} Bild ${index + 1}`;
-                          return (
-                            <div class="news-gallery-item" key={image._key ?? index}>
-                              <img
-                                src={urlFor(image).width(900).auto("format").quality(80).url()}
-                                alt={imageAlt}
-                                data-caption={image.caption ?? image.alt ?? `${item.titel} Bild ${index + 1}`}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </>
-                );
-              })()}
-            </div>
-          </article>
-        ))}
+    <section id="news" class="news-section">
+      <div class="section-heading">
+        <span class="section-kicker">News</span>
+        <h2>Aktuelles vom Festival</h2>
       </div>
-    ) : (
-      <p class="placeholder">Keine News verfügbar.</p>
-    )}
-    <div id="news-lightbox" class="news-lightbox hidden" aria-hidden="true">
-      <div class="news-lightbox-inner">
-        <button id="news-lightbox-close" class="news-lightbox-close" aria-label="Schließen">×</button>
-        <div class="news-lightbox-image-wrapper">
-          <button id="news-lightbox-prev" class="news-lightbox-arrow news-lightbox-prev" aria-label="Vorheriges Bild">←</button>
-          <img id="news-lightbox-image" class="news-lightbox-image" src="" alt="" />
-          <button id="news-lightbox-next" class="news-lightbox-arrow news-lightbox-next" aria-label="Nächstes Bild">→</button>
+
+      {sortedNews.length > 0 ? (
+        <div class="news-list">
+          {sortedNews.map((item, index) => <NewsCard item={item} index={index} />)}
         </div>
-        <div id="news-lightbox-caption" class="news-lightbox-caption"></div>
-      </div>
-    </div>
-  </section>
+      ) : (
+        <p class="placeholder">Keine News verfügbar.</p>
+      )}
+    </section>
+
+    <MediaLightbox />
+  </div>
 </Layout>
 
 <style>
-  .section {
-    max-width: 1000px;
-    margin: 0 auto;
+  .home {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
   }
 
-  .news-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  .news-item {
-    background: rgba(23, 23, 23, 0.4);
-    border: 1px solid rgba(63, 63, 70, 0.4);
-    border-left: 4px solid var(--color-festival-red);
-    padding: 2rem;
-    border-radius: 1rem;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .news-item:hover {
-    border-color: rgba(113, 113, 122, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(225, 29, 72, 0.08);
-  }
-
-  .news-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  .section-heading {
     margin-bottom: 1.5rem;
   }
 
-  .news-item h3 {
-    color: #fff;
-    font-weight: 900;
-    font-size: 1.6rem;
+  .section-heading h2 {
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .news-date {
-    color: var(--color-festival-red);
-    font-size: 0.9rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .news-content {
-    color: #d4d4d8;
-    line-height: 1.8;
-    font-size: 1.05rem;
-  }
-
-  .news-content p {
-    margin: 0 0 1.25rem;
-  }
-
-  .news-content p:last-child {
-    margin-bottom: 0;
-  }
-
-  .news-gallery {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.5rem;
-  }
-
-  .news-gallery-item {
-    overflow: hidden;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(63, 63, 70, 0.3);
-    aspect-ratio: 16/10;
-    background: #09090b;
-    cursor: zoom-in;
-  }
-
-  .news-gallery-item img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .news-gallery-item:hover img {
-    transform: scale(1.05);
-  }
-
-  @media (max-width: 640px) {
-    .news-gallery {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.5rem;
-    }
-    .news-item {
-      padding: 1.5rem;
-    }
-    .news-item h3 {
-      font-size: 1.3rem;
-    }
-  }
-
-  .news-body {
-    position: relative;
-  }
-
-  .news-body.collapsed {
-    max-height: 6rem;
-    overflow: hidden;
-  }
-
-  .news-body.collapsed::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 3.5rem;
-    background: linear-gradient(180deg, rgba(9, 9, 11, 0) 0%, rgba(9, 9, 11, 1) 100%);
-    pointer-events: none;
-  }
-
-  .news-body.collapsed .news-content {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    overflow: hidden;
-  }
-
-  .news-body.collapsed .news-gallery {
-    display: none;
-  }
-
-  .news-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    background-color: var(--color-festival-red);
-    border: 1px solid var(--color-festival-red);
     color: #fff;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 950;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
   }
 
-  .news-toggle:hover {
-    background-color: var(--color-festival-red-hover);
-    border-color: var(--color-festival-red-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(225, 29, 72, 0.25);
-  }
-
-  .news-body.expanded {
-    max-height: none;
-  }
-
-  /* News Lightbox Styles */
-  .news-lightbox {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(9, 9, 11, 0.95);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
-    padding: 1rem;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-  }
-
-  .news-lightbox.hidden {
-    display: none;
-  }
-
-  .news-lightbox-inner {
-    position: relative;
-    max-width: 95vw;
-    max-height: 95vh;
-    width: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  .news-lightbox-image-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 90vw;
-    display: flex;
-    align-items: center;
-  }
-
-  .news-lightbox-image {
-    width: 100%;
-    max-height: 75vh;
-    object-fit: contain;
-    border-radius: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: block;
-  }
-
-  .news-lightbox-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 1.5rem;
+  .news-list {
     display: grid;
-    place-items: center;
-    z-index: 2;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .news-lightbox-prev {
-    left: -1.75rem;
-  }
-
-  .news-lightbox-next {
-    right: -1.75rem;
-  }
-
-  .news-lightbox-arrow:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-50%) scale(1.05);
-  }
-
-  .news-lightbox-close {
-    position: absolute;
-    top: -2.5rem;
-    right: 0;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .news-lightbox-close:hover {
-    background: rgba(225, 29, 72, 0.2);
-    border-color: var(--color-festival-red);
-    color: var(--color-festival-red);
-    transform: rotate(90deg);
-  }
-
-  .news-lightbox-caption {
-    color: #f4f4f5;
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-align: center;
-    max-width: 90vw;
-    background: rgba(9, 9, 11, 0.8);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  @media (max-width: 768px) {
-    .news-lightbox-arrow {
-      width: 2.75rem;
-      height: 2.75rem;
-      font-size: 1.2rem;
-    }
-    .news-lightbox-prev {
-      left: 0.5rem;
-    }
-    .news-lightbox-next {
-      right: 0.5rem;
-    }
-    .news-lightbox-close {
-      top: 1rem;
-      right: 1rem;
-      z-index: 10;
-    }
-  }
-
-  .placeholder {
-    color: #6b7280;
-    font-style: italic;
-    text-align: center;
-    padding: 3rem;
-    font-size: 1.2rem;
+    gap: 1rem;
   }
 </style>
-
-<script type="module">
-  const COLLAPSE_HEIGHT = 96;
-
-  document.querySelectorAll('.news-item').forEach((item) => {
-    const body = item.querySelector('.news-body');
-    if (!body) return;
-    if (body.scrollHeight <= COLLAPSE_HEIGHT) return;
-
-    body.classList.add('collapsed');
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'news-toggle';
-    button.innerHTML = 'Zeige mehr <span class="arrow">&darr;</span>';
-
-    button.addEventListener('click', () => {
-      const expanded = body.classList.toggle('expanded');
-      body.classList.toggle('collapsed', !expanded);
-      button.innerHTML = expanded ? 'Weniger anzeigen <span class="arrow">&uarr;</span>' : 'Zeige mehr <span class="arrow">&darr;</span>';
-    });
-
-    item.append(button);
-  });
-
-  const lightbox = document.getElementById('news-lightbox');
-  const lightboxImage = document.getElementById('news-lightbox-image');
-  const lightboxCaption = document.getElementById('news-lightbox-caption');
-  const closeButton = document.getElementById('news-lightbox-close');
-  const prevButton = document.getElementById('news-lightbox-prev');
-  const nextButton = document.getElementById('news-lightbox-next');
-
-  let imageSources = [];
-  let currentIndex = 0;
-
-  function updateLightbox() {
-    const image = imageSources[currentIndex];
-    if (!image) return;
-    lightboxImage.src = image.src;
-    lightboxImage.alt = image.alt || image.caption || '';
-    lightboxCaption.textContent = image.caption || image.alt || '';
-  }
-
-  function openLightbox(index, images) {
-    imageSources = images;
-    currentIndex = index;
-    updateLightbox();
-    lightbox.classList.remove('hidden');
-    lightbox.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeLightbox() {
-    lightbox.classList.add('hidden');
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImage.src = '';
-  }
-
-  document.querySelectorAll('.news-gallery-item img').forEach((img) => {
-    const gallery = img.closest('.news-gallery');
-    if (!gallery) return;
-
-    const galleryImages = Array.from(gallery.querySelectorAll('img')).map((image) => ({
-      src: image.src,
-      alt: image.alt,
-      caption: image.getAttribute('data-caption') || image.alt,
-    }));
-
-    img.addEventListener('click', () => {
-      const index = galleryImages.findIndex((image) => image.src === img.src && image.alt === img.alt);
-      if (index !== -1) {
-        openLightbox(index, galleryImages);
-      }
-    });
-  });
-
-  closeButton.addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (event) => {
-    if (event.target === lightbox) {
-      closeLightbox();
-    }
-  });
-
-  prevButton.addEventListener('click', () => {
-    currentIndex = (currentIndex - 1 + imageSources.length) % imageSources.length;
-    updateLightbox();
-  });
-
-  nextButton.addEventListener('click', () => {
-    currentIndex = (currentIndex + 1) % imageSources.length;
-    updateLightbox();
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (lightbox.classList.contains('hidden')) return;
-    if (event.key === 'Escape') {
-      closeLightbox();
-    }
-    if (event.key === 'ArrowLeft') {
-      currentIndex = (currentIndex - 1 + imageSources.length) % imageSources.length;
-      updateLightbox();
-    }
-    if (event.key === 'ArrowRight') {
-      currentIndex = (currentIndex + 1) % imageSources.length;
-      updateLightbox();
-    }
-  });
-</script>

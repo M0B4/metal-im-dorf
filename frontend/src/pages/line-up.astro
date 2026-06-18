@@ -7,148 +7,195 @@ const bands = await getBands();
 ---
 
 <Layout title="Line-Up | Metal im Dorf" description="Das komplette Line-Up des Metal im Dorf Festivals.">
-  <section class="section space-y-10">
-    <div class="border-l-4 border-festival-red pl-4 py-1">
-      <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider text-white">Line-Up</h1>
-      <p class="text-zinc-500 mt-2 text-sm md:text-base">Erlebe die lautesten Riffs und epischsten Shows live bei uns im Dorf.</p>
-    </div>
+  <div class="shell page">
+    <header class="page-header">
+      <span class="section-kicker">Line-Up</span>
+      <h1 class="page-title">Bands</h1>
+      <p class="page-lede">
+        Bestätigte Bands, Genres, Spielzeiten und offene Slots für kommende
+        Ankündigungen.
+      </p>
+    </header>
 
     {bands.length ? (
-      <div class="band-grid">
-        {bands.map((band) => (
-          <div class="band-card">
-            {band.bild && (
+      <section class="band-grid" aria-label="Festival Line-Up">
+        {bands.map((band, index) => (
+          <article class:list={["band-card panel", band.platzhalter && "band-card--placeholder"]}>
+            <div class="band-slot">{String(index + 1).padStart(2, "0")}</div>
+            {band.platzhalter ? (
+              <div class="band-image-wrapper band-placeholder-image">
+                <span>TBA</span>
+              </div>
+            ) : band.bild ? (
               <div class="band-image-wrapper">
-                <img 
-                  src={urlFor(band.bild).width(400).auto("format").quality(80).url()} 
-                  alt={band.name} 
-                  class="band-image" 
+                <img
+                  src={urlFor(band.bild).width(640).auto("format").quality(82).url()}
+                  alt={band.name}
+                  class="band-image"
+                  loading="lazy"
                 />
               </div>
+            ) : (
+              <div class="band-image-wrapper band-placeholder-image">
+                <span>{band.name?.slice(0, 2) ?? "MI"}</span>
+              </div>
             )}
+
             <div class="band-info">
-              {band.genre && <span class="genre-tag">{band.genre}</span>}
-              <h3>{band.name}</h3>
-              <p class="spielzeit">
-                <svg class="h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {band.spielzeit || "TBA"}
-              </p>
+              <span class:list={["genre-tag", band.platzhalter && "genre-tag--placeholder"]}>
+                {band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}
+              </span>
+              <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
+              <p>{band.spielzeit || "TBA"}</p>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
     ) : (
-      <p class="placeholder">Bands werden bald bekannt gegeben. 🤘</p>
+      <p class="placeholder">Bands werden bald bekannt gegeben.</p>
     )}
-  </section>
+  </div>
 </Layout>
 
 <style>
-  .section {
-    max-width: 1200px;
-    margin: 0 auto;
+  .page {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  .page-header {
+    max-width: 760px;
   }
 
   .band-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
-  @media (max-width: 1024px) {
+  .band-card {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .band-card:hover {
+    border-color: rgba(0, 168, 187, 0.5);
+    box-shadow: var(--shadow-panel);
+    transform: translateY(-3px);
+  }
+
+  .band-card--placeholder {
+    border-style: dashed;
+  }
+
+  .band-slot {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.7rem;
+    z-index: 2;
+    padding: 0.28rem 0.42rem;
+    color: #050505;
+    background: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 900;
+  }
+
+  .band-image-wrapper {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #050505;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .band-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(1.08);
+    transition: transform 320ms ease, filter 320ms ease;
+  }
+
+  .band-card:hover .band-image {
+    filter: saturate(1.05) contrast(1.12);
+    transform: scale(1.04);
+  }
+
+  .band-placeholder-image {
+    display: grid;
+    place-items: center;
+    background:
+      linear-gradient(135deg, rgba(215, 25, 32, 0.16), transparent 42%),
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 13px),
+      #101010;
+  }
+
+  .band-placeholder-image span {
+    color: rgba(255, 255, 255, 0.52);
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 900;
+  }
+
+  .band-info {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .genre-tag {
+    width: fit-content;
+    padding: 0.22rem 0.45rem;
+    color: var(--color-accent);
+    border: 1px solid rgba(0, 168, 187, 0.34);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .genre-tag--placeholder {
+    color: #a1a1aa;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .band-card h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    font-weight: 950;
+    line-height: 1.04;
+    text-transform: uppercase;
+  }
+
+  .band-card p {
+    margin: 0;
+    color: #a1a1aa;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 1040px) {
     .band-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 760px) {
     .band-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
+      gap: 0.75rem;
     }
+
     .band-info {
-      padding: 1rem;
+      padding: 0.8rem;
     }
-    .band-card h3 {
-      font-size: 1.05rem;
-    }
-  }
-
-  .band-card {
-    background: rgba(23, 23, 23, 0.4);
-    border: 1px solid rgba(63, 63, 70, 0.4);
-    border-radius: 1rem;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .band-card:hover {
-    border-color: rgba(225, 29, 72, 0.5);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(225, 29, 72, 0.1);
-  }
-
-  .band-image-wrapper {
-    width: 100%;
-    overflow: hidden;
-    background: #09090b;
-    border-bottom: 1px solid rgba(63, 63, 70, 0.3);
-  }
-
-  .band-image {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .band-card:hover .band-image {
-    transform: scale(1.05);
-  }
-
-  .band-info {
-    padding: 1.25rem;
-  }
-
-  .band-card h3 {
-    color: #fff;
-    font-weight: 900;
-    font-size: 1.2rem;
-    margin: 0 0 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .genre-tag {
-    color: var(--color-festival-red);
-    background: rgba(225, 29, 72, 0.1);
-    border: 1px solid rgba(225, 29, 72, 0.2);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    display: inline-block;
-    margin-bottom: 0.5rem;
-  }
-
-  .spielzeit {
-    color: #a1a1aa;
-    font-size: 0.8rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .placeholder {
-    color: #6b7280;
-    font-style: italic;
-    text-align: center;
-    padding: 3rem;
-    font-size: 1.2rem;
   }
 </style>

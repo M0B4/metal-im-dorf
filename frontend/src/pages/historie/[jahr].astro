@@ -1,96 +1,89 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import MediaLightbox from "../../components/MediaLightbox.astro";
 import { getHistorie } from "../../utils/sanity";
 import { urlFor } from "../../utils/image";
 import { PortableText } from "astro-portabletext";
+import { ArrowLeft } from "@lucide/astro";
+import { getHistoriePath, getKategorieLabel } from "../../utils/historie";
+import { sitePath } from "../../utils/site";
 
 export async function getStaticPaths() {
   const historie = await getHistorie();
   return historie.map((item) => ({
-    params: { jahr: item.jahr.toString() },
+    params: { jahr: getHistoriePath(item, historie) },
     props: { item },
   }));
 }
 
 const { item } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const displayTitle = item.titel || `Festival ${item.jahr}`;
 
-// Combine poster and event photos for a single gallery slideshow
-const allImages = [
-  ...(item.plakat ? [item.plakat] : []),
-  ...(item.bilder ?? []),
-];
-
-// Pre-compile large images list for the client-side lightbox
-const mappedImages = allImages.map((image, index) => {
-  const isPosterItem = item.plakat && index === 0;
-  const caption = image.caption ?? image.alt ?? (isPosterItem ? `Festival Plakat ${item.jahr}` : `Impression ${item.jahr} Bild ${item.plakat ? index : index + 1}`);
-  return {
-    src: urlFor(image).width(1200).auto("format").quality(80).url(),
-    caption,
-  };
-});
+const lightboxGroup = `history-${item._id}`;
 ---
 
 <Layout 
-  title={`Rückblick ${item.jahr} | Metal im Dorf`} 
-  description={`Rückblick und Bildergalerie vom Metal im Dorf Festival ${item.jahr}.`}
+  title={`${displayTitle} | Metal im Dorf`}
+  description={`Rückblick und Bildergalerie: ${displayTitle}.`}
 >
-  <div class="space-y-12">
-    {/* Back navigation link */}
-    <a href={`${base.replace(/\/$/, "")}/historie`} class="inline-flex items-center gap-2 text-zinc-400 hover:text-festival-red transition duration-200 font-semibold uppercase tracking-wider text-xs">
-      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
+  <div class="shell detail-page">
+    <a href={sitePath("historie")} class="back-link">
+      <ArrowLeft size={17} stroke-width={2.5} aria-hidden="true" />
       Zurück zur Übersicht
     </a>
 
-    {/* Header & Description */}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <div class="detail-hero">
       {item.plakat && (
-        <div class="md:col-span-1">
-          <div class="detail-poster-wrapper cursor-pointer" id="main-poster-trigger">
+          <button
+            class="detail-poster-wrapper"
+            type="button"
+            data-lightbox-group={lightboxGroup}
+            data-full-src={urlFor(item.plakat).width(1800).auto("format").quality(88).url()}
+            data-alt={`Festival Plakat ${item.jahr}`}
+            data-caption={item.plakat.caption ?? item.plakat.alt ?? `Festival Plakat ${item.jahr}`}
+          >
             <img 
               src={urlFor(item.plakat).width(600).auto("format").quality(85).url()} 
               alt={`Festival Plakat ${item.jahr}`} 
               class="detail-poster-image"
             />
-          </div>
-        </div>
+          </button>
       )}
       
-      <div class="md:col-span-2 space-y-4">
-        <div class="border-l-4 border-festival-red pl-4 py-1">
-          <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider text-white">Festival {item.jahr}</h1>
-          <p class="text-zinc-500 mt-1 text-sm uppercase tracking-wider font-bold">Rückblick & Impressionen</p>
+      <div class="detail-copy">
+        <div>
+          <span class="section-kicker">{getKategorieLabel(item.kategorie)}</span>
+          <h1 class="page-title">{displayTitle}</h1>
+          <p class="page-lede">Impressionen und Archivmaterial vom Metal im Dorf {item.jahr}.</p>
         </div>
         
         {item.beschreibung ? (
-          <div class="prose prose-invert prose-rose max-w-none pt-4 
-                      prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:text-base md:prose-p:text-lg
-                      prose-blockquote:border-festival-red prose-blockquote:bg-zinc-900/30 prose-blockquote:py-2 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg
-                      prose-headings:uppercase prose-headings:tracking-wider prose-headings:font-extrabold prose-headings:text-white">
+          <div class="prose prose-invert max-w-none history-copy">
             <PortableText value={item.beschreibung} />
           </div>
         ) : (
-          <p class="text-zinc-400 italic">Für dieses Jahr ist noch kein Rückblickstext vorhanden. 🤘</p>
+          <p class="placeholder">Für dieses Jahr ist noch kein Rückblickstext vorhanden.</p>
         )}
       </div>
     </div>
 
-    {/* Gallery Grid */}
     {item.bilder && item.bilder.length > 0 && (
-      <div class="space-y-6 pt-6 border-t border-zinc-800/60">
-        <h2 class="text-2xl md:text-3xl font-black uppercase tracking-wider text-white">Impressionen & Event-Fotos</h2>
+      <section class="gallery-section">
+        <div class="section-heading">
+          <span class="section-kicker">Galerie</span>
+          <h2>Impressionen & Event-Fotos</h2>
+        </div>
         <div class="gallery-grid">
           {item.bilder.map((image, index) => {
             const imageAlt = image.caption || image.alt || `Festival Impression ${item.jahr} Bild ${index + 1}`;
-            // If poster exists, poster is at index 0. So gallery images indices shift by 1.
-            const slideIndex = item.plakat ? index + 1 : index;
             return (
-              <div 
-                class="gallery-item-wrapper cursor-pointer" 
-                data-slide-index={slideIndex}
+              <button
+                class="gallery-item-wrapper"
+                type="button"
+                data-lightbox-group={lightboxGroup}
+                data-full-src={urlFor(image).width(1800).auto("format").quality(88).url()}
+                data-alt={imageAlt}
+                data-caption={image.caption ?? image.alt ?? imageAlt}
               >
                 <img 
                   src={urlFor(image).width(500).auto("format").quality(80).url()} 
@@ -98,37 +91,61 @@ const mappedImages = allImages.map((image, index) => {
                   class="gallery-image"
                   data-caption={image.caption ?? image.alt ?? ""}
                 />
-              </div>
+              </button>
             );
           })}
         </div>
-      </div>
+      </section>
     )}
 
-    {/* Dynamic Lightbox */}
-    {mappedImages.length > 0 && (
-      <div id="gallery-lightbox" class="lightbox hidden" aria-hidden="true">
-        <div class="lightbox-inner">
-          <button id="lightbox-close" class="lightbox-close" aria-label="Schließen">×</button>
-          <div class="lightbox-image-wrapper">
-            <button id="lightbox-prev" class="lightbox-arrow lightbox-prev" aria-label="Vorheriges Bild">←</button>
-            <img id="lightbox-image" class="lightbox-image" src="" alt="" />
-            <button id="lightbox-next" class="lightbox-arrow lightbox-next" aria-label="Nächstes Bild">→</button>
-          </div>
-          <div id="lightbox-caption" class="lightbox-caption"></div>
-        </div>
-      </div>
-    )}
+    {(item.plakat || item.bilder?.length) && <MediaLightbox />}
   </div>
 </Layout>
 
 <style>
+  .detail-page {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .back-link:hover {
+    color: #fff;
+  }
+
+  .detail-hero {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+    gap: clamp(1.25rem, 4vw, 2.5rem);
+    align-items: start;
+  }
+
+  .detail-copy {
+    display: grid;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
   .detail-poster-wrapper {
+    width: 100%;
+    padding: 0;
     overflow: hidden;
-    border-radius: 1rem;
-    border: 1px solid rgba(63, 63, 70, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    background: #09090b;
+    background: #050505;
     cursor: zoom-in;
   }
 
@@ -140,34 +157,68 @@ const mappedImages = allImages.map((image, index) => {
   }
 
   .detail-poster-wrapper:hover .detail-poster-image {
-    transform: scale(1.03);
+    filter: contrast(1.05);
+  }
+
+  .prose {
+    padding: clamp(1rem, 3vw, 1.5rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .history-copy :global(blockquote) {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.035);
+    border-left-color: var(--color-accent);
+  }
+
+  .history-copy :global(h2),
+  .history-copy :global(h3) {
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .gallery-section {
+    display: grid;
+    gap: 1.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .section-heading h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    font-weight: 950;
+    text-transform: uppercase;
   }
 
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.5rem;
+    gap: 0.75rem;
   }
 
   .gallery-item-wrapper {
+    width: 100%;
+    padding: 0;
+    align-self: start;
     overflow: hidden;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(63, 63, 70, 0.3);
-    aspect-ratio: 16/10;
-    background: #09090b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #050505;
     cursor: zoom-in;
   }
 
   .gallery-image {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .gallery-item-wrapper:hover .gallery-image {
-    transform: scale(1.05);
+    filter: contrast(1.05);
   }
 
   @media (max-width: 1024px) {
@@ -183,219 +234,13 @@ const mappedImages = allImages.map((image, index) => {
     }
   }
 
-  /* Lightbox Styles */
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(9, 9, 11, 0.95);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    z-index: 9999;
-  }
-
-  .lightbox.hidden {
-    display: none !important;
-  }
-
-  .lightbox-inner {
-    position: relative;
-    max-width: 95vw;
-    max-height: 95vh;
-    width: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  .lightbox-image-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 90vw;
-    display: flex;
-    align-items: center;
-  }
-
-  .lightbox-image {
-    width: 100%;
-    max-height: 75vh;
-    object-fit: contain;
-    border-radius: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: block;
-  }
-
-  .lightbox-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 1.5rem;
-    display: grid;
-    place-items: center;
-    z-index: 2;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .lightbox-prev {
-    left: -1.75rem;
-  }
-
-  .lightbox-next {
-    right: -1.75rem;
-  }
-
-  .lightbox-arrow:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-50%) scale(1.05);
-  }
-
-  .lightbox-close {
-    position: absolute;
-    top: -2.5rem;
-    right: 0;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s ease;
-    line-height: 1;
-  }
-
-  .lightbox-close:hover {
-    background: rgba(225, 29, 72, 0.2);
-    border-color: var(--color-festival-red);
-    color: var(--color-festival-red);
-    transform: rotate(90deg);
-  }
-
-  .lightbox-caption {
-    color: #f4f4f5;
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-align: center;
-    max-width: 90vw;
-    background: rgba(9, 9, 11, 0.8);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
   @media (max-width: 768px) {
-    .lightbox-arrow {
-      width: 2.75rem;
-      height: 2.75rem;
-      font-size: 1.2rem;
+    .detail-hero {
+      grid-template-columns: 1fr;
     }
-    .lightbox-prev {
-      left: 0.5rem;
-    }
-    .lightbox-next {
-      right: 0.5rem;
-    }
-    .lightbox-close {
-      top: 1rem;
-      right: 1rem;
-      z-index: 10;
+
+    .detail-poster-wrapper {
+      max-width: 420px;
     }
   }
 </style>
-
-<script type="module" define:vars={{ mappedImages }}>
-  const lightbox = document.getElementById('gallery-lightbox');
-  const lightboxImage = document.getElementById('lightbox-image');
-  const lightboxCaption = document.getElementById('lightbox-caption');
-  const closeButton = document.getElementById('lightbox-close');
-  const prevButton = document.getElementById('lightbox-prev');
-  const nextButton = document.getElementById('lightbox-next');
-  const mainPosterTrigger = document.getElementById('main-poster-trigger');
-
-  let currentIndex = 0;
-
-  function updateLightbox() {
-    const imgData = mappedImages[currentIndex];
-    if (!imgData) return;
-    lightboxImage.src = imgData.src;
-    lightboxImage.alt = imgData.caption;
-    lightboxCaption.textContent = imgData.caption;
-  }
-
-  function openLightbox(index) {
-    currentIndex = index;
-    updateLightbox();
-    lightbox.classList.remove('hidden');
-    lightbox.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeLightbox() {
-    lightbox.classList.add('hidden');
-    lightbox.setAttribute('aria-hidden', 'true');
-    lightboxImage.src = '';
-  }
-
-  if (mainPosterTrigger) {
-    mainPosterTrigger.addEventListener('click', () => {
-      openLightbox(0);
-    });
-  }
-
-  document.querySelectorAll('.gallery-item-wrapper').forEach((el) => {
-    el.addEventListener('click', () => {
-      const idx = parseInt(el.getAttribute('data-slide-index'), 10);
-      openLightbox(idx);
-    });
-  });
-
-  closeButton.addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (event) => {
-    if (event.target === lightbox) {
-      closeLightbox();
-    }
-  });
-
-  prevButton.addEventListener('click', () => {
-    currentIndex = (currentIndex - 1 + mappedImages.length) % mappedImages.length;
-    updateLightbox();
-  });
-
-  nextButton.addEventListener('click', () => {
-    currentIndex = (currentIndex + 1) % mappedImages.length;
-    updateLightbox();
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (lightbox.classList.contains('hidden')) return;
-    if (event.key === 'Escape') {
-      closeLightbox();
-    }
-    if (event.key === 'ArrowLeft') {
-      currentIndex = (currentIndex - 1 + mappedImages.length) % mappedImages.length;
-      updateLightbox();
-    }
-    if (event.key === 'ArrowRight') {
-      currentIndex = (currentIndex + 1) % mappedImages.length;
-      updateLightbox();
-    }
-  });
-</script>

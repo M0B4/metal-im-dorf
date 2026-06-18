@@ -4,8 +4,14 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
+  repository_dispatch:
+    types: [sanity-content-update]
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/10 * * * *'
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
@@ -35,6 +41,9 @@ jobs:
           PUBLIC_SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           PUBLIC_SANITY_STUDIO_DATASET: production
           PUBLIC_SANITY_VISUAL_EDITING_ENABLED: false
+          PUBLIC_SANITY_STUDIO_URL: ${{ vars.SANITY_STUDIO_URL }}
+          PUBLIC_FACEBOOK_URL: ${{ vars.FACEBOOK_URL }}
+          PUBLIC_INSTAGRAM_URL: ${{ vars.INSTAGRAM_URL }}
 
       - uses: actions/configure-pages@v4
       

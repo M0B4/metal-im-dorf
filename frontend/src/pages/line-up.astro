@@ -1,9 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getBands, getSiteSettings } from "../utils/sanity";
+import RunningOrder from "../components/RunningOrder.astro";
+import { getCurrentLineup, getSiteSettings } from "../utils/sanity";
 import { urlFor } from "../utils/image";
 
-const [bands, settings] = await Promise.all([getBands(), getSiteSettings()]);
+const [{bands, event}, settings] = await Promise.all([getCurrentLineup(), getSiteSettings()]);
 const copy = settings.sections.lineup;
 ---
 
@@ -13,7 +14,10 @@ const copy = settings.sections.lineup;
       <span class="section-kicker">{copy.kicker}</span>
       <h1 class="page-title">{copy.title}</h1>
       <p class="page-lede">{copy.intro}</p>
+      {event && <p class="lineup-event">{event.titel}</p>}
     </header>
+
+    {copy.showRunningOrder && <RunningOrder bands={bands} copy={copy} />}
 
     {bands.length ? (
       <section class="band-grid" aria-label="Festival Line-Up">
@@ -63,6 +67,17 @@ const copy = settings.sections.lineup;
 
   .page-header {
     max-width: 760px;
+  }
+
+  .lineup-event {
+    width: fit-content;
+    margin: 1rem 0 0;
+    padding: 0.35rem 0.55rem;
+    color: var(--color-accent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
   }
 
   .band-grid {

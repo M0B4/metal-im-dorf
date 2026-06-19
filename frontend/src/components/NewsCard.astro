@@ -3,6 +3,7 @@ import { ArrowUpRight } from "@lucide/astro";
 import type { News } from "../utils/sanity";
 import { formatDate } from "../utils/format";
 import { urlForUncropped } from "../utils/image";
+import { portableTextToPlainText } from "../utils/news";
 import { sitePath } from "../utils/site";
 
 interface Props {
@@ -11,13 +12,7 @@ interface Props {
 }
 
 const { item, index } = Astro.props;
-const preview = (item.inhalt ?? [])
-  .filter((block) => block._type === "block")
-  .flatMap((block) => block.children ?? [])
-  .map((child) => "text" in child ? child.text : "")
-  .join(" ")
-  .replace(/\s+/g, " ")
-  .trim();
+const preview = portableTextToPlainText(item.inhalt);
 const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 ---
 
@@ -144,7 +139,37 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 
   @media (max-width: 640px) {
     .news-tile {
-      aspect-ratio: 1 / 1.04;
+      aspect-ratio: 1 / 1.2;
+      grid-template-rows: minmax(0, 45%) minmax(0, 1fr);
+    }
+
+    .news-media {
+      padding: 0.4rem;
+    }
+
+    .news-body {
+      gap: 0.35rem;
+      padding: 0.6rem;
+    }
+
+    .news-date,
+    .news-read-more {
+      font-size: 0.58rem;
+      letter-spacing: 0.04em;
+    }
+
+    h3 {
+      font-size: 0.9rem;
+      line-height: 1.08;
+    }
+
+    p {
+      display: none;
+    }
+
+    .news-read-more svg {
+      width: 14px;
+      height: 14px;
     }
   }
 </style>

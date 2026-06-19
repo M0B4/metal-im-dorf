@@ -1,0 +1,132 @@
+---
+import {CalendarDays, MapPin} from "@lucide/astro";
+import {formatEventDate} from "../utils/format";
+import type {Veranstaltung} from "../utils/sanity";
+import type {SiteSettings} from "../utils/site";
+
+interface Props {
+  events: Veranstaltung[];
+  settings: SiteSettings;
+}
+
+const {events, settings} = Astro.props;
+const copy = settings.sections.nextEvent;
+---
+
+<section class="events-section" aria-labelledby="next-event-title">
+  <header class="events-heading">
+    <span class="section-kicker">{copy.kicker}</span>
+    <h2 id="next-event-title">{copy.title}</h2>
+  </header>
+
+  {events.length ? (
+    <div class="event-list">
+      {events.map((event) => (
+          <article class="event-row">
+            <div class="event-copy">
+              <h3>{event.titel}</h3>
+              {event.kurzbeschreibung && <p>{event.kurzbeschreibung}</p>}
+            </div>
+
+            <dl class="event-facts">
+              <div>
+                <dt><CalendarDays size={18} aria-hidden="true" />{copy.dateLabel}</dt>
+                <dd>{formatEventDate(event.beginn)} Uhr</dd>
+              </div>
+              <div>
+                <dt><MapPin size={18} aria-hidden="true" />{copy.locationLabel}</dt>
+                <dd>{event.ort}{event.adresse ? `, ${event.adresse}` : ""}</dd>
+              </div>
+            </dl>
+          </article>
+      ))}
+    </div>
+  ) : (
+    <p class="placeholder">{copy.emptyText}</p>
+  )}
+</section>
+
+<style>
+  .events-section {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .events-heading h2 {
+    margin: 0.35rem 0 0;
+    color: #fff;
+    font-size: clamp(1.5rem, 3vw, 2.35rem);
+    font-weight: 950;
+    line-height: 1.05;
+  }
+
+  .event-list {
+    display: grid;
+    border-top: 1px solid var(--border);
+  }
+
+  .event-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2rem);
+    padding-block: clamp(0.9rem, 2vw, 1.25rem);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .event-copy h3 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.2rem, 2.4vw, 1.75rem);
+    line-height: 1.08;
+  }
+
+  .event-copy p {
+    max-width: 62ch;
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .event-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .event-facts div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .event-facts dt {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .event-facts dd {
+    margin: 0;
+    color: #f4f4f5;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 900px) {
+    .event-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .event-facts {
+      gap: 0.65rem;
+    }
+  }
+</style>

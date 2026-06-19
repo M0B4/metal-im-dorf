@@ -1,0 +1,24 @@
+---
+import UpcomingPosters from "../components/UpcomingPosters.astro";
+import Layout from "../layouts/Layout.astro";
+import {getSiteSettings, getUpcomingEvents} from "../utils/sanity";
+
+const [events, settings] = await Promise.all([getUpcomingEvents(), getSiteSettings()]);
+const copy = settings.sections.eventPosters;
+---
+
+<Layout
+  title={`${copy.title} | ${settings.siteName}`}
+  description="Plakate und Termine der kommenden Metal im Dorf Veranstaltungen."
+  settings={settings}
+>
+  <div class="shell events-page">
+    <UpcomingPosters events={events} settings={settings} />
+  </div>
+</Layout>
+
+<style>
+  .events-page {
+    display: grid;
+  }
+</style>

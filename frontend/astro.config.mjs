@@ -14,7 +14,6 @@ const dataset = PUBLIC_SANITY_STUDIO_DATASET;
 const studioUrl = PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333";
 
 import sanity from "@sanity/astro";
-import react from "@astrojs/react";
 import icon from "astro-icon";
 
 // Change this depending on your hosting provider (Vercel, Netlify etc)
@@ -44,12 +43,10 @@ export default defineConfig({
                 studioUrl,
             },
         }),
-        react(), // Required for Sanity Studio
     ],
     vite: {
         optimizeDeps: {
             include: [
-                "react/compiler-runtime",
                 "lodash/isObject.js",
                 "lodash/groupBy.js",
                 "lodash/keyBy.js",

@@ -93,6 +93,26 @@ They will be able to access the deployed Studio, where you can collaborate toget
 
 `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` controls the entire visual editing system. Set it to `"true"` for local development and staging environments where editors use the Presentation tool. **In production, omit it or set it to `"false"` — this switches to the published content perspective, disables stega encoding, and removes `data-sanity` attributes from the rendered HTML.**
 
+## Veröffentlichungen und Vorschau
+
+Die GitHub-Pages-Action baut die Website automatisch alle zehn Minuten neu. Zusätzlich kann Sanity den Build sofort auslösen:
+
+1. In GitHub einen fein eingeschränkten Token mit Zugriff auf `Actions` für dieses Repository anlegen.
+2. In Sanity unter `API > Webhooks` einen Webhook für `create`, `update` und `delete` veröffentlichter Dokumente anlegen.
+3. Als URL `https://api.github.com/repos/OWNER/REPOSITORY/dispatches` verwenden.
+4. Header `Authorization: Bearer TOKEN` und `Accept: application/vnd.github+json` setzen.
+5. Als JSON-Payload `{ "event_type": "sanity-content-update" }` senden.
+
+Für Entwürfe lokal Frontend und Studio gemeinsam starten. Im Frontend werden benötigt:
+
+```env
+SANITY_API_READ_TOKEN="VIEWER_TOKEN"
+PUBLIC_SANITY_VISUAL_EDITING_ENABLED="true"
+PUBLIC_SANITY_STUDIO_URL="http://localhost:3333"
+```
+
+Im Studio zeigt `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` auf diese Vorschau. Ein Lesetoken darf niemals als `PUBLIC_*` Variable gesetzt oder in den öffentlichen GitHub-Pages-Build eingebunden werden.
+
 ## Visual Editing notes
 
 Stega encoding handles **string fields** (e.g. `title`, `excerpt`) automatically — invisible metadata is embedded in the string values returned by the Sanity client, and the visual editing overlay detects them in the DOM.

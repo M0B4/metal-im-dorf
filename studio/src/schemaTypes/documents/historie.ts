@@ -58,6 +58,12 @@ export default defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'veranstaltung',
+      title: 'Zugehörige Veranstaltung',
+      type: 'reference',
+      to: [{type: 'veranstaltung'}],
+    }),
+    defineField({
       name: 'plakat',
       title: 'Festival-Plakat',
       type: 'image',

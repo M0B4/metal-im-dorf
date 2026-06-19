@@ -31,7 +31,14 @@ export default defineType({
     defineField({
       name: 'spielzeit',
       title: 'Spielzeit',
-      type: 'datetime',
+      description: 'Uhrzeit im Format HH:MM, zum Beispiel 18:30.',
+      type: 'string',
+      placeholder: '18:30',
+      validation: Rule =>
+        Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {
+          name: 'Uhrzeit',
+          invert: false,
+        }).error('Bitte eine gültige Uhrzeit im Format HH:MM eingeben.'),
     }),
     defineField({
       name: 'bild',

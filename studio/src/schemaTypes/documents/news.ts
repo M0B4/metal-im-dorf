@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import NewsDocumentInput from '../../components/NewsDocumentInput'
 
 const imageField = {
   type: 'image',
@@ -21,7 +22,45 @@ export default defineType({
   name: 'news',
   title: 'News & Ankündigungen',
   type: 'document',
+  components: {input: NewsDocumentInput},
   fields: [
+    defineField({
+      name: 'facebookSchnelleingabe',
+      title: 'Facebook-Schnelleingabe',
+      description:
+        'Facebook-Text und heruntergeladene Bilder einfügen. Anschließend oben „Als News übernehmen“ wählen.',
+      type: 'object',
+      options: {collapsible: true, collapsed: false},
+      fields: [
+        defineField({
+          name: 'url',
+          title: 'Facebook-Link',
+          type: 'url',
+        }),
+        defineField({
+          name: 'text',
+          title: 'Beitragstext',
+          description: 'Die erste ausgefüllte Zeile wird als Titel verwendet.',
+          type: 'text',
+          rows: 8,
+        }),
+        defineField({
+          name: 'datum',
+          title: 'Datum',
+          type: 'date',
+          initialValue: () =>
+            new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Berlin'}).format(new Date()),
+        }),
+        defineField({
+          name: 'bilder',
+          title: 'Bilder',
+          description: 'Das erste Bild wird zum Hauptbild, alle weiteren zur Galerie.',
+          type: 'array',
+          options: {layout: 'grid'},
+          of: [imageField],
+        }),
+      ],
+    }),
     defineField({
       name: 'titel',
       title: 'Titel',
@@ -32,6 +71,12 @@ export default defineType({
       name: 'datum',
       title: 'Datum',
       type: 'date',
+    }),
+    defineField({
+      name: 'veranstaltung',
+      title: 'Zugehörige Veranstaltung',
+      type: 'reference',
+      to: [{type: 'veranstaltung'}],
     }),
     defineField({
       name: 'bild',

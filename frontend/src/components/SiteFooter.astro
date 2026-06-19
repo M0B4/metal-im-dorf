@@ -15,23 +15,21 @@ const logoUrl = settings.logo
 
 <footer class="site-footer">
   <div class="shell footer-grid">
-    <div>
+    <div class="footer-brand">
       <img src={logoUrl} alt={settings.logo?.alt || settings.siteName} class="footer-logo" />
       <p>{settings.footer.description}</p>
     </div>
-    <div>
+    <div class="footer-navigation">
       <h2>{settings.footer.navigationTitle}</h2>
-      <a href={sitePath()}>{settings.navigation.newsLabel}</a>
-      <a href={sitePath("/line-up")}>{settings.navigation.lineupLabel}</a>
-      <a href={sitePath("/historie")}>{settings.navigation.historyLabel}</a>
-      <a href={sitePath("/impressum")}>{settings.navigation.legalLabel}</a>
+      <a class="legal-link" href={sitePath("/impressum")}>{settings.navigation.legalLabel}</a>
+      <a class="admin-link" href={sitePath("/admin")}>Adminbereich</a>
     </div>
-    <div>
+    <div class="footer-contact">
       <h2>{settings.footer.contactTitle}</h2>
       <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
-      {settings.contact.address.map((line) => <span>{line}</span>)}
+      {settings.contact.address.map((line) => <span class="address-line">{line}</span>)}
     </div>
-    {(settings.contact.showInstagram || settings.contact.showFacebook) && <div>
+    {(settings.contact.showInstagram || settings.contact.showFacebook) && <div class="footer-social-block">
       <h2>{settings.footer.socialTitle}</h2>
       <div class="footer-socials">
         {settings.contact.showInstagram && <a href={settings.contact.instagramUrl} target="_blank" rel="noreferrer">
@@ -83,6 +81,12 @@ const logoUrl = settings.logo
 
   .site-footer a:hover { color: var(--color-accent); }
 
+  .footer-navigation {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+  }
+
   .site-footer h2 {
     margin: 0 0 0.85rem;
     color: #fff;
@@ -94,6 +98,7 @@ const logoUrl = settings.logo
 
   .footer-socials {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.55rem;
   }
 
@@ -139,6 +144,50 @@ const logoUrl = settings.logo
   }
 
   @media (max-width: 760px) {
-    .footer-grid { grid-template-columns: 1fr; }
+    .site-footer {
+      padding: 1.5rem 0 1rem;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+
+    .footer-logo {
+      height: 2rem;
+      margin-bottom: 0;
+    }
+
+    .footer-brand p,
+    .footer-navigation h2,
+    .footer-contact h2,
+    .footer-contact .address-line,
+    .footer-social-block h2 {
+      display: none;
+    }
+
+    .site-footer p,
+    .site-footer a,
+    .site-footer span {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .footer-socials {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
+
+    .site-footer .footer-socials a {
+      min-height: 2.5rem;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .footer-bottom {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+    }
   }
 </style>

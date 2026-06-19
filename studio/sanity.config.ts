@@ -12,6 +12,15 @@ const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
 
 // Presentation Preview URL
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:4321'
+const previewBasePath = (() => {
+  try {
+    const path = new URL(previewUrl).pathname.replace(/\/$/, '')
+    return path === '/' ? '' : path
+  } catch {
+    return ''
+  }
+})()
+const previewPath = (path = '') => `${previewBasePath}${path}` || '/'
 
 export default defineConfig({
   name: 'metal-im-dorf',
@@ -37,15 +46,66 @@ export default defineConfig({
       resolve: {
         mainDocuments: defineDocuments([
           {
-            route: '/',
+            route: previewPath('/'),
             filter: () => '_id == "siteSettings"',
+          },
+          {
+            route: previewPath('/line-up'),
+            filter: () => '_type == "veranstaltung" && istAktuell == true',
           },
         ]),
         locations: {
           siteSettings: defineLocations({
             select: {title: 'siteName'},
             resolve: doc => ({
-              locations: [{title: doc?.title || 'Startseite', href: '/'}],
+              locations: [{title: doc?.title || 'Startseite', href: previewPath('/')}],
+            }),
+          }),
+          veranstaltung: defineLocations({
+            select: {title: 'titel', current: 'istAktuell'},
+            resolve: doc => ({
+              locations: [
+                {title: 'Veranstaltungen', href: previewPath('/veranstaltungen')},
+                ...(doc?.current
+                  ? [
+                      {title: 'Startseite', href: previewPath('/')},
+                      {title: 'Line-up', href: previewPath('/line-up')},
+                    ]
+                  : []),
+              ],
+            }),
+          }),
+          news: defineLocations({
+            select: {title: 'titel', id: '_id'},
+            resolve: doc => ({
+              locations: doc?.id
+                ? [
+                    {title: doc?.title || 'News', href: previewPath(`/news/artikel/${doc.id}`)},
+                    {title: 'Startseite', href: previewPath('/')},
+                  ]
+                : [],
+            }),
+          }),
+          band: defineLocations({
+            select: {title: 'name'},
+            resolve: doc => ({
+              locations: [{title: doc?.title || 'Line-up', href: previewPath('/line-up')}],
+            }),
+          }),
+          historie: defineLocations({
+            select: {title: 'titel', year: 'jahr', slug: 'slug.current'},
+            resolve: doc => ({
+              locations: [
+                {title: 'Historie', href: previewPath('/historie')},
+                ...(doc?.slug || doc?.year
+                  ? [
+                      {
+                        title: doc?.title || `Festival ${doc?.year}`,
+                        href: previewPath(`/historie/${doc?.slug || doc?.year}`),
+                      },
+                    ]
+                  : []),
+              ],
             }),
           }),
         },

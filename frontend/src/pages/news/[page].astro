@@ -1,12 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import NewsSection from "../../components/NewsSection.astro";
+import { NEWS_PAGE_SIZE } from "../../utils/news";
 import { getNews, getSiteSettings } from "../../utils/sanity";
 
 export async function getStaticPaths() {
-  const pageSize = 12;
   const news = await getNews();
-  const totalPages = Math.ceil(news.length / pageSize);
+  const totalPages = Math.ceil(news.length / NEWS_PAGE_SIZE);
 
   return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
     params: { page: String(index + 2) },
@@ -15,9 +15,6 @@ export async function getStaticPaths() {
 
 const currentPage = Number(Astro.params.page);
 const [news, settings] = await Promise.all([getNews(), getSiteSettings()]);
-const sortedNews = [...news].sort(
-  (a, b) => new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime(),
-);
 ---
 
 <Layout
@@ -26,7 +23,7 @@ const sortedNews = [...news].sort(
   settings={settings}
 >
   <div class="shell news-page">
-    <NewsSection news={sortedNews} settings={settings} currentPage={currentPage} />
+    <NewsSection news={news} settings={settings} currentPage={currentPage} />
   </div>
 </Layout>
 

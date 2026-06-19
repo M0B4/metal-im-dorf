@@ -1,7 +1,6 @@
 import type { SanityImage } from "./sanity";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-const projectId = import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID || "hrgrzj9i";
 
 export interface SiteSettings {
   siteName: string;
@@ -28,6 +27,19 @@ export interface SiteSettings {
     emptyAnnouncementText: string;
   };
   sections: {
+    nextEvent: {
+      kicker: string;
+      title: string;
+      dateLabel: string;
+      locationLabel: string;
+      defaultButtonLabel: string;
+      emptyText: string;
+    };
+    eventPosters: {
+      kicker: string;
+      title: string;
+      emptyText: string;
+    };
     news: {
       kicker: string;
       title: string;
@@ -42,6 +54,10 @@ export interface SiteSettings {
       kicker: string;
       title: string;
       intro: string;
+      showRunningOrder: boolean;
+      runningOrderKicker: string;
+      runningOrderTitle: string;
+      runningOrderEmptyText: string;
       emptyText: string;
       placeholderGenre: string;
       placeholderName: string;
@@ -62,6 +78,7 @@ export interface SiteSettings {
   navigation: {
     newsLabel: string;
     lineupLabel: string;
+    eventsLabel: string;
     historyLabel: string;
     legalLabel: string;
   };
@@ -95,7 +112,7 @@ export const siteConfig = {
   instagramUrl: import.meta.env.PUBLIC_INSTAGRAM_URL || "https://www.instagram.com/metalimdorf",
   studioUrl:
     import.meta.env.PUBLIC_SANITY_STUDIO_URL ||
-    `https://www.sanity.io/manage/project/${projectId}`,
+    "https://metal-im-dorf.sanity.studio/",
 };
 
 export const defaultSiteSettings: SiteSettings = {
@@ -121,6 +138,19 @@ export const defaultSiteSettings: SiteSettings = {
     emptyAnnouncementText: "Bleib dran",
   },
   sections: {
+    nextEvent: {
+      kicker: "Termine",
+      title: "Kommende Veranstaltungen",
+      dateLabel: "Termin",
+      locationLabel: "Ort",
+      defaultButtonLabel: "Mehr erfahren",
+      emptyText: "Aktuell sind keine kommenden Veranstaltungen angekündigt.",
+    },
+    eventPosters: {
+      kicker: "Plakate",
+      title: "Kommende Veranstaltungen",
+      emptyText: "Aktuell sind noch keine Veranstaltungsplakate verfügbar.",
+    },
     news: {
       kicker: "News",
       title: "Aktuelles vom Festival",
@@ -135,6 +165,10 @@ export const defaultSiteSettings: SiteSettings = {
       kicker: "Live & laut",
       title: "Line-Up",
       intro: "Die Bands für das nächste Metal im Dorf.",
+      showRunningOrder: false,
+      runningOrderKicker: "Live-Zeiten",
+      runningOrderTitle: "Running Order",
+      runningOrderEmptyText: "Die Running Order wird noch bekanntgegeben.",
       emptyText: "Das Line-Up wird bald bekanntgegeben.",
       placeholderGenre: "Ankündigung folgt",
       placeholderName: "Wird noch bekannt gegeben",
@@ -155,6 +189,7 @@ export const defaultSiteSettings: SiteSettings = {
   navigation: {
     newsLabel: "News",
     lineupLabel: "Line-Up",
+    eventsLabel: "Veranstaltungen",
     historyLabel: "Historie",
     legalLabel: "Impressum",
   },

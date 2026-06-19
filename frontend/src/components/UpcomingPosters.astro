@@ -1,0 +1,155 @@
+---
+import MediaLightbox from "./MediaLightbox.astro";
+import {formatDate} from "../utils/format";
+import {urlForUncropped} from "../utils/image";
+import type {Veranstaltung} from "../utils/sanity";
+import type {SiteSettings} from "../utils/site";
+
+interface Props {
+  events: Veranstaltung[];
+  settings: SiteSettings;
+}
+
+const {events, settings} = Astro.props;
+const copy = settings.sections.eventPosters;
+const posterEvents = events.filter(
+  (event): event is Veranstaltung & {bild: NonNullable<Veranstaltung["bild"]>} => Boolean(event.bild),
+);
+const lightboxGroup = "upcoming-event-posters";
+---
+
+<section class="poster-section" aria-labelledby="poster-section-title">
+  <header class="poster-heading">
+    <span class="section-kicker">{copy.kicker}</span>
+    <h2 id="poster-section-title">{copy.title}</h2>
+  </header>
+
+  {posterEvents.length ? (
+    <div class="poster-grid">
+      {posterEvents.map((event) => {
+        const alt = event.bild.alt || `Veranstaltungsplakat ${event.titel}`;
+        return (
+          <article class="poster-item">
+            <button
+              type="button"
+              class="poster-button"
+              data-lightbox-group={lightboxGroup}
+              data-full-src={urlForUncropped(event.bild).width(2000).auto("format").quality(90).url()}
+              data-alt={alt}
+              data-caption={event.titel}
+              aria-label={`${alt} vergrößern`}
+            >
+              <img
+                src={urlForUncropped(event.bild).width(720).auto("format").quality(85).url()}
+                alt={alt}
+                loading="lazy"
+              />
+            </button>
+            <div class="poster-copy">
+              <time class="poster-date" datetime={event.beginn}>
+                {formatDate(event.beginn)}
+              </time>
+              <h3>{event.titel}</h3>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  ) : (
+    <p class="placeholder">{copy.emptyText}</p>
+  )}
+</section>
+
+{posterEvents.length > 0 && <MediaLightbox />}
+
+<style>
+  .poster-section {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .poster-heading h2 {
+    margin: 0.35rem 0 0;
+    color: #fff;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 950;
+    line-height: 1.05;
+  }
+
+  .poster-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .poster-item {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
+  .poster-button {
+    display: flex;
+    width: 100%;
+    height: clamp(260px, 35vw, 480px);
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--border);
+  }
+
+  .poster-button:hover,
+  .poster-button:focus-visible {
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .poster-button img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .poster-copy h3 {
+    margin: 0.45rem 0 0;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .poster-copy {
+    text-align: center;
+  }
+
+  .poster-date {
+    display: block;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 900;
+    line-height: 1.3;
+  }
+
+  @media (max-width: 1000px) {
+    .poster-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .poster-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .poster-button {
+      height: clamp(220px, 68vw, 420px);
+      padding: 0.4rem;
+    }
+  }
+</style>

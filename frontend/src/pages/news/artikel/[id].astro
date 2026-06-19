@@ -5,7 +5,8 @@ import Layout from "../../../layouts/Layout.astro";
 import MediaLightbox from "../../../components/MediaLightbox.astro";
 import { formatDate } from "../../../utils/format";
 import { urlForUncropped } from "../../../utils/image";
-import { getNews, getSiteSettings, type News, type SanityImage } from "../../../utils/sanity";
+import { getNewsImages, getTextBlocks, portableTextToPlainText } from "../../../utils/news";
+import { getNews, getSiteSettings, type News } from "../../../utils/sanity";
 import { sitePath, type SiteSettings } from "../../../utils/site";
 
 interface Props {
@@ -22,20 +23,10 @@ export async function getStaticPaths() {
 }
 
 const { item, settings } = Astro.props as Props;
-const textBlocks = item.inhalt?.filter((block) => block._type === "block") ?? [];
-const inlineImages = (item.inhalt?.filter((block) => block._type === "image") ?? []) as unknown as SanityImage[];
-const images = [
-  ...(item.bild ? [item.bild] : []),
-  ...(item.bilder ?? []),
-  ...inlineImages,
-];
+const textBlocks = getTextBlocks(item.inhalt);
+const images = getNewsImages(item);
 const [primaryImage, ...galleryImages] = images;
-const plainText = textBlocks
-  .flatMap((block) => block.children ?? [])
-  .map((child) => "text" in child ? child.text : "")
-  .join(" ")
-  .replace(/\s+/g, " ")
-  .trim();
+const plainText = portableTextToPlainText(item.inhalt);
 const description = plainText.slice(0, 180) || settings.defaultSeo.description;
 const ogImage = images[0]
   ? urlForUncropped(images[0]).width(1200).height(630).fit("max").auto("format").quality(82).url()

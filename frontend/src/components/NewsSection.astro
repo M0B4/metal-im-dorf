@@ -1,6 +1,7 @@
 ---
 import { ChevronLeft, ChevronRight } from "@lucide/astro";
 import NewsCard from "./NewsCard.astro";
+import { NEWS_PAGE_SIZE } from "../utils/news";
 import type { News } from "../utils/sanity";
 import { sitePath, type SiteSettings } from "../utils/site";
 
@@ -10,11 +11,10 @@ interface Props {
   currentPage?: number;
 }
 
-const PAGE_SIZE = 12;
 const { news, settings, currentPage = 1 } = Astro.props;
-const totalPages = Math.max(1, Math.ceil(news.length / PAGE_SIZE));
+const totalPages = Math.max(1, Math.ceil(news.length / NEWS_PAGE_SIZE));
 const page = Math.min(Math.max(currentPage, 1), totalPages);
-const pageNews = news.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+const pageNews = news.slice((page - 1) * NEWS_PAGE_SIZE, page * NEWS_PAGE_SIZE);
 const copy = settings.sections.news;
 
 function pageUrl(targetPage: number) {
@@ -38,7 +38,7 @@ function pageUrl(targetPage: number) {
       {pageNews.map((item, index) => (
         <NewsCard
           item={item}
-          index={(page - 1) * PAGE_SIZE + index}
+          index={(page - 1) * NEWS_PAGE_SIZE + index}
         />
       ))}
     </div>
@@ -187,9 +187,7 @@ function pageUrl(targetPage: number) {
       flex-direction: column;
     }
 
-    .news-list {
-      grid-template-columns: 1fr;
-    }
+    .news-list { gap: 0.65rem; }
 
     .pagination {
       grid-template-columns: repeat(2, minmax(0, 1fr));

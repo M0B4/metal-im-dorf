@@ -45,6 +45,19 @@ export default defineType({
       emptyAnnouncementText: 'Bleib dran',
     },
     sections: {
+      nextEvent: {
+        kicker: 'Termine',
+        title: 'Kommende Veranstaltungen',
+        dateLabel: 'Termin',
+        locationLabel: 'Ort',
+        defaultButtonLabel: 'Mehr erfahren',
+        emptyText: 'Aktuell sind keine kommenden Veranstaltungen angekündigt.',
+      },
+      eventPosters: {
+        kicker: 'Plakate',
+        title: 'Kommende Veranstaltungen',
+        emptyText: 'Aktuell sind noch keine Veranstaltungsplakate verfügbar.',
+      },
       news: {
         kicker: 'News',
         title: 'Aktuelles vom Festival',
@@ -80,6 +93,7 @@ export default defineType({
     navigation: {
       newsLabel: 'News',
       lineupLabel: 'Line-Up',
+      eventsLabel: 'Veranstaltungen',
       historyLabel: 'Historie',
       legalLabel: 'Impressum',
     },
@@ -215,6 +229,37 @@ export default defineType({
       group: 'sections',
       fields: [
         defineField({
+          name: 'nextEvent',
+          title: 'Kommende Veranstaltungen',
+          type: 'object',
+          fields: [
+            requiredText('kicker', 'Kleine Überschrift', 'Termine'),
+            requiredText('title', 'Überschrift', 'Kommende Veranstaltungen'),
+            requiredText('dateLabel', 'Beschriftung des Termins', 'Termin'),
+            requiredText('locationLabel', 'Beschriftung des Orts', 'Ort'),
+            requiredText('defaultButtonLabel', 'Standardtext des Links', 'Mehr erfahren'),
+            requiredText(
+              'emptyText',
+              'Text ohne kommende Veranstaltungen',
+              'Aktuell sind keine kommenden Veranstaltungen angekündigt.',
+            ),
+          ],
+        }),
+        defineField({
+          name: 'eventPosters',
+          title: 'Veranstaltungsplakate',
+          type: 'object',
+          fields: [
+            requiredText('kicker', 'Kleine Überschrift', 'Plakate'),
+            requiredText('title', 'Überschrift', 'Kommende Veranstaltungen'),
+            requiredText(
+              'emptyText',
+              'Text ohne Plakate',
+              'Aktuell sind noch keine Veranstaltungsplakate verfügbar.',
+            ),
+          ],
+        }),
+        defineField({
           name: 'news',
           title: 'News',
           type: 'object',
@@ -237,6 +282,20 @@ export default defineType({
             requiredText('kicker', 'Kleine Überschrift', 'Live & laut'),
             requiredText('title', 'Überschrift', 'Line-Up'),
             defineField({name: 'intro', title: 'Einleitung', type: 'text', rows: 2}),
+            defineField({
+              name: 'showRunningOrder',
+              title: 'Running Order anzeigen',
+              description: 'Zeigt die Spielzeiten oberhalb der Bandübersicht an.',
+              type: 'boolean',
+              initialValue: false,
+            }),
+            requiredText('runningOrderKicker', 'Kleine Überschrift der Running Order', 'Live-Zeiten'),
+            requiredText('runningOrderTitle', 'Überschrift der Running Order', 'Running Order'),
+            requiredText(
+              'runningOrderEmptyText',
+              'Text ohne eingetragene Spielzeiten',
+              'Die Running Order wird noch bekanntgegeben.',
+            ),
             requiredText('emptyText', 'Text ohne Einträge', 'Das Line-Up wird bald bekanntgegeben.'),
             requiredText('placeholderGenre', 'Text für offenen Slot', 'Ankündigung folgt'),
             requiredText('placeholderName', 'Name für offenen Slot', 'Wird noch bekannt gegeben'),
@@ -284,6 +343,7 @@ export default defineType({
       fields: [
         requiredText('newsLabel', 'News', 'News'),
         requiredText('lineupLabel', 'Line-Up', 'Line-Up'),
+        requiredText('eventsLabel', 'Veranstaltungen', 'Veranstaltungen'),
         requiredText('historyLabel', 'Historie', 'Historie'),
         requiredText('legalLabel', 'Impressum', 'Impressum'),
       ],

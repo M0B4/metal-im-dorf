@@ -7,15 +7,19 @@ import { defaultSiteSettings, type SiteSettings } from "./site";
 const visualEditingEnabled = import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 const token = import.meta.env.SANITY_API_READ_TOKEN;
 
+function mergeWithDefaults<T extends object>(defaults: T, values?: Partial<T>): T {
+  return { ...defaults, ...values };
+}
+
 // visualEditingEnabled=true: fetch draft content with stega encoding (local/staging with Presentation tool)
 // Static builds must read the latest published content so newly added event pages
 // are included immediately instead of waiting for the API CDN cache to refresh.
-async function loadQuery<T>(query: string, params: Record<string, any> = {}): Promise<T> {
+async function loadQuery<T>(query: string, params: Record<string, unknown> = {}): Promise<T> {
   return sanityClient.fetch<T>(
     query,
     params,
     {
-      perspective: visualEditingEnabled ? 'drafts' : 'published',
+      perspective: visualEditingEnabled ? "drafts" : "published",
       useCdn: false,
       ...(visualEditingEnabled && token ? { token, stega: true } : {}),
     }
@@ -56,16 +60,18 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   return {
     ...defaultSiteSettings,
     ...settings,
-    defaultSeo: { ...defaultSiteSettings.defaultSeo, ...settings?.defaultSeo },
-    hero: { ...defaultSiteSettings.hero, ...settings?.hero },
+    defaultSeo: mergeWithDefaults(defaultSiteSettings.defaultSeo, settings?.defaultSeo),
+    hero: mergeWithDefaults(defaultSiteSettings.hero, settings?.hero),
     sections: {
-      news: { ...defaultSiteSettings.sections.news, ...settings?.sections?.news },
-      lineup: { ...defaultSiteSettings.sections.lineup, ...settings?.sections?.lineup },
-      history: { ...defaultSiteSettings.sections.history, ...settings?.sections?.history },
+      nextEvent: mergeWithDefaults(defaultSiteSettings.sections.nextEvent, settings?.sections?.nextEvent),
+      eventPosters: mergeWithDefaults(defaultSiteSettings.sections.eventPosters, settings?.sections?.eventPosters),
+      news: mergeWithDefaults(defaultSiteSettings.sections.news, settings?.sections?.news),
+      lineup: mergeWithDefaults(defaultSiteSettings.sections.lineup, settings?.sections?.lineup),
+      history: mergeWithDefaults(defaultSiteSettings.sections.history, settings?.sections?.history),
     },
-    navigation: { ...defaultSiteSettings.navigation, ...settings?.navigation },
-    footer: { ...defaultSiteSettings.footer, ...settings?.footer },
-    contact: { ...defaultSiteSettings.contact, ...settings?.contact },
+    navigation: mergeWithDefaults(defaultSiteSettings.navigation, settings?.navigation),
+    footer: mergeWithDefaults(defaultSiteSettings.footer, settings?.footer),
+    contact: mergeWithDefaults(defaultSiteSettings.contact, settings?.contact),
   };
 }
 
@@ -157,6 +163,96 @@ export interface Band {
   spielzeit?: string;
   platzhalter?: boolean;
   bild?: SanityImage;
+}
+
+export interface Veranstaltung {
+  _id: string;
+  titel: string;
+  slug?: Slug;
+  kategorie: "hauptfestival" | "nebenveranstaltung";
+  beginn: string;
+  ende?: string;
+  ort: string;
+  adresse?: string;
+  kurzbeschreibung?: string;
+  bild?: SanityImage;
+  istAktuell?: boolean;
+  ticketUrl?: string;
+  ticketLabel?: string;
+  lineup?: Array<{
+    _key: string;
+    spielzeit?: string;
+    band?: Band;
+  }>;
+}
+
+export async function getCurrentEvent(): Promise<Veranstaltung | null> {
+  return loadQuery<Veranstaltung | null>(
+    groq`*[
+      _type == "veranstaltung" &&
+      (istAktuell == true || coalesce(ende, beginn) >= now())
+    ] | order(istAktuell desc, beginn asc)[0] {
+      _id,
+      titel,
+      slug,
+      kategorie,
+      beginn,
+      ende,
+      ort,
+      adresse,
+      kurzbeschreibung,
+      bild ${imageProjection},
+      istAktuell,
+      ticketUrl,
+      ticketLabel,
+      lineup[] {
+        _key,
+        spielzeit,
+        band-> {
+          _id,
+          name,
+          genre,
+          platzhalter,
+          bild ${imageProjection}
+        }
+      }
+    }`,
+  );
+}
+
+export async function getUpcomingEvents(): Promise<Veranstaltung[]> {
+  return loadQuery<Veranstaltung[]>(
+    groq`*[
+      _type == "veranstaltung" &&
+      coalesce(ende, beginn) >= now()
+    ] | order(beginn asc) {
+      _id,
+      titel,
+      slug,
+      kategorie,
+      beginn,
+      ende,
+      ort,
+      adresse,
+      kurzbeschreibung,
+      bild ${imageProjection},
+      istAktuell,
+      ticketUrl,
+      ticketLabel
+    }`,
+  );
+}
+
+export async function getCurrentLineup(): Promise<{event: Veranstaltung | null; bands: Band[]}> {
+  const event = await getCurrentEvent();
+  const eventBands = event?.lineup
+    ?.filter((slot): slot is typeof slot & {band: Band} => Boolean(slot.band))
+    .map((slot) => ({...slot.band, spielzeit: slot.spielzeit}));
+
+  return {
+    event,
+    bands: eventBands?.length ? eventBands : await getBands(),
+  };
 }
 
 export interface News {

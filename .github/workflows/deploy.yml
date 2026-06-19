@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [sanity-content-update]
+  # Fallback: published Sanity changes go live within ten minutes even without a webhook.
   schedule:
     - cron: '*/10 * * * *'
 
@@ -31,12 +32,10 @@ jobs:
           node-version: 22
           
       - name: Install dependencies
-        run: npm install
-        working-directory: frontend
-        
+        run: npm ci
+
       - name: Build
-        run: npm run build
-        working-directory: frontend
+        run: npm run build --workspace=frontend
         env:
           PUBLIC_SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           PUBLIC_SANITY_STUDIO_DATASET: production

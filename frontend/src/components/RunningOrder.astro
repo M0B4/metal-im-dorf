@@ -1,0 +1,120 @@
+---
+import { formatTime } from "../utils/format";
+import type { Band } from "../utils/sanity";
+import type { SiteSettings } from "../utils/site";
+
+interface Props {
+  bands: Band[];
+  copy: SiteSettings["sections"]["lineup"];
+}
+
+const { bands, copy } = Astro.props;
+const scheduledBands = bands.filter(
+  (band): band is Band & { spielzeit: string } => Boolean(band.spielzeit?.trim()),
+);
+---
+
+<section class="running-order" aria-labelledby="running-order-title">
+  <div class="running-order-heading">
+    <span class="section-kicker">{copy.runningOrderKicker}</span>
+    <h2 id="running-order-title">{copy.runningOrderTitle}</h2>
+  </div>
+
+  {scheduledBands.length ? (
+    <ol class="running-order-list">
+      {scheduledBands.map((band) => (
+        <li>
+          <time datetime={band.spielzeit}>{formatTime(band.spielzeit)}</time>
+          <strong>{band.platzhalter ? copy.placeholderName : band.name}</strong>
+          <span>{band.platzhalter ? copy.placeholderGenre : band.genre || copy.defaultGenre}</span>
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <p class="running-order-empty">{copy.runningOrderEmptyText}</p>
+  )}
+</section>
+
+<style>
+  .running-order {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.38fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 4vw, 3rem);
+    padding-block: clamp(1.25rem, 3vw, 2rem);
+    border-block: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .running-order-heading h2 {
+    margin: 0.35rem 0 0;
+    color: #fff;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1;
+  }
+
+  .running-order-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .running-order-list li {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr) minmax(7rem, auto);
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.72rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .running-order-list li:first-child {
+    padding-top: 0;
+  }
+
+  .running-order-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .running-order-list time {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  .running-order-list strong {
+    min-width: 0;
+    color: #fff;
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+  }
+
+  .running-order-list span,
+  .running-order-empty {
+    margin: 0;
+    color: #a1a1aa;
+    font-size: 0.82rem;
+  }
+
+  .running-order-list span {
+    text-align: right;
+  }
+
+  @media (max-width: 760px) {
+    .running-order {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .running-order-list li {
+      grid-template-columns: 3.8rem minmax(0, 1fr);
+      gap: 0.35rem 0.75rem;
+    }
+
+    .running-order-list span {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+</style>

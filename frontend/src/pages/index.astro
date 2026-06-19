@@ -1,13 +1,15 @@
 ---
 import FestivalHero from "../components/FestivalHero.astro";
+import NextEvent from "../components/NextEvent.astro";
 import NewsSection from "../components/NewsSection.astro";
 import Layout from "../layouts/Layout.astro";
-import { getNews, getSiteSettings } from "../utils/sanity";
+import { getNews, getSiteSettings, getUpcomingEvents } from "../utils/sanity";
 
-const [news, settings] = await Promise.all([getNews(), getSiteSettings()]);
-const sortedNews = [...news].sort(
-  (a, b) => new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime(),
-);
+const [news, settings, upcomingEvents] = await Promise.all([
+  getNews(),
+  getSiteSettings(),
+  getUpcomingEvents(),
+]);
 ---
 
 <Layout
@@ -16,9 +18,11 @@ const sortedNews = [...news].sort(
   settings={settings}
 >
   <div class="shell home">
-    <FestivalHero featured={sortedNews[0]} settings={settings} />
+    <FestivalHero featured={news[0]} settings={settings} />
 
-    <NewsSection news={sortedNews} settings={settings} />
+    <NextEvent events={upcomingEvents} settings={settings} />
+
+    <NewsSection news={news} settings={settings} />
   </div>
 </Layout>
 

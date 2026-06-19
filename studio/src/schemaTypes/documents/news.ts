@@ -53,6 +53,22 @@ export default defineType({
         imageField,
       ],
     }),
+    defineField({
+      name: 'facebookQuelle',
+      title: 'Facebook-Import',
+      type: 'object',
+      readOnly: true,
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        defineField({name: 'id', title: 'Facebook-ID', type: 'string'}),
+        defineField({name: 'url', title: 'Originalbeitrag', type: 'url'}),
+        defineField({name: 'likes', title: 'Likes beim Import', type: 'number'}),
+        defineField({name: 'comments', title: 'Kommentare beim Import', type: 'number'}),
+        defineField({name: 'shares', title: 'Geteilt beim Import', type: 'number'}),
+        defineField({name: 'reihenfolge', title: 'Import-Reihenfolge', type: 'number'}),
+        defineField({name: 'importiertAm', title: 'Importiert am', type: 'datetime'}),
+      ],
+    }),
   ],
   preview: {
     select: {

@@ -1,17 +1,22 @@
 ---
 import { Icon } from "astro-icon/components";
-import { siteConfig, sitePath } from "../utils/site";
+import { sitePath, type SiteSettings } from "../utils/site";
+import { urlFor } from "../utils/image";
 
 interface Props {
   currentPath: string;
+  settings: SiteSettings;
 }
 
-const { currentPath } = Astro.props;
+const { currentPath, settings } = Astro.props;
 const navItems = [
-  { label: "News", path: "" },
-  { label: "Line-Up", path: "/line-up" },
-  { label: "Historie", path: "/historie" },
+  { label: settings.navigation.newsLabel, path: "" },
+  { label: settings.navigation.lineupLabel, path: "/line-up" },
+  { label: settings.navigation.historyLabel, path: "/historie" },
 ];
+const logoUrl = settings.logo
+  ? urlFor(settings.logo).height(180).auto("format").quality(90).url()
+  : sitePath("/logo.svg");
 
 function isActive(path = "") {
   const target = sitePath(path).replace(/\/$/, "") || "/";
@@ -22,8 +27,8 @@ function isActive(path = "") {
 <header class="site-header">
   <nav class="main-nav" aria-label="Hauptnavigation">
     <div class="shell nav-inner">
-      <a href={sitePath()} class="brand" aria-label="Metal im Dorf Startseite">
-        <img src={sitePath("/logo.svg")} alt="Metal im Dorf" />
+      <a href={sitePath()} class="brand" aria-label={`${settings.siteName} Startseite`}>
+        <img src={logoUrl} alt={settings.logo?.alt || settings.siteName} />
       </a>
 
       <button
@@ -46,28 +51,30 @@ function isActive(path = "") {
             {item.label}
           </a>
         ))}
-        <div class="header-socials" aria-label="Social Media">
-          <a
+        {(settings.contact.showInstagram || settings.contact.showFacebook) && (
+          <div class="header-socials" aria-label="Social Media">
+          {settings.contact.showInstagram && <a
             class="social-icon"
-            href={siteConfig.instagramUrl}
+            href={settings.contact.instagramUrl}
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
             title="Instagram"
           >
             <Icon name="simple-icons:instagram" size={20} />
-          </a>
-          <a
+          </a>}
+          {settings.contact.showFacebook && <a
             class="social-icon"
-            href={siteConfig.facebookUrl}
+            href={settings.contact.facebookUrl}
             target="_blank"
             rel="noreferrer"
             aria-label="Facebook"
             title="Facebook"
           >
             <Icon name="simple-icons:facebook" size={20} />
-          </a>
-        </div>
+          </a>}
+          </div>
+        )}
       </div>
     </div>
   </nav>
@@ -143,7 +150,7 @@ function isActive(path = "") {
   .nav-link.is-active,
   .social-icon:hover,
   .social-icon:focus-visible {
-    color: #050505;
+    color: var(--color-accent-contrast);
     background: var(--color-accent);
     border-color: var(--color-accent);
   }

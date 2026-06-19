@@ -2,6 +2,7 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {codeInput} from '@sanity/code-input'
+import {colorInput} from '@sanity/color-input'
 import {defineDocuments, defineLocations, presentationTool} from 'sanity/presentation'
 import {schemaTypes} from './src/schemaTypes'
 
@@ -13,32 +14,38 @@ const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:4321'
 
 export default defineConfig({
-  name: 'sanity-template-astro-clean',
-  title: 'Sanity Astro Starter',
+  name: 'metal-im-dorf',
+  title: 'Metal im Dorf',
   projectId,
   dataset,
   plugins: [
-    structureTool(),
+    structureTool({
+      structure: S =>
+        S.list()
+          .title('Metal im Dorf')
+          .items([
+            S.listItem()
+              .title('Website-Einstellungen')
+              .id('siteSettings')
+              .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
+            S.divider(),
+            ...S.documentTypeListItems().filter(item => item.getId() !== 'siteSettings'),
+          ]),
+    }),
     presentationTool({
       previewUrl,
       resolve: {
-        // Maps a URL in the preview to the corresponding Sanity document,
-        // so opening /post/my-slug in Presentation opens that post in the sidebar.
         mainDocuments: defineDocuments([
           {
-            route: '/post/:slug',
-            filter: ({params}) => `_type == "post" && slug.current == "${params.slug}"`,
+            route: '/',
+            filter: () => '_id == "siteSettings"',
           },
         ]),
-        // Maps a post document to its preview URL,
-        // so editors can jump straight to the preview from any post in the Studio.
         locations: {
-          post: defineLocations({
-            select: {title: 'title', slug: 'slug.current'},
-            resolve: (doc) => ({
-              locations: doc?.slug
-                ? [{title: doc?.title || 'Untitled', href: `/post/${doc.slug}`}]
-                : [],
+          siteSettings: defineLocations({
+            select: {title: 'siteName'},
+            resolve: doc => ({
+              locations: [{title: doc?.title || 'Startseite', href: '/'}],
             }),
           }),
         },
@@ -46,6 +53,19 @@ export default defineConfig({
     }),
     visionTool(),
     codeInput(),
+    colorInput(),
   ],
   schema: {types: schemaTypes},
+  document: {
+    newDocumentOptions: (previous, context) =>
+      context.creationContext.type === 'global'
+        ? previous.filter(template => template.templateId !== 'siteSettings')
+        : previous,
+    actions: (previous, context) =>
+      context.schemaType === 'siteSettings'
+        ? previous.filter(action =>
+            ['publish', 'discardChanges', 'restore'].includes(action.action || ''),
+          )
+        : previous,
+  },
 })

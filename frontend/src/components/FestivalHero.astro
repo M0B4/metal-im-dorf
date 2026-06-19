@@ -1,38 +1,51 @@
 ---
 import type { News } from "../utils/sanity";
+import type { SiteSettings } from "../utils/site";
 import { formatDate } from "../utils/format";
 import { sitePath } from "../utils/site";
+import { urlFor } from "../utils/image";
 
 interface Props {
   featured?: News;
+  settings: SiteSettings;
 }
 
-const { featured } = Astro.props;
-const heroImagePath = sitePath("/hero-stage.jpg");
+const { featured, settings } = Astro.props;
+const hero = settings.hero;
+const heroImagePath = hero.image
+  ? urlFor(hero.image).width(2000).auto("format").quality(88).url()
+  : sitePath("/hero-stage.jpg");
 ---
 
 <section
-  class="hero"
+  class:list={["hero", !hero.showAnnouncement && "hero--without-board"]}
   style={`background-image: linear-gradient(90deg, rgba(3, 3, 3, 0.92) 0%, rgba(3, 3, 3, 0.7) 48%, rgba(3, 3, 3, 0.3) 100%), linear-gradient(180deg, rgba(3, 3, 3, 0.12), rgba(3, 3, 3, 0.52)), url("${heroImagePath}");`}
 >
   <div class="hero-copy">
-    <span class="section-kicker">Small festival, heavy sound</span>
-    <h1 class="page-title">Metal im Dorf</h1>
-    <p class="page-lede">
-      Das kleine Metal-Festival am Opfermoor Niederdorla: direkt, laut und ohne
-      Umwege. Hier findest du aktuelle Ansagen, Bands und Rückblicke.
-    </p>
-    <div class="hero-actions">
-      <a class="metal-button" href="#news">News lesen</a>
-      <a class="metal-button metal-button--ghost" href={sitePath("/line-up")}>Line-Up ansehen</a>
-    </div>
+    <span class="section-kicker">{hero.kicker}</span>
+    <h1 class="page-title">{hero.title}</h1>
+    <p class="page-lede">{hero.intro}</p>
+    {(hero.showPrimaryButton || hero.showSecondaryButton) && (
+      <div class="hero-actions">
+        {hero.showPrimaryButton && (
+          <a class="metal-button" href="#news">{hero.primaryButtonLabel}</a>
+        )}
+        {hero.showSecondaryButton && (
+          <a class="metal-button metal-button--ghost" href={sitePath("/line-up")}>
+            {hero.secondaryButtonLabel}
+          </a>
+        )}
+      </div>
+    )}
   </div>
 
-  <aside class="hero-board panel">
-    <span>Aktuelle Meldung</span>
-    <h2>{featured?.titel ?? "News folgen bald"}</h2>
-    <p>{featured ? formatDate(featured.datum) : "Bleib dran"}</p>
-  </aside>
+  {hero.showAnnouncement && (
+    <aside class="hero-board panel">
+      <span>{hero.announcementLabel}</span>
+      <h2>{featured?.titel ?? hero.emptyAnnouncementTitle}</h2>
+      <p>{featured ? formatDate(featured.datum) : hero.emptyAnnouncementText}</p>
+    </aside>
+  )}
 </section>
 
 <style>
@@ -57,6 +70,10 @@ const heroImagePath = sitePath("/hero-stage.jpg");
   .hero-board {
     position: relative;
     z-index: 1;
+  }
+
+  .hero--without-board {
+    grid-template-columns: minmax(0, 760px);
   }
 
   .hero-actions {
@@ -99,7 +116,6 @@ const heroImagePath = sitePath("/hero-stage.jpg");
     font-size: clamp(1.45rem, 3vw, 2.35rem);
     font-weight: 950;
     line-height: 1;
-    text-transform: uppercase;
   }
 
   @media (max-width: 860px) {

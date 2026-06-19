@@ -1,49 +1,48 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { siteConfig } from "../utils/site";
+import { getSiteSettings } from "../utils/sanity";
+
+const settings = await getSiteSettings();
 ---
 
 <Layout
-  title="Impressum | Metal im Dorf"
-  description="Impressum und rechtliche Angaben zum Metal im Dorf Festival."
+  title={`${settings.navigation.legalLabel} | ${settings.siteName}`}
+  description={`Impressum und rechtliche Angaben zu ${settings.siteName}.`}
+  settings={settings}
 >
   <section class="shell legal-page">
     <header class="page-header">
       <span class="section-kicker">Rechtliches</span>
-      <h1 class="page-title">Impressum</h1>
+      <h1 class="page-title">{settings.navigation.legalLabel}</h1>
       <p class="page-lede">Angaben gemäß § 5 TMG</p>
     </header>
 
     <div class="legal-content panel">
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Veranstalter</h2>
+        <h2 class="text-xl font-bold text-white">Veranstalter</h2>
         <p>
-          Metal im Dorf Festival<br />
-          Opfermoor Niederdorla<br />
-          An der Oberrothe<br />
-          99988 Niederdorla
+          {settings.siteName}<br />
+          {settings.contact.address.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Kontakt</h2>
+        <h2 class="text-xl font-bold text-white">Kontakt</h2>
         <p>
-          E-Mail: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+          E-Mail: <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
         </p>
       </section>
 
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+        <h2 class="text-xl font-bold text-white">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
         <p>
-          Metal im Dorf Festival<br />
-          Opfermoor Niederdorla<br />
-          An der Oberrothe<br />
-          99988 Niederdorla
+          {settings.siteName}<br />
+          {settings.contact.address.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Haftung für Inhalte</h2>
+        <h2 class="text-xl font-bold text-white">Haftung für Inhalte</h2>
         <p class="leading-relaxed">
           Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den
           allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht
@@ -59,7 +58,7 @@ import { siteConfig } from "../utils/site";
       </section>
 
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Haftung für Links</h2>
+        <h2 class="text-xl font-bold text-white">Haftung für Links</h2>
         <p class="leading-relaxed">
           Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben.
           Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der
@@ -70,7 +69,7 @@ import { siteConfig } from "../utils/site";
       </section>
 
       <section class="space-y-2">
-        <h2 class="text-xl font-bold uppercase tracking-wider text-white">Urheberrecht</h2>
+        <h2 class="text-xl font-bold text-white">Urheberrecht</h2>
         <p class="leading-relaxed">
           Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem
           deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung
@@ -102,8 +101,7 @@ import { siteConfig } from "../utils/site";
     color: #fff;
     font-size: 1rem;
     font-weight: 950;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   .legal-content p {

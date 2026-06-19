@@ -1,0 +1,229 @@
+---
+import { ArrowLeft, CalendarDays } from "@lucide/astro";
+import { PortableText } from "astro-portabletext";
+import Layout from "../../../layouts/Layout.astro";
+import MediaLightbox from "../../../components/MediaLightbox.astro";
+import { formatDate } from "../../../utils/format";
+import { urlForUncropped } from "../../../utils/image";
+import { getNews, getSiteSettings, type News, type SanityImage } from "../../../utils/sanity";
+import { sitePath, type SiteSettings } from "../../../utils/site";
+
+interface Props {
+  item: News;
+  settings: SiteSettings;
+}
+
+export async function getStaticPaths() {
+  const [news, settings] = await Promise.all([getNews(), getSiteSettings()]);
+  return news.map((item) => ({
+    params: { id: item._id },
+    props: { item, settings },
+  }));
+}
+
+const { item, settings } = Astro.props as Props;
+const textBlocks = item.inhalt?.filter((block) => block._type === "block") ?? [];
+const inlineImages = (item.inhalt?.filter((block) => block._type === "image") ?? []) as unknown as SanityImage[];
+const images = [
+  ...(item.bild ? [item.bild] : []),
+  ...(item.bilder ?? []),
+  ...inlineImages,
+];
+const [primaryImage, ...galleryImages] = images;
+const plainText = textBlocks
+  .flatMap((block) => block.children ?? [])
+  .map((child) => "text" in child ? child.text : "")
+  .join(" ")
+  .replace(/\s+/g, " ")
+  .trim();
+const description = plainText.slice(0, 180) || settings.defaultSeo.description;
+const ogImage = images[0]
+  ? urlForUncropped(images[0]).width(1200).height(630).fit("max").auto("format").quality(82).url()
+  : undefined;
+const lightboxGroup = `news-detail-${item._id}`;
+---
+
+<Layout
+  title={`${item.titel} | ${settings.siteName}`}
+  description={description}
+  image={ogImage}
+  settings={settings}
+>
+  <article class="shell news-detail">
+    <a href={`${sitePath()}#news`} class="back-link">
+      <ArrowLeft size={17} stroke-width={2.5} aria-hidden="true" />
+      Zurück zu News
+    </a>
+
+    <header class="news-header">
+      <span class="news-date">
+        <CalendarDays size={16} stroke-width={2.3} aria-hidden="true" />
+        {formatDate(item.datum)}
+      </span>
+      <h1>{item.titel}</h1>
+    </header>
+
+    {primaryImage && (() => {
+      const alt = primaryImage.caption || primaryImage.alt || `${item.titel} Hauptbild`;
+      return (
+        <button
+          class="gallery-item news-primary-image"
+          type="button"
+          data-lightbox-group={lightboxGroup}
+          data-full-src={urlForUncropped(primaryImage).width(2000).auto("format").quality(90).url()}
+          data-alt={alt}
+          data-caption={primaryImage.caption ?? primaryImage.alt ?? alt}
+          aria-label={`${alt} vergrößern`}
+        >
+          <img
+            src={urlForUncropped(primaryImage).width(1300).auto("format").quality(86).url()}
+            alt={alt}
+            loading="eager"
+          />
+        </button>
+      );
+    })()}
+
+    {galleryImages.length > 0 && (
+      <div class="news-gallery">
+        {galleryImages.map((image, index) => {
+          const alt = image.caption || image.alt || `${item.titel} Bild ${index + 2}`;
+          return (
+            <button
+              class="gallery-item"
+              type="button"
+              data-lightbox-group={lightboxGroup}
+              data-full-src={urlForUncropped(image).width(2000).auto("format").quality(90).url()}
+              data-alt={alt}
+              data-caption={image.caption ?? image.alt ?? alt}
+              aria-label={`${alt} vergrößern`}
+            >
+              <img
+                src={urlForUncropped(image).width(760).auto("format").quality(86).url()}
+                alt={alt}
+                loading="lazy"
+              />
+            </button>
+          );
+        })}
+      </div>
+    )}
+
+    {textBlocks.length > 0 && (
+      <div class="news-content prose prose-invert max-w-none">
+        <PortableText value={textBlocks} />
+      </div>
+    )}
+  </article>
+
+  {images.length > 0 && <MediaLightbox />}
+</Layout>
+
+<style>
+  .news-detail {
+    display: grid;
+    max-width: 980px;
+    gap: clamp(1.4rem, 3vw, 2.2rem);
+    padding-block: clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  .back-link,
+  .news-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .back-link {
+    color: #a1a1aa;
+    text-decoration: none;
+  }
+
+  .back-link:hover,
+  .news-date {
+    color: var(--color-accent);
+  }
+
+  .news-header {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  h1 {
+    max-width: 24ch;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.7rem, 4vw, 3.1rem);
+    font-weight: 950;
+    line-height: 1.05;
+  }
+
+  .news-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .gallery-item {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: color-mix(in srgb, var(--surface) 88%, #fff 12%);
+    border: 1px solid var(--border);
+  }
+
+  .news-primary-image {
+    width: 100%;
+  }
+
+  .gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 72vh;
+    object-fit: contain;
+  }
+
+  .gallery-item:hover,
+  .gallery-item:focus-visible {
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .news-content {
+    max-width: 760px;
+    color: #d4d4d8;
+    font-size: clamp(1rem, 1.5vw, 1.08rem);
+    line-height: 1.75;
+  }
+
+  .news-content :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .news-content :global(a) {
+    color: var(--color-accent);
+  }
+
+  .news-content :global(h2),
+  .news-content :global(h3) {
+    color: #fff;
+  }
+
+  @media (max-width: 640px) {
+    .news-gallery {
+      grid-template-columns: 1fr;
+    }
+
+  }
+</style>

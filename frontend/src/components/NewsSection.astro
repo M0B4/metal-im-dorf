@@ -1,0 +1,209 @@
+---
+import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import NewsCard from "./NewsCard.astro";
+import type { News } from "../utils/sanity";
+import { sitePath, type SiteSettings } from "../utils/site";
+
+interface Props {
+  news: News[];
+  settings: SiteSettings;
+  currentPage?: number;
+}
+
+const PAGE_SIZE = 12;
+const { news, settings, currentPage = 1 } = Astro.props;
+const totalPages = Math.max(1, Math.ceil(news.length / PAGE_SIZE));
+const page = Math.min(Math.max(currentPage, 1), totalPages);
+const pageNews = news.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+const copy = settings.sections.news;
+
+function pageUrl(targetPage: number) {
+  return targetPage === 1 ? `${sitePath()}#news` : sitePath(`/news/${targetPage}`);
+}
+---
+
+<section id="news" class="news-section">
+  <div class="section-heading">
+    <div>
+      <span class="section-kicker">{copy.kicker}</span>
+      <h2>{copy.title}</h2>
+    </div>
+    {totalPages > 1 && (
+      <span class="page-status">{copy.pageLabel} {page} / {totalPages}</span>
+    )}
+  </div>
+
+  {pageNews.length > 0 ? (
+    <div class="news-list">
+      {pageNews.map((item, index) => (
+        <NewsCard
+          item={item}
+          index={(page - 1) * PAGE_SIZE + index}
+        />
+      ))}
+    </div>
+  ) : (
+    <p class="placeholder">{copy.emptyText}</p>
+  )}
+
+  {totalPages > 1 && (
+    <nav class="pagination" aria-label="News-Seiten">
+      {page > 1 ? (
+        <a class="page-direction" href={pageUrl(page - 1)}>
+          <ChevronLeft size={18} stroke-width={2.5} aria-hidden="true" />
+          {copy.previousLabel}
+        </a>
+      ) : <span />}
+
+      <div class="page-numbers">
+        {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
+          <a
+            href={pageUrl(number)}
+            class:list={["page-number", number === page && "is-active"]}
+            aria-current={number === page ? "page" : undefined}
+          >
+            {number}
+          </a>
+        ))}
+      </div>
+
+      {page < totalPages ? (
+        <a class="page-direction" href={pageUrl(page + 1)}>
+          {copy.nextLabel}
+          <ChevronRight size={18} stroke-width={2.5} aria-hidden="true" />
+        </a>
+      ) : <span />}
+    </nav>
+  )}
+</section>
+
+<style>
+  .news-section {
+    min-width: 0;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-heading h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 950;
+  }
+
+  .page-status {
+    padding-bottom: 0.35rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .news-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .news-list > :global(.news-tile) {
+    height: 100%;
+  }
+
+  .pagination {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .page-number,
+  .page-direction {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    color: #d4d4d8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .page-direction {
+    width: fit-content;
+    gap: 0.45rem;
+    padding-inline: 0.85rem;
+  }
+
+  .page-direction:last-child {
+    justify-self: end;
+  }
+
+  .page-number:hover,
+  .page-number.is-active,
+  .page-direction:hover {
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  @media (max-width: 1100px) {
+    .news-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 820px) {
+    .news-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .section-heading {
+      align-items: start;
+      flex-direction: column;
+    }
+
+    .news-list {
+      grid-template-columns: 1fr;
+    }
+
+    .pagination {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .page-numbers {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .page-direction {
+      grid-row: 2;
+    }
+  }
+</style>

@@ -1,30 +1,34 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getHistorie } from "../utils/sanity";
+import { getHistorie, getSiteSettings } from "../utils/sanity";
 import { urlFor } from "../utils/image";
 import { getHistoriePath, getKategorieLabel } from "../utils/historie";
 import { sitePath } from "../utils/site";
 
-const historie = await getHistorie();
+const [historie, settings] = await Promise.all([getHistorie(), getSiteSettings()]);
+const copy = settings.sections.history;
 ---
 
-<Layout title="Historie | Metal im Dorf" description="Die Geschichte und Rückblicke des Metal im Dorf Festivals.">
+<Layout title={`${copy.title} | ${settings.siteName}`} description={copy.intro} settings={settings}>
   <div class="shell page">
     <header class="page-header">
-      <span class="section-kicker">Archiv</span>
-      <h1 class="page-title">Historie</h1>
-      <p class="page-lede">
-        Poster, Rückblicke und Impressionen vergangener Festivals und
-        Nebenveranstaltungen.
-      </p>
+      <span class="section-kicker">{copy.kicker}</span>
+      <h1 class="page-title">{copy.title}</h1>
+      <p class="page-lede">{copy.intro}</p>
     </header>
 
     {historie.length ? (
       <>
         <div class="category-filter" role="group" aria-label="Historie filtern">
-          <button class="filter-button is-active" type="button" data-filter="alle">Alle</button>
-          <button class="filter-button" type="button" data-filter="hauptfestival">Hauptfestival</button>
-          <button class="filter-button" type="button" data-filter="nebenveranstaltung">Nebenveranstaltungen</button>
+          <button class="filter-button is-active" type="button" data-filter="alle">
+            {copy.allFilterLabel}
+          </button>
+          <button class="filter-button" type="button" data-filter="hauptfestival">
+            {copy.mainFilterLabel}
+          </button>
+          <button class="filter-button" type="button" data-filter="nebenveranstaltung">
+            {copy.sideFilterLabel}
+          </button>
         </div>
 
         <section class="history-grid" aria-label="Festival Historie">
@@ -53,10 +57,10 @@ const historie = await getHistorie();
           </a>
         ))}
         </section>
-        <p class="filter-empty" hidden>In dieser Kategorie gibt es noch keine Einträge.</p>
+        <p class="filter-empty" hidden>{copy.filterEmptyText}</p>
       </>
     ) : (
-      <p class="placeholder">Keine Einträge in der Historie verfügbar.</p>
+      <p class="placeholder">{copy.emptyText}</p>
     )}
   </div>
 </Layout>
@@ -99,7 +103,7 @@ const historie = await getHistorie();
 
   .filter-button:hover,
   .filter-button.is-active {
-    color: #050505;
+    color: var(--color-accent-contrast);
     background: var(--color-accent);
     border-color: var(--color-accent);
   }
@@ -119,7 +123,7 @@ const historie = await getHistorie();
   }
 
   .history-card:hover {
-    border-color: rgba(0, 168, 187, 0.5);
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
     box-shadow: var(--shadow-panel);
     transform: translateY(-3px);
   }

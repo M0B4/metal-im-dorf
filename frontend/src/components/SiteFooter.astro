@@ -1,45 +1,54 @@
 ---
 import { Icon } from "astro-icon/components";
-import { siteConfig, sitePath } from "../utils/site";
+import { sitePath, type SiteSettings } from "../utils/site";
+import { urlFor } from "../utils/image";
+
+interface Props {
+  settings: SiteSettings;
+}
+
+const { settings } = Astro.props;
+const logoUrl = settings.logo
+  ? urlFor(settings.logo).height(160).auto("format").quality(90).url()
+  : sitePath("/logo.svg");
 ---
 
 <footer class="site-footer">
   <div class="shell footer-grid">
     <div>
-      <img src={sitePath("/logo.svg")} alt="Metal im Dorf" class="footer-logo" />
-      <p>
-        Ein kleines, lautes Festival im Dorf: harte Riffs, kurze Wege und eine
-        Community, die vor der Bühne zuhause ist.
-      </p>
+      <img src={logoUrl} alt={settings.logo?.alt || settings.siteName} class="footer-logo" />
+      <p>{settings.footer.description}</p>
     </div>
     <div>
-      <h2>Navigation</h2>
-      <a href={sitePath()}>News</a>
-      <a href={sitePath("/line-up")}>Line-Up</a>
-      <a href={sitePath("/historie")}>Historie</a>
-      <a href={sitePath("/impressum")}>Impressum</a>
+      <h2>{settings.footer.navigationTitle}</h2>
+      <a href={sitePath()}>{settings.navigation.newsLabel}</a>
+      <a href={sitePath("/line-up")}>{settings.navigation.lineupLabel}</a>
+      <a href={sitePath("/historie")}>{settings.navigation.historyLabel}</a>
+      <a href={sitePath("/impressum")}>{settings.navigation.legalLabel}</a>
     </div>
     <div>
-      <h2>Kontakt</h2>
-      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
-      {siteConfig.address.map((line) => <span>{line}</span>)}
+      <h2>{settings.footer.contactTitle}</h2>
+      <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
+      {settings.contact.address.map((line) => <span>{line}</span>)}
     </div>
-    <div>
-      <h2>Folge uns</h2>
+    {(settings.contact.showInstagram || settings.contact.showFacebook) && <div>
+      <h2>{settings.footer.socialTitle}</h2>
       <div class="footer-socials">
-        <a href={siteConfig.instagramUrl} target="_blank" rel="noreferrer">
+        {settings.contact.showInstagram && <a href={settings.contact.instagramUrl} target="_blank" rel="noreferrer">
           <Icon name="simple-icons:instagram" size={21} />
           <span>Instagram</span>
-        </a>
-        <a href={siteConfig.facebookUrl} target="_blank" rel="noreferrer">
+        </a>}
+        {settings.contact.showFacebook && <a href={settings.contact.facebookUrl} target="_blank" rel="noreferrer">
           <Icon name="simple-icons:facebook" size={21} />
           <span>Facebook</span>
-        </a>
+        </a>}
       </div>
-    </div>
+    </div>}
   </div>
   <div class="shell footer-bottom">
-    <span>© {new Date().getFullYear()} Metal im Dorf Festival</span>
+    <span>
+      © {new Date().getFullYear()} {settings.footer.copyright || settings.siteName}
+    </span>
   </div>
 </footer>
 
@@ -100,7 +109,7 @@ import { siteConfig, sitePath } from "../utils/site";
   }
 
   .site-footer .footer-socials a:hover {
-    color: #050505;
+    color: var(--color-accent-contrast);
     background: var(--color-accent);
     border-color: var(--color-accent);
   }

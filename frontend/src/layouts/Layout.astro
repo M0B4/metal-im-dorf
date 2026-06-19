@@ -2,7 +2,9 @@
 import { VisualEditing } from "@sanity/astro/visual-editing";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import { sitePath } from "../utils/site";
+import { sitePath, type SiteSettings } from "../utils/site";
+import { getSiteSettings } from "../utils/sanity";
+import { urlFor } from "../utils/image";
 import "../styles/global.css";
 
 interface Props {
@@ -10,13 +12,27 @@ interface Props {
   description?: string;
   image?: string;
   noindex?: boolean;
+  settings?: SiteSettings;
 }
 
-const { title, description, image, noindex = false } = Astro.props;
+const { title, description, image, noindex = false, settings: providedSettings } = Astro.props;
+const settings = providedSettings || (await getSiteSettings());
 const canonicalURL = Astro.url;
 const currentPath = canonicalURL.pathname.replace(/\/$/, "") || "/";
 const visualEditingEnabled =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+const resolvedDescription = description || settings.defaultSeo.description;
+const resolvedImage =
+  image ||
+  (settings.defaultSeo.image
+    ? urlFor(settings.defaultSeo.image).width(1200).height(630).fit("crop").url()
+    : undefined);
+const accentColor = /^#[0-9a-f]{6}$/i.test(settings.accentColor)
+  ? settings.accentColor
+  : "#00A8BB";
+const accentTextColor = /^#[0-9a-f]{6}$/i.test(settings.accentTextColor)
+  ? settings.accentTextColor
+  : "#050505";
 ---
 
 <!doctype html>
@@ -29,16 +45,16 @@ const visualEditingEnabled =
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonicalURL} />
 
-    {description && <meta name="description" content={description} />}
+    {resolvedDescription && <meta name="description" content={resolvedDescription} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
-    {description && <meta property="og:description" content={description} />}
-    {image && <meta property="og:image" content={image} />}
-    <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+    {resolvedDescription && <meta property="og:description" content={resolvedDescription} />}
+    {resolvedImage && <meta property="og:image" content={resolvedImage} />}
+    <meta name="twitter:card" content={resolvedImage ? "summary_large_image" : "summary"} />
     <meta name="twitter:title" content={title} />
-    {description && <meta name="twitter:description" content={description} />}
-    {image && <meta name="twitter:image" content={image} />}
+    {resolvedDescription && <meta name="twitter:description" content={resolvedDescription} />}
+    {resolvedImage && <meta name="twitter:image" content={resolvedImage} />}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -48,11 +64,13 @@ const visualEditingEnabled =
     />
     <title>{title}</title>
   </head>
-  <body>
+  <body
+    style={`--color-accent: ${accentColor}; --color-accent-contrast: ${accentTextColor}`}
+  >
     <VisualEditing enabled={visualEditingEnabled} />
-    <SiteHeader currentPath={currentPath} />
+    <SiteHeader currentPath={currentPath} settings={settings} />
     <main class="site-main animate-slide-up"><slot /></main>
-    <SiteFooter />
+    <SiteFooter settings={settings} />
   </body>
 </html>
 

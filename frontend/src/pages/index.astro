@@ -1,36 +1,24 @@
 ---
 import FestivalHero from "../components/FestivalHero.astro";
-import MediaLightbox from "../components/MediaLightbox.astro";
-import NewsCard from "../components/NewsCard.astro";
+import NewsSection from "../components/NewsSection.astro";
 import Layout from "../layouts/Layout.astro";
-import { getNews } from "../utils/sanity";
+import { getNews, getSiteSettings } from "../utils/sanity";
 
-const news = await getNews();
+const [news, settings] = await Promise.all([getNews(), getSiteSettings()]);
 const sortedNews = [...news].sort(
   (a, b) => new Date(b.datum || 0).getTime() - new Date(a.datum || 0).getTime(),
 );
 ---
 
-<Layout title="Metal im Dorf" description="News und aktuelle Infos vom Metal im Dorf Festival.">
+<Layout
+  title={settings.defaultSeo.title}
+  description={settings.defaultSeo.description}
+  settings={settings}
+>
   <div class="shell home">
-    <FestivalHero featured={sortedNews[0]} />
+    <FestivalHero featured={sortedNews[0]} settings={settings} />
 
-    <section id="news" class="news-section">
-      <div class="section-heading">
-        <span class="section-kicker">News</span>
-        <h2>Aktuelles vom Festival</h2>
-      </div>
-
-      {sortedNews.length > 0 ? (
-        <div class="news-list">
-          {sortedNews.map((item, index) => <NewsCard item={item} index={index} />)}
-        </div>
-      ) : (
-        <p class="placeholder">Keine News verfügbar.</p>
-      )}
-    </section>
-
-    <MediaLightbox />
+    <NewsSection news={sortedNews} settings={settings} />
   </div>
 </Layout>
 
@@ -40,20 +28,4 @@ const sortedNews = [...news].sort(
     gap: clamp(2rem, 5vw, 4rem);
   }
 
-  .section-heading {
-    margin-bottom: 1.5rem;
-  }
-
-  .section-heading h2 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.8rem, 4vw, 3.2rem);
-    font-weight: 950;
-    text-transform: uppercase;
-  }
-
-  .news-list {
-    display: grid;
-    gap: 1rem;
-  }
 </style>

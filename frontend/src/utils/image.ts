@@ -8,6 +8,10 @@ export function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
+export function urlForUncropped(source: SanityImageSource) {
+  return builder.image(source).ignoreImageParams();
+}
+
 /**
  * Generates a responsive srcset string using Sanity's image CDN.
  * Widths should be in ascending order.

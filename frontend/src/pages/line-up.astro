@@ -1,20 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getBands } from "../utils/sanity";
+import { getBands, getSiteSettings } from "../utils/sanity";
 import { urlFor } from "../utils/image";
 
-const bands = await getBands();
+const [bands, settings] = await Promise.all([getBands(), getSiteSettings()]);
+const copy = settings.sections.lineup;
 ---
 
-<Layout title="Line-Up | Metal im Dorf" description="Das komplette Line-Up des Metal im Dorf Festivals.">
+<Layout title={`${copy.title} | ${settings.siteName}`} description={copy.intro} settings={settings}>
   <div class="shell page">
     <header class="page-header">
-      <span class="section-kicker">Line-Up</span>
-      <h1 class="page-title">Bands</h1>
-      <p class="page-lede">
-        Bestätigte Bands, Genres, Spielzeiten und offene Slots für kommende
-        Ankündigungen.
-      </p>
+      <span class="section-kicker">{copy.kicker}</span>
+      <h1 class="page-title">{copy.title}</h1>
+      <p class="page-lede">{copy.intro}</p>
     </header>
 
     {bands.length ? (
@@ -43,16 +41,16 @@ const bands = await getBands();
 
             <div class="band-info">
               <span class:list={["genre-tag", band.platzhalter && "genre-tag--placeholder"]}>
-                {band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}
+                {band.platzhalter ? copy.placeholderGenre : band.genre || copy.defaultGenre}
               </span>
-              <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
-              <p>{band.spielzeit || "TBA"}</p>
+              <h2>{band.platzhalter ? copy.placeholderName : band.name}</h2>
+              <p>{band.spielzeit || copy.unknownTime}</p>
             </div>
           </article>
         ))}
       </section>
     ) : (
-      <p class="placeholder">Bands werden bald bekannt gegeben.</p>
+      <p class="placeholder">{copy.emptyText}</p>
     )}
   </div>
 </Layout>
@@ -81,7 +79,7 @@ const bands = await getBands();
   }
 
   .band-card:hover {
-    border-color: rgba(0, 168, 187, 0.5);
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
     box-shadow: var(--shadow-panel);
     transform: translateY(-3px);
   }
@@ -96,7 +94,7 @@ const bands = await getBands();
     left: 0.7rem;
     z-index: 2;
     padding: 0.28rem 0.42rem;
-    color: #050505;
+    color: var(--color-accent-contrast);
     background: var(--color-accent);
     font-family: var(--font-mono);
     font-size: 0.68rem;
@@ -150,7 +148,7 @@ const bands = await getBands();
     width: fit-content;
     padding: 0.22rem 0.45rem;
     color: var(--color-accent);
-    border: 1px solid rgba(0, 168, 187, 0.34);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 34%, transparent);
     font-family: var(--font-mono);
     font-size: 0.68rem;
     font-weight: 800;
@@ -169,7 +167,6 @@ const bands = await getBands();
     font-size: clamp(1.05rem, 2vw, 1.35rem);
     font-weight: 950;
     line-height: 1.04;
-    text-transform: uppercase;
   }
 
   .band-card p {

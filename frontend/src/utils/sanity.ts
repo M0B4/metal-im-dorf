@@ -2,6 +2,7 @@ import { sanityClient } from "sanity:client";
 import type { PortableTextBlock } from "@portabletext/types";
 import type { Slug } from "@sanity/types";
 import groq from "groq";
+import { defaultSiteSettings, type SiteSettings } from "./site";
 
 const visualEditingEnabled = import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 const token = import.meta.env.SANITY_API_READ_TOKEN;
@@ -28,6 +29,45 @@ const imageProjection = `{
   "height": asset->metadata.dimensions.height,
   "lqip": asset->metadata.lqip,
 }`;
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  const settings = await loadQuery<Partial<SiteSettings> | null>(
+    groq`*[_type == "siteSettings" && _id == "siteSettings"][0] {
+      siteName,
+      "accentColor": coalesce(accentColorPicker.hex, accentColor, "#00A8BB"),
+      "accentTextColor": coalesce(accentTextColorPicker.hex, accentTextColor, "#050505"),
+      logo ${imageProjection},
+      defaultSeo {
+        title,
+        description,
+        image ${imageProjection}
+      },
+      hero {
+        ...,
+        image ${imageProjection}
+      },
+      sections,
+      navigation,
+      footer,
+      contact
+    }`,
+  );
+
+  return {
+    ...defaultSiteSettings,
+    ...settings,
+    defaultSeo: { ...defaultSiteSettings.defaultSeo, ...settings?.defaultSeo },
+    hero: { ...defaultSiteSettings.hero, ...settings?.hero },
+    sections: {
+      news: { ...defaultSiteSettings.sections.news, ...settings?.sections?.news },
+      lineup: { ...defaultSiteSettings.sections.lineup, ...settings?.sections?.lineup },
+      history: { ...defaultSiteSettings.sections.history, ...settings?.sections?.history },
+    },
+    navigation: { ...defaultSiteSettings.navigation, ...settings?.navigation },
+    footer: { ...defaultSiteSettings.footer, ...settings?.footer },
+    contact: { ...defaultSiteSettings.contact, ...settings?.contact },
+  };
+}
 
 export async function getPosts(): Promise<Post[]> {
   return loadQuery<Post[]>(
@@ -99,7 +139,7 @@ export async function getBands(): Promise<Band[]> {
 
 export async function getNews(): Promise<News[]> {
   return loadQuery<News[]>(
-    groq`*[_type == "news"] | order(datum desc) {
+    groq`*[_type == "news"] | order(datum desc, facebookQuelle.reihenfolge asc) {
       _id,
       titel,
       datum,

@@ -37,3 +37,14 @@ export function formatEventDate(value: string) {
     timeZone: "Europe/Berlin",
   }).format(date);
 }
+
+export function formatCompactEventDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "Europe/Berlin",
+  }).format(date);
+}

@@ -1,5 +1,5 @@
 ---
-import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import { ArrowRight, ChevronLeft, ChevronRight } from "@lucide/astro";
 import NewsCard from "./NewsCard.astro";
 import { NEWS_PAGE_SIZE } from "../utils/news";
 import type { News } from "../utils/sanity";
@@ -20,6 +20,29 @@ const copy = settings.sections.news;
 function pageUrl(targetPage: number) {
   return targetPage === 1 ? `${sitePath()}#news` : sitePath(`/news/${targetPage}`);
 }
+
+function paginationItems(siblings: number) {
+  const visible = new Set([1, totalPages, page]);
+  for (let offset = 1; offset <= siblings; offset += 1) {
+    visible.add(page - offset);
+    visible.add(page + offset);
+  }
+  if (page <= siblings + 2) {
+    for (let number = 1; number <= Math.min(totalPages, siblings * 2 + 3); number += 1) visible.add(number);
+  }
+  if (page >= totalPages - siblings - 1) {
+    for (let number = Math.max(1, totalPages - siblings * 2 - 2); number <= totalPages; number += 1) visible.add(number);
+  }
+
+  const pages = [...visible].filter((number) => number >= 1 && number <= totalPages).sort((a, b) => a - b);
+  return pages.flatMap<(number | "ellipsis")>((number, index) => {
+    const previous = pages[index - 1];
+    return previous && number - previous > 1 ? ["ellipsis", number] : [number];
+  });
+}
+
+const desktopPagination = paginationItems(1);
+const mobilePagination = paginationItems(0);
 ---
 
 <section id="news" class="news-section">
@@ -49,33 +72,110 @@ function pageUrl(targetPage: number) {
   {totalPages > 1 && (
     <nav class="pagination" aria-label="News-Seiten">
       {page > 1 ? (
-        <a class="page-direction" href={pageUrl(page - 1)}>
+        <a class="page-direction page-direction--previous" href={pageUrl(page - 1)} aria-label={copy.previousLabel}>
           <ChevronLeft size={18} stroke-width={2.5} aria-hidden="true" />
-          {copy.previousLabel}
+          <span>{copy.previousLabel}</span>
         </a>
-      ) : <span />}
+      ) : <span class="page-direction-placeholder" />}
 
-      <div class="page-numbers">
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
-          <a
-            href={pageUrl(number)}
-            class:list={["page-number", number === page && "is-active"]}
-            aria-current={number === page ? "page" : undefined}
-          >
-            {number}
-          </a>
+      <div class="page-numbers page-numbers--desktop">
+        {desktopPagination.map((item) => item === "ellipsis" ? (
+          <button
+            type="button"
+            class="page-ellipsis"
+            data-page-jump-toggle
+            aria-controls="news-page-jump-form"
+            aria-expanded="false"
+            aria-label="Zu einer anderen News-Seite springen"
+          >…</button>
+        ) : (
+          <a href={pageUrl(item)} class:list={["page-number", item === page && "is-active"]} aria-current={item === page ? "page" : undefined}>{item}</a>
         ))}
       </div>
 
+      <div class="page-numbers page-numbers--mobile">
+        {mobilePagination.map((item) => item === "ellipsis" ? (
+          <button
+            type="button"
+            class="page-ellipsis"
+            data-page-jump-toggle
+            aria-controls="news-page-jump-form"
+            aria-expanded="false"
+            aria-label="Zu einer anderen News-Seite springen"
+          >…</button>
+        ) : (
+          <a href={pageUrl(item)} class:list={["page-number", item === page && "is-active"]} aria-current={item === page ? "page" : undefined}>{item}</a>
+        ))}
+      </div>
+
+      <form
+        id="news-page-jump-form"
+        class="page-jump"
+        data-page-jump
+        data-news-base={sitePath("/news")}
+        data-news-home={`${sitePath()}#news`}
+        hidden
+      >
+        <label for="news-page-jump">Seite</label>
+        <input id="news-page-jump" name="page" type="number" min="1" max={totalPages} value={page} inputmode="numeric" />
+        <button type="submit" aria-label="Zur eingegebenen News-Seite springen" title="Seite öffnen">
+          <ArrowRight size={16} stroke-width={2.5} aria-hidden="true" />
+        </button>
+      </form>
+
       {page < totalPages ? (
-        <a class="page-direction" href={pageUrl(page + 1)}>
-          {copy.nextLabel}
+        <a class="page-direction page-direction--next" href={pageUrl(page + 1)} aria-label={copy.nextLabel}>
+          <span>{copy.nextLabel}</span>
           <ChevronRight size={18} stroke-width={2.5} aria-hidden="true" />
         </a>
-      ) : <span />}
+      ) : <span class="page-direction-placeholder" />}
     </nav>
   )}
 </section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("[data-page-jump]").forEach((form) => {
+    const toggles = form.closest(".pagination")?.querySelectorAll<HTMLButtonElement>("[data-page-jump-toggle]") ?? [];
+    const input = form.querySelector<HTMLInputElement>('input[name="page"]');
+
+    const closeJump = () => {
+      form.hidden = true;
+      toggles.forEach((toggle) => toggle.setAttribute("aria-expanded", "false"));
+    };
+
+    toggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const shouldOpen = form.hidden;
+        form.hidden = !shouldOpen;
+        toggles.forEach((item) => item.setAttribute("aria-expanded", String(shouldOpen)));
+        if (shouldOpen) {
+          input?.focus();
+          input?.select();
+        }
+      });
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const page = Number(input?.value);
+      const max = Number(input?.max);
+      if (!Number.isInteger(page) || page < 1 || page > max) {
+        input?.focus();
+        return;
+      }
+      window.location.href = page === 1 ? form.dataset.newsHome! : `${form.dataset.newsBase}/${page}`;
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target as Node;
+      if (!form.hidden && !form.contains(target) && !Array.from(toggles).some((toggle) => toggle.contains(target))) closeJump();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !form.hidden) closeJump();
+    });
+  });
+</script>
 
 <style>
   .news-section {
@@ -119,6 +219,7 @@ function pageUrl(targetPage: number) {
   }
 
   .pagination {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
@@ -130,11 +231,17 @@ function pageUrl(targetPage: number) {
 
   .page-numbers {
     display: flex;
+    align-items: center;
     gap: 0.4rem;
   }
 
+  .page-numbers--mobile {
+    display: none;
+  }
+
   .page-number,
-  .page-direction {
+  .page-direction,
+  .page-ellipsis {
     display: inline-flex;
     min-width: 2.75rem;
     min-height: 2.75rem;
@@ -151,14 +258,68 @@ function pageUrl(targetPage: number) {
     text-transform: uppercase;
   }
 
+  .page-ellipsis {
+    min-width: 1.4rem;
+    background: transparent;
+    border-color: transparent;
+  }
+
   .page-direction {
     width: fit-content;
     gap: 0.45rem;
     padding-inline: 0.85rem;
   }
 
-  .page-direction:last-child {
+  .page-direction--next {
     justify-self: end;
+  }
+
+  .page-jump {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.45rem;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-panel);
+    transform: translateX(-50%);
+  }
+
+  .page-jump[hidden] {
+    display: none;
+  }
+
+  .page-jump label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .page-jump input,
+  .page-jump button {
+    width: 2.75rem;
+    min-height: 2.75rem;
+    color: #f4f4f5;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .page-jump button {
+    display: grid;
+    width: 2.3rem;
+    padding: 0;
+    place-items: center;
+    cursor: pointer;
   }
 
   .page-number:hover,
@@ -190,18 +351,50 @@ function pageUrl(targetPage: number) {
     .news-list { gap: 0.65rem; }
 
     .pagination {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex;
+      gap: 0.25rem;
+      overflow: visible;
     }
 
-    .page-numbers {
-      grid-column: 1 / -1;
-      grid-row: 1;
-      justify-content: center;
-      flex-wrap: wrap;
+    .page-numbers--desktop {
+      display: none;
+    }
+
+    .page-numbers--mobile {
+      display: flex;
+      min-width: 0;
+      gap: 0.15rem;
+    }
+
+    .page-number,
+    .page-direction,
+    .page-ellipsis,
+    .page-jump input,
+    .page-jump button {
+      min-width: 2.2rem;
+      min-height: 2.35rem;
+      font-size: 0.66rem;
     }
 
     .page-direction {
-      grid-row: 2;
+      flex: 0 0 2.2rem;
+      padding: 0;
+    }
+
+    .page-direction span {
+      display: none;
+    }
+
+    .page-direction-placeholder {
+      flex: 0 0 2.2rem;
+    }
+
+    .page-jump input {
+      width: 2.2rem;
+    }
+
+    .page-jump button {
+      width: 2.2rem;
     }
   }
 </style>

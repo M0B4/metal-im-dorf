@@ -1,6 +1,6 @@
 ---
 import {CalendarDays, MapPin} from "@lucide/astro";
-import {formatEventDate} from "../utils/format";
+import {formatCompactEventDate, formatEventDate} from "../utils/format";
 import type {Veranstaltung} from "../utils/sanity";
 import type {SiteSettings} from "../utils/site";
 
@@ -23,6 +23,11 @@ const copy = settings.sections.nextEvent;
     <div class="event-list">
       {events.map((event) => (
           <article class="event-row">
+            <div class="event-mobile-line">
+              <time datetime={event.beginn}>{formatCompactEventDate(event.beginn)}</time>
+              <strong>{event.titel}</strong>
+              <span>{event.ort}</span>
+            </div>
             <div class="event-copy">
               <h3>{event.titel}</h3>
               {event.kurzbeschreibung && <p>{event.kurzbeschreibung}</p>}
@@ -72,6 +77,10 @@ const copy = settings.sections.nextEvent;
     gap: clamp(1rem, 3vw, 2rem);
     padding-block: clamp(0.9rem, 2vw, 1.25rem);
     border-bottom: 1px solid var(--border);
+  }
+
+  .event-mobile-line {
+    display: none;
   }
 
   .event-copy h3 {
@@ -125,8 +134,49 @@ const copy = settings.sections.nextEvent;
   }
 
   @media (max-width: 640px) {
+    .event-row {
+      display: block;
+      padding-block: 0.7rem;
+    }
+
+    .event-copy,
     .event-facts {
-      gap: 0.65rem;
+      display: none;
+    }
+
+    .event-mobile-line {
+      display: grid;
+      grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 0.75fr);
+      align-items: center;
+      gap: 0.55rem;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .event-mobile-line time,
+    .event-mobile-line span {
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      font-weight: 800;
+      text-overflow: ellipsis;
+    }
+
+    .event-mobile-line time {
+      color: var(--color-accent);
+    }
+
+    .event-mobile-line strong {
+      min-width: 0;
+      overflow: hidden;
+      color: #fff;
+      font-size: 0.78rem;
+      text-overflow: ellipsis;
+    }
+
+    .event-mobile-line span {
+      color: var(--muted);
+      text-align: right;
     }
   }
 </style>

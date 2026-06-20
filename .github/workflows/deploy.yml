@@ -1,9 +1,15 @@
 name: Deploy to GitHub Pages
+run-name: Website deploy (${{ github.event_name }}) by @${{ github.actor }}
 
 on:
   push:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      reason:
+        description: Grund für den manuellen Neuaufbau (optional)
+        required: false
+        type: string
   repository_dispatch:
     types: [sanity-content-update]
   # Fallback: published Sanity changes go live within ten minutes even without a webhook.

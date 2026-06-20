@@ -1,0 +1,23 @@
+<div class="poster-grid">
+  <slot />
+</div>
+
+<style>
+  .poster-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .poster-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .poster-grid {
+      gap: 0.75rem;
+    }
+  }
+</style>

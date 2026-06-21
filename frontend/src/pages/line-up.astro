@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import RunningOrder from "../components/RunningOrder.astro";
 import { getCurrentLineup, getSiteSettings } from "../utils/sanity";
-import { urlFor } from "../utils/image";
+import { buildSrcSet, urlFor } from "../utils/image";
 
 const [{bands, event}, settings] = await Promise.all([getCurrentLineup(), getSiteSettings()]);
 const copy = settings.sections.lineup;
@@ -32,6 +32,10 @@ const copy = settings.sections.lineup;
               <div class="band-image-wrapper">
                 <img
                   src={urlFor(band.bild).width(640).auto("format").quality(82).url()}
+                  srcset={buildSrcSet(band.bild, [320, 480, 640, 800], 80)}
+                  sizes="(max-width: 760px) 50vw, (max-width: 1180px) 33vw, 380px"
+                  width={band.bild.width}
+                  height={band.bild.height}
                   alt={band.name}
                   class="band-image"
                   loading="lazy"
@@ -72,9 +76,9 @@ const copy = settings.sections.lineup;
   .lineup-event {
     width: fit-content;
     margin: 1rem 0 0;
-    padding: 0.35rem 0.55rem;
+    padding: 0.25rem 0;
     color: var(--color-accent);
-    border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
     font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 800;
@@ -82,7 +86,7 @@ const copy = settings.sections.lineup;
 
   .band-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
@@ -90,13 +94,12 @@ const copy = settings.sections.lineup;
     position: relative;
     min-width: 0;
     overflow: hidden;
-    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    transition: border-color 180ms ease, transform 180ms ease;
   }
 
   .band-card:hover {
     border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-    box-shadow: var(--shadow-panel);
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 
   .band-card--placeholder {
@@ -105,14 +108,14 @@ const copy = settings.sections.lineup;
 
   .band-slot {
     position: absolute;
-    top: 0.7rem;
-    left: 0.7rem;
+    top: 0.55rem;
+    left: 0.55rem;
     z-index: 2;
-    padding: 0.28rem 0.42rem;
+    padding: 0.22rem 0.34rem;
     color: var(--color-accent-contrast);
     background: var(--color-accent);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.6rem;
     font-weight: 900;
   }
 
@@ -134,16 +137,15 @@ const copy = settings.sections.lineup;
 
   .band-card:hover .band-image {
     filter: saturate(1.05) contrast(1.12);
-    transform: scale(1.04);
+    transform: scale(1.025);
   }
 
   .band-placeholder-image {
     display: grid;
     place-items: center;
-    background:
-      linear-gradient(135deg, rgba(215, 25, 32, 0.16), transparent 42%),
-      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 13px),
-      #101010;
+    background-color: #101010;
+    background-image: var(--rough-texture-url);
+    background-size: 512px 512px;
   }
 
   .band-placeholder-image span {
@@ -161,13 +163,13 @@ const copy = settings.sections.lineup;
 
   .genre-tag {
     width: fit-content;
-    padding: 0.22rem 0.45rem;
-    color: var(--color-accent);
-    border: 1px solid color-mix(in srgb, var(--color-accent) 34%, transparent);
+    padding: 0;
+    color: #a1a1aa;
+    border: 0;
     font-family: var(--font-mono);
     font-size: 0.68rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
@@ -186,18 +188,12 @@ const copy = settings.sections.lineup;
 
   .band-card p {
     margin: 0;
-    color: #a1a1aa;
+    color: var(--color-accent);
     font-family: var(--font-mono);
     font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-  }
-
-  @media (max-width: 1040px) {
-    .band-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
   }
 
   @media (max-width: 760px) {

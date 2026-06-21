@@ -13,6 +13,7 @@ const navItems = [
   { label: settings.navigation.newsLabel, path: "" },
   { label: settings.navigation.lineupLabel, path: "/line-up" },
   { label: settings.navigation.eventsLabel, path: "/veranstaltungen" },
+  { label: settings.navigation.infoLabel, path: "/infos" },
   { label: settings.navigation.historyLabel, path: "/historie" },
 ];
 const logoUrl = settings.logo
@@ -21,7 +22,7 @@ const logoUrl = settings.logo
 
 function isActive(path = "") {
   const target = sitePath(path).replace(/\/$/, "") || "/";
-  return currentPath === target;
+  return currentPath === target || Boolean(path && currentPath.startsWith(`${target}/`));
 }
 ---
 
@@ -98,14 +99,14 @@ function isActive(path = "") {
     position: sticky;
     top: 0;
     z-index: 40;
-    background: rgba(5, 5, 5, 0.88);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(18px);
+    background: rgba(5, 5, 5, 0.94);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
   }
 
   .nav-inner {
     display: flex;
-    min-height: 5rem;
+    min-height: 4.5rem;
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
@@ -118,7 +119,7 @@ function isActive(path = "") {
 
   .brand img {
     width: auto;
-    height: 3rem;
+    height: 2.65rem;
   }
 
   .nav-links,
@@ -132,28 +133,49 @@ function isActive(path = "") {
   }
 
   .nav-link {
+    position: relative;
     display: inline-flex;
     min-height: 2.6rem;
     align-items: center;
     padding: 0.7rem 0.95rem;
     color: #d4d4d8;
-    border: 1px solid transparent;
+    border: 0;
     font-family: var(--font-mono);
     font-size: 0.74rem;
     font-weight: 800;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.06em;
     text-decoration: none;
     text-transform: uppercase;
     transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
   }
 
+  .nav-link::after {
+    position: absolute;
+    right: 0.95rem;
+    bottom: 0.35rem;
+    left: 0.95rem;
+    height: 2px;
+    content: "";
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 160ms ease;
+  }
+
   .nav-link:hover,
-  .nav-link.is-active,
+  .nav-link.is-active {
+    color: #fff;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.is-active::after {
+    transform: scaleX(1);
+  }
+
   .social-icon:hover,
   .social-icon:focus-visible {
-    color: var(--color-accent-contrast);
-    background: var(--color-accent);
-    border-color: var(--color-accent);
+    color: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
   }
 
   .header-socials {
@@ -169,8 +191,9 @@ function isActive(path = "") {
     height: 2.6rem;
     place-items: center;
     color: #d4d4d8;
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-subtle);
     transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
   }
 
@@ -182,6 +205,7 @@ function isActive(path = "") {
     padding: 0.7rem;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-subtle);
   }
 
   .nav-toggle span {
@@ -198,13 +222,13 @@ function isActive(path = "") {
   .nav-toggle.is-open span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 
   @media (max-width: 760px) {
-    .nav-inner { min-height: 4.4rem; }
+    .nav-inner { min-height: 4.15rem; }
     .brand img { height: 2.45rem; }
     .nav-toggle { display: grid; }
 
     .nav-links {
       position: fixed;
-      top: 4.9rem;
+      top: 4.65rem;
       right: 1rem;
       left: 1rem;
       display: none;
@@ -213,7 +237,15 @@ function isActive(path = "") {
       padding: 0.75rem;
       background: rgba(5, 5, 5, 0.98);
       border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.5);
+      border-radius: var(--radius-subtle);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    @supports (backdrop-filter: blur(8px)) {
+      .nav-links {
+        background: rgba(5, 5, 5, 0.86);
+        backdrop-filter: blur(8px) saturate(0.9);
+      }
     }
 
     .nav-links.is-open { display: flex; }

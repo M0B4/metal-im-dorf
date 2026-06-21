@@ -15,6 +15,7 @@ const studioUrl = PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333";
 
 import sanity from "@sanity/astro";
 import icon from "astro-icon";
+import sitemap from "@astrojs/sitemap";
 
 // Change this depending on your hosting provider (Vercel, Netlify etc)
 // https://docs.astro.build/en/guides/server-side-rendering/#adding-an-adapter
@@ -26,8 +27,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
     // Use static output for GitHub Pages
     output: "static",
+    site: "https://m0b4.github.io",
     base: import.meta.env.PROD ? '/metal-im-dorf' : '/',
     integrations: [
+        sitemap({
+            filter: (page) => !page.includes('/admin'),
+        }),
         icon({
             include: {
                 "simple-icons": ["instagram", "facebook"],

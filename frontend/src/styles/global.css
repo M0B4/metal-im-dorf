@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Inter Variable", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
   --color-white: #fff;
@@ -20,8 +20,9 @@
   --muted: #a1a1aa;
   --surface: rgba(16, 16, 16, 0.82);
   --surface-strong: rgba(5, 5, 5, 0.94);
-  --shadow-panel: 0 18px 60px rgba(0, 0, 0, 0.42);
+  --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.28);
   --color-accent-contrast: #050505;
+  --radius-subtle: 3px;
 }
 
 * {
@@ -39,27 +40,17 @@ body {
   min-height: 100vh;
   margin: 0;
   color: #f4f4f5;
-  background:
-    radial-gradient(circle at 24% 10%, rgba(255, 255, 255, 0.055), transparent 24rem),
-    radial-gradient(circle at 82% 4%, rgba(255, 255, 255, 0.035), transparent 22rem),
-    linear-gradient(180deg, rgba(18, 18, 18, 0.92), rgba(5, 5, 5, 0.98) 34rem),
-    repeating-linear-gradient(132deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 15px),
-    #050505;
+  background-color: #050505;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24)),
+    var(--rough-texture-url);
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-size: 512px 512px;
 }
 
 body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  content: "";
-  background:
-    repeating-radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 5px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 180px 180px, 78px 78px, 78px 78px;
-  opacity: 0.5;
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 86%);
+  content: none;
 }
 
 a {
@@ -102,11 +93,11 @@ img {
   align-items: center;
   gap: 0.6rem;
   margin-bottom: 0.85rem;
-  color: var(--color-accent);
+  color: #a1a1aa;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -114,15 +105,15 @@ img {
   width: 2.4rem;
   height: 2px;
   content: "";
-  background: currentColor;
+  background: var(--color-accent);
 }
 
 .page-title {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.4rem, 7vw, 5.7rem);
+  font-size: clamp(2.35rem, 6.5vw, 5.35rem);
   font-weight: 950;
-  line-height: 0.88;
+  line-height: 0.92;
 }
 
 .page-lede {
@@ -134,9 +125,9 @@ img {
 }
 
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  background: rgba(14, 14, 14, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-subtle);
 }
 
 .metal-button {
@@ -148,17 +139,18 @@ img {
   color: var(--color-accent-contrast);
   background: var(--color-accent);
   border: 1px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
+  border-radius: var(--radius-subtle);
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-decoration: none;
   text-transform: uppercase;
   transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .metal-button:hover {
-  background: #37c4d3;
-  border-color: #37c4d3;
+  background: color-mix(in srgb, var(--color-accent) 86%, #fff);
+  border-color: color-mix(in srgb, var(--color-accent) 86%, #fff);
   transform: translateY(-1px);
 }
 
@@ -167,6 +159,7 @@ img {
   color: #a1a1aa;
   background: rgba(255, 255, 255, 0.035);
   border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-subtle);
   font-style: italic;
   text-align: center;
 }
@@ -252,6 +245,7 @@ body.lightbox-open {
   cursor: pointer;
   background: rgba(16, 16, 16, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-subtle);
   font-size: 1.4rem;
   line-height: 1;
   transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;

@@ -1,0 +1,422 @@
+---
+import {ArrowLeft, MapPin, Ticket} from "@lucide/astro";
+import {PortableText} from "astro-portabletext";
+import MediaLightbox from "../../components/MediaLightbox.astro";
+import RunningOrder from "../../components/RunningOrder.astro";
+import Layout from "../../layouts/Layout.astro";
+import {getEventMapUrl, getEventPath} from "../../utils/events";
+import {formatEventDate} from "../../utils/format";
+import {buildSrcSet, urlFor, urlForUncropped} from "../../utils/image";
+import {getEvents, getSiteSettings, type Band, type Veranstaltung} from "../../utils/sanity";
+import {sitePath} from "../../utils/site";
+
+export async function getStaticPaths() {
+  const events = await getEvents();
+  return events.map((event) => ({
+    params: {slug: event.slug?.current || event._id},
+    props: {event},
+  }));
+}
+
+const {event} = Astro.props as {event: Veranstaltung};
+const settings = await getSiteSettings();
+const bands = event.lineup
+  ?.filter((slot): slot is typeof slot & {band: Band} => Boolean(slot.band))
+  .map((slot) => ({...slot.band, spielzeit: slot.spielzeit})) || [];
+const hasRunningOrder = bands.some((band) => Boolean(band.spielzeit));
+const mapUrl = getEventMapUrl(event);
+const imageAlt = event.bild?.alt || `Plakat ${event.titel}`;
+const imageUrl = event.bild
+  ? urlForUncropped(event.bild).width(1600).auto("format").quality(88).url()
+  : undefined;
+const canonicalUrl = new URL(`${getEventPath(event).replace(/\/$/, "")}/`, Astro.url.origin).href;
+const eventSchema = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: event.titel,
+  description: event.kurzbeschreibung || `${event.titel} in ${event.ort}`,
+  startDate: event.beginn,
+  endDate: event.ende,
+  eventStatus: "https://schema.org/EventScheduled",
+  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+  image: imageUrl ? [imageUrl] : undefined,
+  url: canonicalUrl,
+  location: {
+    "@type": "Place",
+    name: event.ort,
+    address: event.adresse || event.ort,
+  },
+  organizer: {
+    "@type": "Organization",
+    name: settings.siteName,
+    url: new URL(sitePath(), Astro.url.origin).href,
+  },
+  offers: event.ticketUrl ? {
+    "@type": "Offer",
+    url: event.ticketUrl,
+    availability: "https://schema.org/InStock",
+  } : undefined,
+};
+---
+
+<Layout
+  title={`${event.titel} | ${settings.siteName}`}
+  description={event.kurzbeschreibung || `${event.titel} in ${event.ort}`}
+  image={imageUrl}
+  settings={settings}
+  structuredData={eventSchema}
+>
+  <div class="shell event-page">
+    <a class="back-link" href={sitePath("/veranstaltungen")}>
+      <ArrowLeft size={16} aria-hidden="true" /> Veranstaltungen
+    </a>
+
+    <div class="event-hero">
+      {event.bild && (
+        <button
+          class="event-poster panel"
+          type="button"
+          data-lightbox-group={`event-${event._id}`}
+          data-full-src={imageUrl}
+          data-alt={imageAlt}
+          data-caption={event.titel}
+          aria-label={`${imageAlt} vergrößern`}
+        >
+          <img
+            src={urlFor(event.bild).width(720).auto("format").quality(84).url()}
+            srcset={buildSrcSet(event.bild, [360, 540, 720, 960], 84)}
+            sizes="(max-width: 760px) 100vw, 38vw"
+            width={event.bild.width}
+            height={event.bild.height}
+            alt={imageAlt}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </button>
+      )}
+
+      <div class="event-intro">
+        <span class="section-kicker">Veranstaltung</span>
+        <h1 class="page-title">{event.titel}</h1>
+        {event.kurzbeschreibung && <p class="page-lede">{event.kurzbeschreibung}</p>}
+
+        <div class="event-bento">
+          <dl class="event-details">
+            <div class="event-detail event-detail--date">
+              <dt>Termin</dt>
+              <dd><time datetime={event.beginn}>{formatEventDate(event.beginn)} Uhr</time></dd>
+            </div>
+            <div class="event-detail event-detail--location">
+              <dt>Ort</dt>
+              <dd>{event.ort}{event.adresse ? <><br />{event.adresse}</> : null}</dd>
+            </div>
+          </dl>
+          {event.ticketUrl && (
+            <a class="event-action-tile event-action-tile--ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
+              <Ticket size={20} aria-hidden="true" />
+              <span>Eintritt</span>
+              <strong>{event.ticketLabel || "Tickets"}</strong>
+            </a>
+          )}
+          <a class="event-action-tile" href={mapUrl} target="_blank" rel="noreferrer">
+            <MapPin size={20} aria-hidden="true" />
+            <span>Route</span>
+            <strong>Anfahrt</strong>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {event.beschreibung?.length && (
+      <section class="event-body prose prose-invert max-w-none" aria-label="Informationen zur Veranstaltung">
+        <PortableText value={event.beschreibung} />
+      </section>
+    )}
+
+    {hasRunningOrder && <RunningOrder bands={bands} copy={settings.sections.lineup} />}
+
+    {bands.length > 0 && (
+      <section class="event-lineup" aria-labelledby="event-lineup-title">
+        <div>
+          <span class="section-kicker">Live</span>
+          <h2 id="event-lineup-title">Line-Up</h2>
+        </div>
+        <div class="event-bands">
+          {bands.map((band) => (
+            <article>
+              <strong>{band.platzhalter ? settings.sections.lineup.placeholderName : band.name}</strong>
+              <span>{band.genre || settings.sections.lineup.defaultGenre}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <a class="info-link" href={sitePath("/infos")}>
+      <span>Vor deinem Besuch</span>
+      <strong>Anreise, Parken, Einlass und weitere Festival-Infos</strong>
+    </a>
+  </div>
+  {event.bild && <MediaLightbox />}
+</Layout>
+
+<style>
+  .event-page {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .back-link {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .back-link:hover {
+    color: var(--color-accent);
+  }
+
+  .event-hero {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.7fr) minmax(0, 1.3fr);
+    align-items: center;
+    gap: clamp(1.5rem, 5vw, 4rem);
+  }
+
+  .event-poster {
+    display: flex;
+    width: 100%;
+    max-height: 720px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+
+  .event-poster img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 720px;
+    object-fit: contain;
+  }
+
+  .event-intro .page-title {
+    font-size: clamp(2.35rem, 6vw, 5rem);
+  }
+
+  .event-bento {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin: 2rem 0 0;
+  }
+
+  .event-details {
+    display: contents;
+  }
+
+  .event-detail,
+  .event-action-tile {
+    min-height: 7.25rem;
+    padding: 1rem;
+    background: rgba(16, 16, 16, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-subtle);
+  }
+
+  .event-detail--date {
+    grid-column: span 7;
+  }
+
+  .event-detail--location {
+    grid-column: span 5;
+  }
+
+  .event-details dt {
+    margin-bottom: 0.35rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .event-details dd {
+    margin: 0;
+    color: #fff;
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .event-detail--date dd {
+    color: #fff;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    font-weight: 900;
+  }
+
+  .event-action-tile {
+    position: relative;
+    display: grid;
+    grid-column: span 6;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: end;
+    gap: 0.15rem 0.65rem;
+    color: #fff;
+    text-decoration: none;
+    transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .event-action-tile svg {
+    grid-row: 1 / 3;
+    align-self: end;
+    color: var(--color-accent);
+  }
+
+  .event-action-tile span {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .event-action-tile strong {
+    font-size: 1rem;
+  }
+
+  .event-action-tile:hover {
+    color: var(--color-accent);
+    background: rgba(24, 24, 24, 0.86);
+    transform: translateY(-2px);
+  }
+
+  .event-action-tile--ticket {
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .event-action-tile--ticket svg,
+  .event-action-tile--ticket span {
+    color: var(--color-accent-contrast);
+  }
+
+  .event-action-tile--ticket:hover {
+    color: var(--color-accent-contrast);
+    background: color-mix(in srgb, var(--color-accent) 86%, #fff);
+  }
+
+  .event-bento > .event-action-tile:nth-child(2):last-child {
+    grid-column: 1 / -1;
+  }
+
+  .event-body {
+    max-width: 780px;
+    color: #d4d4d8;
+    line-height: 1.75;
+  }
+
+  .event-lineup {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+    gap: clamp(1rem, 4vw, 3rem);
+    padding-block: clamp(1.25rem, 3vw, 2rem);
+    border-block: 1px solid var(--border);
+  }
+
+  .event-lineup h2 {
+    margin: 0.35rem 0 0;
+    color: #fff;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+  }
+
+  .event-bands {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .event-bands article {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--border);
+  }
+
+  .event-bands strong {
+    color: #fff;
+  }
+
+  .event-bands span {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .info-link {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1.2rem 0;
+    color: inherit;
+    border-block: 1px solid var(--border);
+    text-decoration: none;
+  }
+
+  .info-link span {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .info-link strong {
+    color: #fff;
+    font-size: 1.05rem;
+  }
+
+  .info-link:hover {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 760px) {
+    .event-hero,
+    .event-lineup {
+      grid-template-columns: 1fr;
+    }
+
+    .event-poster {
+      max-width: 520px;
+      margin-inline: auto;
+    }
+
+    .event-detail--date,
+    .event-detail--location,
+    .event-action-tile {
+      grid-column: span 6;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .event-bands {
+      grid-template-columns: 1fr;
+    }
+
+    .event-detail--date,
+    .event-detail--location,
+    .event-action-tile {
+      grid-column: 1 / -1;
+      min-height: 6rem;
+    }
+  }
+</style>

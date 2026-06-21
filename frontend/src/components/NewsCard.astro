@@ -2,7 +2,7 @@
 import { ArrowUpRight } from "@lucide/astro";
 import type { News } from "../utils/sanity";
 import { formatDate } from "../utils/format";
-import { urlForUncropped } from "../utils/image";
+import { buildSrcSet, urlForUncropped } from "../utils/image";
 import { portableTextToPlainText } from "../utils/news";
 import { sitePath } from "../utils/site";
 
@@ -21,6 +21,10 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     <div class="news-media">
       <img
         src={urlForUncropped(item.bild).width(720).auto("format").quality(84).url()}
+        srcset={buildSrcSet(item.bild, [240, 360, 520, 720], 82)}
+        sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 25vw"
+        width={item.bild.width}
+        height={item.bild.height}
         alt={item.bild.caption || item.bild.alt || item.titel}
         loading={index === 0 ? "eager" : "lazy"}
       />
@@ -43,12 +47,11 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     display: grid;
     min-width: 0;
     aspect-ratio: 1 / 1.08;
-    grid-template-rows: minmax(0, 48%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 55%) minmax(0, 1fr);
     overflow: hidden;
     color: inherit;
-    border-top: 3px solid var(--color-accent);
     text-decoration: none;
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    transition: transform 180ms ease, border-color 180ms ease;
   }
 
   .news-tile:not(:has(.news-media)) {
@@ -57,8 +60,7 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 
   .news-tile:hover,
   .news-tile:focus-visible {
-    border-color: color-mix(in srgb, var(--color-accent) 78%, #fff);
-    box-shadow: var(--shadow-panel);
+    border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
     outline: none;
     transform: translateY(-3px);
   }
@@ -71,7 +73,7 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     justify-content: center;
     padding: 0.6rem;
     overflow: hidden;
-    background: color-mix(in srgb, var(--surface) 88%, #fff 12%);
+    background: #090909;
     border-bottom: 1px solid var(--border);
   }
 
@@ -85,7 +87,7 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 
   .news-tile:hover .news-media img {
     filter: contrast(1.05);
-    transform: scale(1.015);
+    transform: scale(1.01);
   }
 
   .news-body {
@@ -99,11 +101,11 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 
   .news-date,
   .news-read-more {
-    color: var(--color-accent);
+    color: #a1a1aa;
     font-family: var(--font-mono);
     font-size: 0.66rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
@@ -116,7 +118,7 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     font-weight: 950;
     line-height: 1.08;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
   }
 
   p {
@@ -137,10 +139,14 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     margin-top: auto;
   }
 
+  .news-read-more :global(svg) {
+    color: var(--color-accent);
+  }
+
   @media (max-width: 640px) {
     .news-tile {
       aspect-ratio: 1 / 1.2;
-      grid-template-rows: minmax(0, 45%) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 52%) minmax(0, 1fr);
     }
 
     .news-media {

@@ -1,0 +1,159 @@
+---
+import {
+  Accessibility,
+  CircleParking,
+  Info,
+  Mail,
+  Route,
+  ScrollText,
+  ShieldCheck,
+  TentTree,
+  Ticket,
+  Utensils,
+} from "@lucide/astro";
+import {PortableText} from "astro-portabletext";
+import Layout from "../layouts/Layout.astro";
+import {getFestivalInfo, getSiteSettings} from "../utils/sanity";
+import {sitePath} from "../utils/site";
+
+const [info, settings] = await Promise.all([getFestivalInfo(), getSiteSettings()]);
+const icons = {
+  info: Info,
+  route: Route,
+  parking: CircleParking,
+  camping: TentTree,
+  ticket: Ticket,
+  food: Utensils,
+  rules: ScrollText,
+  accessibility: Accessibility,
+  safety: ShieldCheck,
+  contact: Mail,
+};
+const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url;
+---
+
+<Layout title={`${info.title} | ${settings.siteName}`} description={info.intro} settings={settings}>
+  <div class="shell info-page">
+    <header class="page-header">
+      <span class="section-kicker">{info.kicker}</span>
+      <h1 class="page-title">{info.title}</h1>
+      <p class="page-lede">{info.intro}</p>
+    </header>
+
+    <div class="info-grid">
+      {info.sections.map((section) => {
+        const IconComponent = icons[section.icon] || Info;
+        const href = resolveLink(section.linkUrl);
+        return (
+          <article class="info-card">
+            <div class="info-icon"><IconComponent size={24} stroke-width={1.8} aria-hidden="true" /></div>
+            <div class="info-copy">
+              <h2>{section.title}</h2>
+              <div class="prose prose-invert"><PortableText value={section.body} /></div>
+              {href && section.linkLabel && <a href={href}>{section.linkLabel}</a>}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .info-page {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .page-header {
+    max-width: 780px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .info-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 1rem;
+    padding: clamp(1.4rem, 3vw, 2rem) clamp(0rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-card:nth-child(odd) {
+    padding-left: 0;
+    padding-right: clamp(1rem, 3vw, 2rem);
+  }
+
+  .info-card:nth-child(even) {
+    padding-left: clamp(1rem, 3vw, 2rem);
+    padding-right: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .info-icon {
+    display: block;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--color-accent);
+  }
+
+  .info-copy h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    line-height: 1.1;
+  }
+
+  .info-copy .prose {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.65;
+  }
+
+  .info-copy :global(p) {
+    margin: 0 0 0.65rem;
+  }
+
+  .info-copy :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .info-copy a {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .info-copy a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 760px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .info-card:nth-child(n) {
+      padding-inline: 0;
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .info-card {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

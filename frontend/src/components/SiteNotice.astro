@@ -1,0 +1,73 @@
+---
+import {ArrowRight} from "@lucide/astro";
+import {sitePath, type SiteSettings} from "../utils/site";
+
+interface Props {
+  notice: SiteSettings["notice"];
+}
+
+const {notice} = Astro.props;
+const href = notice.linkUrl?.startsWith("/") ? sitePath(notice.linkUrl) : notice.linkUrl;
+---
+
+{notice.enabled && notice.text && (
+  <aside class="site-notice" aria-label="Wichtiger Hinweis">
+    <div class="shell notice-inner">
+      <strong>{notice.text}</strong>
+      {href && notice.linkLabel && (
+        <a href={href}>
+          {notice.linkLabel}
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      )}
+    </div>
+  </aside>
+)}
+
+<style>
+  .site-notice {
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+  }
+
+  .notice-inner {
+    display: flex;
+    min-height: 2.8rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.55rem;
+    font-size: 0.8rem;
+  }
+
+  .site-notice strong {
+    line-height: 1.35;
+  }
+
+  .site-notice a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .site-notice a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .notice-inner {
+      font-size: 0.72rem;
+    }
+
+    .site-notice a {
+      font-size: 0.62rem;
+    }
+  }
+</style>

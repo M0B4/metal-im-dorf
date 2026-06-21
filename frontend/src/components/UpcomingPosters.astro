@@ -1,10 +1,10 @@
 ---
-import MediaLightbox from "./MediaLightbox.astro";
 import PosterCard from "./PosterCard.astro";
 import PosterGrid from "./PosterGrid.astro";
 import {formatDate} from "../utils/format";
 import type {Veranstaltung} from "../utils/sanity";
 import type {SiteSettings} from "../utils/site";
+import {getEventPath} from "../utils/events";
 
 interface Props {
   events: Veranstaltung[];
@@ -16,7 +16,6 @@ const copy = settings.sections.eventPosters;
 const posterEvents = events.filter(
   (event): event is Veranstaltung & {bild: NonNullable<Veranstaltung["bild"]>} => Boolean(event.bild),
 );
-const lightboxGroup = "upcoming-event-posters";
 ---
 
 <section class="poster-section" aria-labelledby="poster-section-title">
@@ -35,8 +34,7 @@ const lightboxGroup = "upcoming-event-posters";
             alt={alt}
             eyebrow={formatDate(event.beginn)}
             title={event.titel}
-            lightboxGroup={lightboxGroup}
-            lightboxCaption={event.titel}
+            href={getEventPath(event)}
           />
         );
       })}
@@ -45,8 +43,6 @@ const lightboxGroup = "upcoming-event-posters";
     <p class="placeholder">{copy.emptyText}</p>
   )}
 </section>
-
-{posterEvents.length > 0 && <MediaLightbox />}
 
 <style>
   .poster-section {

@@ -18,7 +18,7 @@ const [news, settings, upcomingEvents] = await Promise.all([
   settings={settings}
 >
   <div class="shell home">
-    <FestivalHero featured={news[0]} settings={settings} />
+    <FestivalHero event={upcomingEvents[0]} settings={settings} />
 
     <NextEvent events={upcomingEvents} settings={settings} />
 

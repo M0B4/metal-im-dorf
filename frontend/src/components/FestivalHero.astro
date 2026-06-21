@@ -1,16 +1,17 @@
 ---
-import type { News } from "../utils/sanity";
+import type { Veranstaltung } from "../utils/sanity";
 import type { SiteSettings } from "../utils/site";
 import { formatDate } from "../utils/format";
 import { sitePath } from "../utils/site";
-import { urlFor } from "../utils/image";
+import { buildSrcSet, urlFor } from "../utils/image";
+import { getEventPath } from "../utils/events";
 
 interface Props {
-  featured?: News;
+  event?: Veranstaltung;
   settings: SiteSettings;
 }
 
-const { featured, settings } = Astro.props;
+const { event, settings } = Astro.props;
 const hero = settings.hero;
 const heroImagePath = hero.image
   ? urlFor(hero.image).width(2000).auto("format").quality(88).url()
@@ -18,9 +19,19 @@ const heroImagePath = hero.image
 ---
 
 <section
-  class:list={["hero", !hero.showAnnouncement && "hero--without-board"]}
-  style={`background-image: linear-gradient(90deg, rgba(3, 3, 3, 0.92) 0%, rgba(3, 3, 3, 0.7) 48%, rgba(3, 3, 3, 0.3) 100%), linear-gradient(180deg, rgba(3, 3, 3, 0.12), rgba(3, 3, 3, 0.52)), url("${heroImagePath}");`}
+  class:list={["hero", (!hero.showNextEvent || !event) && "hero--without-board"]}
 >
+  <picture class="hero-media" aria-hidden="true">
+    <img
+      src={heroImagePath}
+      srcset={hero.image ? buildSrcSet(hero.image, [640, 960, 1440, 2000], 86) : undefined}
+      sizes="(max-width: 1200px) 100vw, 1180px"
+      width={hero.image?.width}
+      height={hero.image?.height}
+      alt=""
+      fetchpriority="high"
+    />
+  </picture>
   <div class="hero-copy">
     <span class="section-kicker">{hero.kicker}</span>
     <h1 class="page-title">{hero.title}</h1>
@@ -39,11 +50,28 @@ const heroImagePath = hero.image
     )}
   </div>
 
-  {hero.showAnnouncement && (
-    <aside class="hero-board panel">
-      <span>{hero.announcementLabel}</span>
-      <h2>{featured?.titel ?? hero.emptyAnnouncementTitle}</h2>
-      <p>{featured ? formatDate(featured.datum) : hero.emptyAnnouncementText}</p>
+  {hero.showNextEvent && event && (
+    <aside class="hero-board">
+      <span>{hero.nextEventLabel}</span>
+      <h2>{event.titel}</h2>
+      <dl>
+        <div>
+          <dt>Datum</dt>
+          <dd><time datetime={event.beginn}>{formatDate(event.beginn)}</time></dd>
+        </div>
+        <div>
+          <dt>Ort</dt>
+          <dd>{event.ort}</dd>
+        </div>
+      </dl>
+      <div class="hero-board-actions">
+        <a href={getEventPath(event)}>{hero.eventDetailsLabel}</a>
+        {event.ticketUrl && (
+          <a class="hero-ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
+            {event.ticketLabel || hero.ticketFallbackLabel}
+          </a>
+        )}
+      </div>
     </aside>
   )}
 </section>
@@ -53,23 +81,55 @@ const heroImagePath = hero.image
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-    min-height: clamp(440px, 58vh, 620px);
+    min-height: clamp(400px, 52vh, 540px);
     align-items: end;
     gap: 1.5rem;
-    padding: clamp(2rem, 6vw, 4.5rem);
+    padding: clamp(1.75rem, 5vw, 3.75rem);
     overflow: hidden;
     background-color: #050505;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-panel);
+    border-bottom: 2px solid color-mix(in srgb, var(--color-accent) 68%, transparent);
+  }
+
+  .hero::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background: rgba(3, 3, 3, 0.5);
+  }
+
+  .hero-media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   .hero-copy,
   .hero-board {
     position: relative;
     z-index: 1;
+  }
+
+  .hero-copy {
+    max-width: 720px;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.75);
+  }
+
+  .hero-copy :global(.section-kicker) {
+    color: #f4f4f5;
+  }
+
+  .hero-copy :global(.page-lede) {
+    max-width: 55ch;
+    color: #e4e4e7;
   }
 
   .hero--without-board {
@@ -96,39 +156,144 @@ const heroImagePath = hero.image
   }
 
   .hero-board {
-    padding: 1.4rem;
-    border-left: 4px solid var(--color-accent);
+    padding: 1.1rem 1.2rem 1.2rem;
+    background: rgba(3, 3, 3, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 2px solid var(--color-accent);
+    border-radius: var(--radius-subtle);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.92);
   }
 
-  .hero-board span,
-  .hero-board p {
-    color: var(--color-accent);
+  @supports (backdrop-filter: blur(8px)) {
+    .hero-board {
+      background: rgba(3, 3, 3, 0.68);
+      backdrop-filter: blur(8px) saturate(0.9);
+    }
+  }
+
+  .hero-board > span,
+  .hero-board dt {
+    color: #f4f4f5;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
   .hero-board h2 {
     margin: 0.7rem 0 1rem;
     color: #fff;
-    font-size: clamp(1.45rem, 3vw, 2.35rem);
+    font-size: clamp(1.35rem, 2.7vw, 2.15rem);
     font-weight: 950;
     line-height: 1;
+  }
+
+  .hero-board dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .hero-board dl div {
+    min-width: 0;
+  }
+
+  .hero-board dt {
+    margin-bottom: 0.25rem;
+    color: var(--color-accent);
+    font-size: 0.6rem;
+  }
+
+  .hero-board dd {
+    margin: 0;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .hero-board-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 1.25rem;
+  }
+
+  .hero-board-actions a {
+    padding: 0.45rem 0;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .hero-board-actions a:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .hero-board-actions .hero-ticket {
+    padding: 0.55rem 0.75rem;
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-subtle);
+  }
+
+  .hero-board-actions .hero-ticket:hover {
+    filter: brightness(1.1);
   }
 
   @media (max-width: 860px) {
     .hero {
       grid-template-columns: 1fr;
-      min-height: auto;
-      background-size: cover;
+      min-height: 520px;
+      align-content: end;
+    }
+
+    .hero::after {
+      background: rgba(3, 3, 3, 0.58);
+    }
+
+    .hero-board {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.55rem 1rem;
+    }
+
+    .hero-board > span,
+    .hero-board h2 {
+      grid-column: 1 / -1;
+    }
+
+    .hero-board dl {
+      align-self: center;
+    }
+
+    .hero-board-actions {
+      align-self: end;
+      justify-content: flex-end;
     }
   }
 
   @media (max-width: 640px) {
     .hero {
-      padding: 1.4rem;
+      min-height: 510px;
+      padding: 1.25rem;
+    }
+
+    .hero-board {
+      display: block;
+    }
+
+    .hero-board dl {
+      gap: 0.7rem;
     }
   }
 </style>

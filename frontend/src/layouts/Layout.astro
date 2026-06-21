@@ -1,10 +1,14 @@
 ---
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SiteNotice from "../components/SiteNotice.astro";
 import { sitePath, type SiteSettings } from "../utils/site";
 import { getSiteSettings } from "../utils/sanity";
 import { urlFor } from "../utils/image";
 import "../styles/global.css";
+import "@fontsource-variable/inter";
+import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/ibm-plex-mono/700.css";
 
 interface Props {
   title: string;
@@ -12,9 +16,10 @@ interface Props {
   image?: string;
   noindex?: boolean;
   settings?: SiteSettings;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
-const { title, description, image, noindex = false, settings: providedSettings } = Astro.props;
+const { title, description, image, noindex = false, settings: providedSettings, structuredData } = Astro.props;
 const settings = providedSettings || (await getSiteSettings());
 const canonicalURL = Astro.url;
 const currentPath = canonicalURL.pathname.replace(/\/$/, "") || "/";
@@ -35,6 +40,22 @@ const accentColor = /^#[0-9a-f]{6}$/i.test(settings.accentColor)
 const accentTextColor = /^#[0-9a-f]{6}$/i.test(settings.accentTextColor)
   ? settings.accentTextColor
   : "#050505";
+const organizationData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: settings.siteName,
+  url: new URL(sitePath(), Astro.url.origin).href,
+  email: settings.contact.email,
+  sameAs: [
+    settings.contact.showInstagram ? settings.contact.instagramUrl : undefined,
+    settings.contact.showFacebook ? settings.contact.facebookUrl : undefined,
+  ].filter(Boolean),
+};
+const jsonLd = JSON.stringify(
+  structuredData
+    ? [organizationData, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
+    : organizationData,
+).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -42,7 +63,9 @@ const accentTextColor = /^#[0-9a-f]{6}$/i.test(settings.accentTextColor)
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href={sitePath("/favicon.svg")} />
+    <link rel="icon" type="image/png" sizes="64x64" href={sitePath("/favicon.png")} />
+    <link rel="icon" href={sitePath("/favicon.ico")} sizes="any" />
+    <link rel="apple-touch-icon" sizes="180x180" href={sitePath("/apple-touch-icon.png")} />
     <meta name="generator" content={Astro.generator} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonicalURL} />
@@ -57,20 +80,16 @@ const accentTextColor = /^#[0-9a-f]{6}$/i.test(settings.accentTextColor)
     <meta name="twitter:title" content={title} />
     {resolvedDescription && <meta name="twitter:description" content={resolvedDescription} />}
     {resolvedImage && <meta name="twitter:image" content={resolvedImage} />}
+    <script is:inline type="application/ld+json" set:html={jsonLd}></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@600;700&display=swap"
-      rel="stylesheet"
-    />
     <title>{title}</title>
   </head>
   <body
-    style={`--color-accent: ${accentColor}; --color-accent-contrast: ${accentTextColor}`}
+    style={`--color-accent: ${accentColor}; --color-accent-contrast: ${accentTextColor}; --rough-texture-url: url("${sitePath("/rough-texture.webp")}")`}
   >
     {VisualEditing && <VisualEditing enabled />}
     <SiteHeader currentPath={currentPath} settings={settings} />
+    <SiteNotice notice={settings.notice} />
     <main class="site-main animate-slide-up"><slot /></main>
     <SiteFooter settings={settings} />
   </body>
@@ -79,6 +98,6 @@ const accentTextColor = /^#[0-9a-f]{6}$/i.test(settings.accentTextColor)
 <style>
   .site-main {
     min-height: 72vh;
-    padding: clamp(2rem, 5vw, 4rem) 0 clamp(3rem, 7vw, 6rem);
+    padding: clamp(1.25rem, 3vw, 2.5rem) 0 clamp(3rem, 7vw, 6rem);
   }
 </style>

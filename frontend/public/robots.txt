@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://m0b4.github.io/metal-im-dorf/sitemap-index.xml

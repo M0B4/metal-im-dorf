@@ -37,8 +37,14 @@ export default defineConfig({
               .title('Website-Einstellungen')
               .id('siteSettings')
               .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
+            S.listItem()
+              .title('Festival-Infos')
+              .id('festivalInfo')
+              .child(S.document().schemaType('festivalInfo').documentId('festivalInfo')),
             S.divider(),
-            ...S.documentTypeListItems().filter(item => item.getId() !== 'siteSettings'),
+            ...S.documentTypeListItems().filter(
+              item => !['siteSettings', 'festivalInfo'].includes(item.getId() || ''),
+            ),
           ]),
     }),
     presentationTool({
@@ -61,11 +67,25 @@ export default defineConfig({
               locations: [{title: doc?.title || 'Startseite', href: previewPath('/')}],
             }),
           }),
+          festivalInfo: defineLocations({
+            select: {title: 'title'},
+            resolve: doc => ({
+              locations: [{title: doc?.title || 'Festival-Infos', href: previewPath('/infos')}],
+            }),
+          }),
           veranstaltung: defineLocations({
-            select: {title: 'titel', current: 'istAktuell'},
+            select: {title: 'titel', current: 'istAktuell', slug: 'slug.current', id: '_id'},
             resolve: doc => ({
               locations: [
                 {title: 'Veranstaltungen', href: previewPath('/veranstaltungen')},
+                ...(doc?.slug || doc?.id
+                  ? [
+                      {
+                        title: doc?.title || 'Veranstaltung',
+                        href: previewPath(`/veranstaltungen/${doc?.slug || doc?.id}`),
+                      },
+                    ]
+                  : []),
                 ...(doc?.current
                   ? [
                       {title: 'Startseite', href: previewPath('/')},
@@ -119,10 +139,12 @@ export default defineConfig({
   document: {
     newDocumentOptions: (previous, context) =>
       context.creationContext.type === 'global'
-        ? previous.filter(template => template.templateId !== 'siteSettings')
+        ? previous.filter(
+            template => !['siteSettings', 'festivalInfo'].includes(template.templateId),
+          )
         : previous,
     actions: (previous, context) =>
-      context.schemaType === 'siteSettings'
+      ['siteSettings', 'festivalInfo'].includes(context.schemaType)
         ? previous.filter(action =>
             ['publish', 'discardChanges', 'restore'].includes(action.action || ''),
           )

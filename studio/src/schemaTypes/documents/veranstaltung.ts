@@ -85,6 +85,14 @@ export default defineType({
       group: 'website',
     }),
     defineField({
+      name: 'beschreibung',
+      title: 'Ausführliche Beschreibung',
+      description: 'Erscheint auf der automatisch erzeugten Veranstaltungsseite.',
+      type: 'array',
+      group: 'website',
+      of: [{type: 'block'}],
+    }),
+    defineField({
       name: 'bild',
       title: 'Veranstaltungsbild',
       type: 'image',
@@ -112,6 +120,13 @@ export default defineType({
       type: 'string',
       group: 'website',
       initialValue: 'Mehr erfahren',
+    }),
+    defineField({
+      name: 'mapUrl',
+      title: 'Karten- oder Anfahrtslink',
+      description: 'Optional. Ohne Angabe wird automatisch eine Google-Maps-Suche erzeugt.',
+      type: 'url',
+      group: 'website',
     }),
     defineField({
       name: 'lineup',

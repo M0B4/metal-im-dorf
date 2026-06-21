@@ -79,11 +79,13 @@ const copy = settings.sections.history;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-subtle);
     font-family: var(--font-mono);
     font-size: 0.7rem;
     font-weight: 900;
     letter-spacing: 0.07em;
     text-transform: uppercase;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
   }
 
   .filter-button:hover,
@@ -91,6 +93,21 @@ const copy = settings.sections.history;
     color: var(--color-accent-contrast);
     background: var(--color-accent);
     border-color: var(--color-accent);
+  }
+
+  .filter-button:hover {
+    transform: translateY(-1px);
+  }
+
+  :global(.history-card:not([hidden])) {
+    animation: history-filter-in 220ms ease-out both;
+  }
+
+  @keyframes history-filter-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
   }
 
   .filter-empty {

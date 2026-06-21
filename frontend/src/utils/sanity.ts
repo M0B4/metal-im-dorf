@@ -53,7 +53,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       sections,
       navigation,
       footer,
-      contact
+      contact,
+      notice
     }`,
   );
 
@@ -72,6 +73,91 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     navigation: mergeWithDefaults(defaultSiteSettings.navigation, settings?.navigation),
     footer: mergeWithDefaults(defaultSiteSettings.footer, settings?.footer),
     contact: mergeWithDefaults(defaultSiteSettings.contact, settings?.contact),
+    notice: mergeWithDefaults(defaultSiteSettings.notice, settings?.notice),
+  };
+}
+
+export interface FestivalInfoSection {
+  _key: string;
+  icon: "info" | "route" | "parking" | "camping" | "ticket" | "food" | "rules" | "accessibility" | "safety" | "contact";
+  title: string;
+  body: PortableTextBlock[];
+  linkLabel?: string;
+  linkUrl?: string;
+}
+
+export interface FestivalInfo {
+  kicker: string;
+  title: string;
+  intro: string;
+  sections: FestivalInfoSection[];
+}
+
+function defaultTextBlock(key: string, text: string): PortableTextBlock {
+  return {
+    _key: key,
+    _type: "block",
+    style: "normal",
+    markDefs: [],
+    children: [{_key: `${key}-span`, _type: "span", marks: [], text}],
+  };
+}
+
+const defaultFestivalInfo: FestivalInfo = {
+  kicker: "Gut vorbereitet",
+  title: "Festival-Infos",
+  intro: "Alles Wichtige für deinen Besuch bei Metal im Dorf: Anreise, Einlass, Versorgung und Hinweise zum Gelände.",
+  sections: [
+    {
+      _key: "arrival",
+      icon: "route",
+      title: "Anreise & Gelände",
+      body: [defaultTextBlock("arrival", "Metal im Dorf findet am Opfermoor Niederdorla, An der Oberrothe in 99988 Niederdorla statt. Aktuelle Hinweise zur Anfahrt findest du vor der Veranstaltung auf dieser Seite.")],
+    },
+    {
+      _key: "parking",
+      icon: "parking",
+      title: "Parken & Camping",
+      body: [defaultTextBlock("parking", "Informationen zu Parkflächen und Campingmöglichkeiten werden für jede Veranstaltung rechtzeitig bekanntgegeben.")],
+    },
+    {
+      _key: "entry",
+      icon: "ticket",
+      title: "Tickets & Einlass",
+      body: [defaultTextBlock("entry", "Vorverkauf, Abendkasse und Einlasszeiten können je nach Veranstaltung variieren. Maßgeblich sind die Angaben auf der jeweiligen Veranstaltungsseite.")],
+    },
+    {
+      _key: "contact",
+      icon: "contact",
+      title: "Fragen & Barrierefreiheit",
+      body: [defaultTextBlock("contact", "Wenn du Unterstützung benötigst oder Fragen zur Zugänglichkeit des Geländes hast, melde dich bitte vorab bei uns.")],
+      linkLabel: "Kontakt aufnehmen",
+      linkUrl: `mailto:${defaultSiteSettings.contact.email}`,
+    },
+  ],
+};
+
+export async function getFestivalInfo(): Promise<FestivalInfo> {
+  const info = await loadQuery<Partial<FestivalInfo> | null>(
+    groq`*[_type == "festivalInfo" && _id == "festivalInfo"][0] {
+      kicker,
+      title,
+      intro,
+      sections[] {
+        _key,
+        icon,
+        title,
+        body,
+        linkLabel,
+        linkUrl
+      }
+    }`,
+  );
+
+  return {
+    ...defaultFestivalInfo,
+    ...info,
+    sections: info?.sections?.length ? info.sections as FestivalInfoSection[] : defaultFestivalInfo.sections,
   };
 }
 
@@ -175,10 +261,12 @@ export interface Veranstaltung {
   ort: string;
   adresse?: string;
   kurzbeschreibung?: string;
+  beschreibung?: PortableTextBlock[];
   bild?: SanityImage;
   istAktuell?: boolean;
   ticketUrl?: string;
   ticketLabel?: string;
+  mapUrl?: string;
   lineup?: Array<{
     _key: string;
     spielzeit?: string;
@@ -201,10 +289,12 @@ export async function getCurrentEvent(): Promise<Veranstaltung | null> {
       ort,
       adresse,
       kurzbeschreibung,
+      beschreibung,
       bild ${imageProjection},
       istAktuell,
       ticketUrl,
       ticketLabel,
+      mapUrl,
       lineup[] {
         _key,
         spielzeit,
@@ -235,10 +325,45 @@ export async function getUpcomingEvents(): Promise<Veranstaltung[]> {
       ort,
       adresse,
       kurzbeschreibung,
+      beschreibung,
       bild ${imageProjection},
       istAktuell,
       ticketUrl,
-      ticketLabel
+      ticketLabel,
+      mapUrl
+    }`,
+  );
+}
+
+export async function getEvents(): Promise<Veranstaltung[]> {
+  return loadQuery<Veranstaltung[]>(
+    groq`*[_type == "veranstaltung"] | order(beginn asc) {
+      _id,
+      titel,
+      slug,
+      kategorie,
+      beginn,
+      ende,
+      ort,
+      adresse,
+      kurzbeschreibung,
+      beschreibung,
+      bild ${imageProjection},
+      istAktuell,
+      ticketUrl,
+      ticketLabel,
+      mapUrl,
+      lineup[] {
+        _key,
+        spielzeit,
+        band-> {
+          _id,
+          name,
+          genre,
+          platzhalter,
+          bild ${imageProjection}
+        }
+      }
     }`,
   );
 }

@@ -1,5 +1,5 @@
 ---
-import {urlForUncropped} from "../utils/image";
+import {buildSrcSet, urlForUncropped} from "../utils/image";
 import type {SanityImage} from "../utils/sanity";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   placeholder?: string;
   lightboxGroup?: string;
   lightboxCaption?: string;
+  detailsHref?: string;
   class?: string;
   dataCategory?: string;
 }
@@ -24,6 +25,7 @@ const {
   placeholder,
   lightboxGroup,
   lightboxCaption,
+  detailsHref,
   class: className,
   dataCategory,
 } = Astro.props;
@@ -33,44 +35,78 @@ const previewUrl = image
 const fullUrl = image
   ? urlForUncropped(image).width(2000).auto("format").quality(90).url()
   : undefined;
+const posterContentWidth = image?.width && image?.height
+  ? Math.min(100, ((image.width / image.height) / (3 / 4)) * 100)
+  : 100;
 ---
 
 {href ? (
-  <a href={href} class:list={["poster-card", "panel", className]} data-category={dataCategory}>
-    <div class="poster-media">
-      {previewUrl ? (
-        <img src={previewUrl} alt={alt} loading="lazy" />
-      ) : (
-        <div class="poster-placeholder">{placeholder}</div>
-      )}
+  <a
+    href={href}
+    class:list={["poster-card", "panel", className]}
+    data-category={dataCategory}
+    style={`--poster-content-width: ${posterContentWidth}%`}
+  >
+    <div class="poster-slot">
+      <div class="poster-media">
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            srcset={image ? buildSrcSet(image, [280, 420, 620, 720], 84) : undefined}
+            sizes="(max-width: 900px) 50vw, 33vw"
+            width={image?.width}
+            height={image?.height}
+            alt={alt}
+            loading="lazy"
+          />
+        ) : (
+          <div class="poster-placeholder">{placeholder}</div>
+        )}
+      </div>
     </div>
     <div class="poster-info">
       <span>{eyebrow}</span>
-      <h2>{title}</h2>
+      <h2>{detailsHref ? <a href={detailsHref}>{title}</a> : title}</h2>
     </div>
   </a>
 ) : (
-  <article class:list={["poster-card", "panel", className]} data-category={dataCategory}>
+  <article
+    class:list={["poster-card", "panel", className]}
+    data-category={dataCategory}
+    style={`--poster-content-width: ${posterContentWidth}%`}
+  >
     {previewUrl ? (
-      <button
-        type="button"
-        class="poster-media poster-button"
-        data-lightbox-group={lightboxGroup}
-        data-full-src={fullUrl}
-        data-alt={alt}
-        data-caption={lightboxCaption || title}
-        aria-label={`${alt} vergrößern`}
-      >
-        <img src={previewUrl} alt={alt} loading="lazy" />
-      </button>
+      <div class="poster-slot">
+        <button
+          type="button"
+          class="poster-media poster-button"
+          data-lightbox-group={lightboxGroup}
+          data-full-src={fullUrl}
+          data-alt={alt}
+          data-caption={lightboxCaption || title}
+          aria-label={`${alt} vergrößern`}
+        >
+          <img
+            src={previewUrl}
+            srcset={image ? buildSrcSet(image, [280, 420, 620, 720], 84) : undefined}
+            sizes="(max-width: 900px) 50vw, 33vw"
+            width={image?.width}
+            height={image?.height}
+            alt={alt}
+            loading="lazy"
+          />
+        </button>
+      </div>
     ) : (
-      <div class="poster-media">
-        <div class="poster-placeholder">{placeholder}</div>
+      <div class="poster-slot">
+        <div class="poster-media">
+          <div class="poster-placeholder">{placeholder}</div>
+        </div>
       </div>
     )}
     <div class="poster-info">
       <span>{eyebrow}</span>
-      <h2>{title}</h2>
+      <h2>{detailsHref ? <a href={detailsHref}>{title}</a> : title}</h2>
     </div>
   </article>
 )}
@@ -83,8 +119,10 @@ const fullUrl = image
     min-width: 0;
     overflow: hidden;
     color: inherit;
+    background: transparent;
+    border: 0;
     text-decoration: none;
-    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    transition: border-color 180ms ease, transform 180ms ease;
   }
 
   .poster-card[hidden] {
@@ -93,21 +131,27 @@ const fullUrl = image
 
   .poster-card:hover,
   .poster-card:focus-within {
-    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-    box-shadow: var(--shadow-panel);
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 
-  .poster-media {
+  .poster-slot {
     display: flex;
     width: 100%;
     aspect-ratio: 3 / 4;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: #050505;
+  }
+
+  .poster-media {
+    display: flex;
+    width: var(--poster-content-width);
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: transparent;
     border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .poster-button {
@@ -139,10 +183,9 @@ const fullUrl = image
     height: 100%;
     place-items: center;
     color: rgba(255, 255, 255, 0.46);
-    background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 42%),
-      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 13px),
-      #101010;
+    background-color: #101010;
+    background-image: var(--rough-texture-url);
+    background-size: 512px 512px;
     font-family: var(--font-mono);
     font-size: 2rem;
     font-weight: 900;
@@ -150,11 +193,14 @@ const fullUrl = image
 
   .poster-info {
     display: flex;
+    width: var(--poster-content-width);
     align-items: end;
     justify-content: space-between;
     gap: 1rem;
+    margin-inline: auto;
     padding: 1rem;
     overflow: hidden;
+    background: rgba(8, 8, 8, 0.72);
   }
 
   .poster-info span {
@@ -177,6 +223,15 @@ const fullUrl = image
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+
+  .poster-info h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .poster-info h2 a:hover {
+    color: var(--color-accent);
   }
 
   @media (max-width: 560px) {

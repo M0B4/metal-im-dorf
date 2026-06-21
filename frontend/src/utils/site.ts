@@ -21,10 +21,10 @@ export interface SiteSettings {
     secondaryButtonLabel: string;
     showPrimaryButton: boolean;
     showSecondaryButton: boolean;
-    showAnnouncement: boolean;
-    announcementLabel: string;
-    emptyAnnouncementTitle: string;
-    emptyAnnouncementText: string;
+    showNextEvent: boolean;
+    nextEventLabel: string;
+    eventDetailsLabel: string;
+    ticketFallbackLabel: string;
   };
   sections: {
     nextEvent: {
@@ -79,6 +79,7 @@ export interface SiteSettings {
     newsLabel: string;
     lineupLabel: string;
     eventsLabel: string;
+    infoLabel: string;
     historyLabel: string;
     legalLabel: string;
   };
@@ -96,6 +97,12 @@ export interface SiteSettings {
     facebookUrl: string;
     showInstagram: boolean;
     showFacebook: boolean;
+  };
+  notice: {
+    enabled: boolean;
+    text: string;
+    linkLabel?: string;
+    linkUrl?: string;
   };
 }
 
@@ -132,10 +139,10 @@ export const defaultSiteSettings: SiteSettings = {
     secondaryButtonLabel: "Line-Up ansehen",
     showPrimaryButton: true,
     showSecondaryButton: true,
-    showAnnouncement: true,
-    announcementLabel: "Aktuelle Meldung",
-    emptyAnnouncementTitle: "News folgen bald",
-    emptyAnnouncementText: "Bleib dran",
+    showNextEvent: true,
+    nextEventLabel: "Nächste Veranstaltung",
+    eventDetailsLabel: "Veranstaltungsdetails",
+    ticketFallbackLabel: "Tickets",
   },
   sections: {
     nextEvent: {
@@ -190,6 +197,7 @@ export const defaultSiteSettings: SiteSettings = {
     newsLabel: "News",
     lineupLabel: "Line-Up",
     eventsLabel: "Veranstaltungen",
+    infoLabel: "Infos",
     historyLabel: "Historie",
     legalLabel: "Impressum",
   },
@@ -207,5 +215,10 @@ export const defaultSiteSettings: SiteSettings = {
     facebookUrl: siteConfig.facebookUrl,
     showInstagram: true,
     showFacebook: true,
+  },
+  notice: {
+    enabled: false,
+    text: "Wichtiger Hinweis zum Festival",
+    linkLabel: "Mehr erfahren",
   },
 };

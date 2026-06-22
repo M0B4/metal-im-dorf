@@ -13,6 +13,7 @@ interface Props {
 
 const { event, settings } = Astro.props;
 const hero = settings.hero;
+const detailCopy = settings.sections.eventDetail;
 const heroImagePath = hero.image
   ? urlFor(hero.image).width(2000).auto("format").quality(88).url()
   : sitePath("/hero-stage.jpg");
@@ -56,11 +57,11 @@ const heroImagePath = hero.image
       <h2>{event.titel}</h2>
       <dl>
         <div>
-          <dt>Datum</dt>
+          <dt>{detailCopy.dateLabel}</dt>
           <dd><time datetime={event.beginn}>{formatDate(event.beginn)}</time></dd>
         </div>
         <div>
-          <dt>Ort</dt>
+          <dt>{detailCopy.locationLabel}</dt>
           <dd>{event.ort}</dd>
         </div>
       </dl>

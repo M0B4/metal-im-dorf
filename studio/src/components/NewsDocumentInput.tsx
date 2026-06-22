@@ -4,6 +4,7 @@ import {
   PatchEvent,
   set,
   setIfMissing,
+  unset,
   type FormPatch,
   type ObjectInputProps,
   type SanityDocument,
@@ -77,6 +78,8 @@ export default function NewsDocumentInput(props: ObjectInputProps) {
       patches.push(set(quickEntry.url, ['facebookQuelle', 'url']))
     }
 
+    patches.push(unset(['facebookSchnelleingabe']))
+
     props.onChange(PatchEvent.from(patches))
     setMessage('Die Angaben wurden in die News-Felder übernommen.')
   }
@@ -90,7 +93,7 @@ export default function NewsDocumentInput(props: ObjectInputProps) {
               Facebook-Schnelleingabe
             </Text>
             <Text muted size={1}>
-              Text und Bilder unten einfügen, dann in die normalen News-Felder übernehmen.
+              Text und Bilder im Tab „Schnelleingabe“ einfügen und anschließend übernehmen.
             </Text>
             {message && <Text size={1}>{message}</Text>}
           </Stack>

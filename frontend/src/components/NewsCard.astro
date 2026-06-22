@@ -9,9 +9,10 @@ import { sitePath } from "../utils/site";
 interface Props {
   item: News;
   index: number;
+  articleLabel: string;
 }
 
-const { item, index } = Astro.props;
+const { item, index, articleLabel } = Astro.props;
 const preview = portableTextToPlainText(item.inhalt);
 const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
 ---
@@ -36,7 +37,7 @@ const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
     <h3>{item.titel}</h3>
     {preview && <p>{preview}</p>}
     <span class="news-read-more">
-      Artikel lesen
+      {articleLabel}
       <ArrowUpRight size={17} stroke-width={2.4} aria-hidden="true" />
     </span>
   </div>

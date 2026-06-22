@@ -30,22 +30,20 @@ export interface SiteSettings {
     nextEvent: {
       kicker: string;
       title: string;
-      dateLabel: string;
       locationLabel: string;
-      defaultButtonLabel: string;
       emptyText: string;
     };
     eventPosters: {
       kicker: string;
       title: string;
+      description: string;
       emptyText: string;
     };
     news: {
       kicker: string;
       title: string;
       emptyText: string;
-      expandLabel: string;
-      collapseLabel: string;
+      articleLabel: string;
       previousLabel: string;
       nextLabel: string;
       pageLabel: string;
@@ -74,6 +72,32 @@ export interface SiteSettings {
       sideFilterLabel: string;
       filterEmptyText: string;
     };
+    eventDetail: {
+      kicker: string;
+      backLabel: string;
+      dateLabel: string;
+      locationLabel: string;
+      admissionLabel: string;
+      routeLabel: string;
+      directionsLabel: string;
+      lineupKicker: string;
+      lineupTitle: string;
+      infoKicker: string;
+      infoLabel: string;
+    };
+    historyDetail: {
+      backLabel: string;
+      introTemplate: string;
+      emptyText: string;
+      galleryKicker: string;
+      galleryTitle: string;
+    };
+    admin: {
+      kicker: string;
+      title: string;
+      intro: string;
+      buttonLabel: string;
+    };
   };
   navigation: {
     newsLabel: string;
@@ -82,6 +106,7 @@ export interface SiteSettings {
     infoLabel: string;
     historyLabel: string;
     legalLabel: string;
+    adminLabel: string;
   };
   footer: {
     description: string;
@@ -97,6 +122,7 @@ export interface SiteSettings {
     facebookUrl: string;
     showInstagram: boolean;
     showFacebook: boolean;
+    studioUrl: string;
   };
   notice: {
     enabled: boolean;
@@ -148,22 +174,20 @@ export const defaultSiteSettings: SiteSettings = {
     nextEvent: {
       kicker: "Termine",
       title: "Kommende Veranstaltungen",
-      dateLabel: "Termin",
       locationLabel: "Ort",
-      defaultButtonLabel: "Mehr erfahren",
       emptyText: "Aktuell sind keine kommenden Veranstaltungen angekündigt.",
     },
     eventPosters: {
       kicker: "Plakate",
       title: "Kommende Veranstaltungen",
+      description: "Plakate und Termine der kommenden Metal im Dorf Veranstaltungen.",
       emptyText: "Aktuell sind noch keine Veranstaltungsplakate verfügbar.",
     },
     news: {
       kicker: "News",
       title: "Aktuelles vom Festival",
       emptyText: "Keine News verfügbar.",
-      expandLabel: "Mehr anzeigen",
-      collapseLabel: "Weniger anzeigen",
+      articleLabel: "Artikel lesen",
       previousLabel: "Zurück",
       nextLabel: "Weiter",
       pageLabel: "Seite",
@@ -192,6 +216,32 @@ export const defaultSiteSettings: SiteSettings = {
       sideFilterLabel: "Nebenveranstaltungen",
       filterEmptyText: "In dieser Kategorie gibt es noch keine Einträge.",
     },
+    eventDetail: {
+      kicker: "Veranstaltung",
+      backLabel: "Veranstaltungen",
+      dateLabel: "Termin",
+      locationLabel: "Ort",
+      admissionLabel: "Eintritt",
+      routeLabel: "Route",
+      directionsLabel: "Anfahrt",
+      lineupKicker: "Live",
+      lineupTitle: "Line-Up",
+      infoKicker: "Vor deinem Besuch",
+      infoLabel: "Anreise, Parken, Einlass und weitere Festival-Infos",
+    },
+    historyDetail: {
+      backLabel: "Zurück zur Übersicht",
+      introTemplate: "Impressionen und Archivmaterial vom Metal im Dorf {year}.",
+      emptyText: "Für dieses Jahr ist noch kein Rückblickstext vorhanden.",
+      galleryKicker: "Galerie",
+      galleryTitle: "Impressionen & Event-Fotos",
+    },
+    admin: {
+      kicker: "Verwaltung",
+      title: "Redaktionsbereich",
+      intro: "Hier geht es zur Verwaltung der Festivalinhalte.",
+      buttonLabel: "Sanity öffnen",
+    },
   },
   navigation: {
     newsLabel: "News",
@@ -200,6 +250,7 @@ export const defaultSiteSettings: SiteSettings = {
     infoLabel: "Infos",
     historyLabel: "Historie",
     legalLabel: "Impressum",
+    adminLabel: "Adminbereich",
   },
   footer: {
     description:
@@ -215,6 +266,7 @@ export const defaultSiteSettings: SiteSettings = {
     facebookUrl: siteConfig.facebookUrl,
     showInstagram: true,
     showFacebook: true,
+    studioUrl: siteConfig.studioUrl,
   },
   notice: {
     enabled: false,

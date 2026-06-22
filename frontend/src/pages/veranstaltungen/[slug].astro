@@ -20,6 +20,7 @@ export async function getStaticPaths() {
 
 const {event} = Astro.props as {event: Veranstaltung};
 const settings = await getSiteSettings();
+const copy = settings.sections.eventDetail;
 const bands = event.lineup
   ?.filter((slot): slot is typeof slot & {band: Band} => Boolean(slot.band))
   .map((slot) => ({...slot.band, spielzeit: slot.spielzeit})) || [];
@@ -68,7 +69,7 @@ const eventSchema = {
 >
   <div class="shell event-page">
     <a class="back-link" href={sitePath("/veranstaltungen")}>
-      <ArrowLeft size={16} aria-hidden="true" /> Veranstaltungen
+      <ArrowLeft size={16} aria-hidden="true" /> {copy.backLabel}
     </a>
 
     <div class="event-hero">
@@ -96,32 +97,32 @@ const eventSchema = {
       )}
 
       <div class="event-intro">
-        <span class="section-kicker">Veranstaltung</span>
+        <span class="section-kicker">{copy.kicker}</span>
         <h1 class="page-title">{event.titel}</h1>
         {event.kurzbeschreibung && <p class="page-lede">{event.kurzbeschreibung}</p>}
 
         <div class="event-bento">
           <dl class="event-details">
             <div class="event-detail event-detail--date">
-              <dt>Termin</dt>
+              <dt>{copy.dateLabel}</dt>
               <dd><time datetime={event.beginn}>{formatEventDate(event.beginn)} Uhr</time></dd>
             </div>
             <div class="event-detail event-detail--location">
-              <dt>Ort</dt>
+              <dt>{copy.locationLabel}</dt>
               <dd>{event.ort}{event.adresse ? <><br />{event.adresse}</> : null}</dd>
             </div>
           </dl>
           {event.ticketUrl && (
             <a class="event-action-tile event-action-tile--ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
               <Ticket size={20} aria-hidden="true" />
-              <span>Eintritt</span>
-              <strong>{event.ticketLabel || "Tickets"}</strong>
+              <span>{copy.admissionLabel}</span>
+              <strong>{event.ticketLabel || settings.hero.ticketFallbackLabel}</strong>
             </a>
           )}
           <a class="event-action-tile" href={mapUrl} target="_blank" rel="noreferrer">
             <MapPin size={20} aria-hidden="true" />
-            <span>Route</span>
-            <strong>Anfahrt</strong>
+            <span>{copy.routeLabel}</span>
+            <strong>{copy.directionsLabel}</strong>
           </a>
         </div>
       </div>
@@ -138,8 +139,8 @@ const eventSchema = {
     {bands.length > 0 && (
       <section class="event-lineup" aria-labelledby="event-lineup-title">
         <div>
-          <span class="section-kicker">Live</span>
-          <h2 id="event-lineup-title">Line-Up</h2>
+          <span class="section-kicker">{copy.lineupKicker}</span>
+          <h2 id="event-lineup-title">{copy.lineupTitle}</h2>
         </div>
         <div class="event-bands">
           {bands.map((band) => (
@@ -153,8 +154,8 @@ const eventSchema = {
     )}
 
     <a class="info-link" href={sitePath("/infos")}>
-      <span>Vor deinem Besuch</span>
-      <strong>Anreise, Parken, Einlass und weitere Festival-Infos</strong>
+      <span>{copy.infoKicker}</span>
+      <strong>{copy.infoLabel}</strong>
     </a>
   </div>
   {event.bild && <MediaLightbox />}

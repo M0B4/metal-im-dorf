@@ -33,17 +33,35 @@ export default defineConfig({
         S.list()
           .title('Metal im Dorf')
           .items([
-            S.listItem()
-              .title('Website-Einstellungen')
-              .id('siteSettings')
-              .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
-            S.listItem()
-              .title('Festival-Infos')
-              .id('festivalInfo')
-              .child(S.document().schemaType('festivalInfo').documentId('festivalInfo')),
-            S.divider(),
-            ...S.documentTypeListItems().filter(
-              item => !['siteSettings', 'festivalInfo'].includes(item.getId() || ''),
+            S.listItem().title('Website').child(
+              S.list()
+                .title('Website')
+                .items([
+                  S.listItem()
+                    .title('Website-Einstellungen')
+                    .id('siteSettings')
+                    .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
+                  S.listItem()
+                    .title('Festival-Infos')
+                    .id('festivalInfo')
+                    .child(S.document().schemaType('festivalInfo').documentId('festivalInfo')),
+                ]),
+            ),
+            S.listItem().title('Veranstaltungen & Line-up').child(
+              S.list()
+                .title('Veranstaltungen & Line-up')
+                .items([
+                  S.documentTypeListItem('veranstaltung').title('Veranstaltungen'),
+                  S.documentTypeListItem('band').title('Bands'),
+                ]),
+            ),
+            S.listItem().title('News & Rückblicke').child(
+              S.list()
+                .title('News & Rückblicke')
+                .items([
+                  S.documentTypeListItem('news').title('News'),
+                  S.documentTypeListItem('historie').title('Historie'),
+                ]),
             ),
           ]),
     }),

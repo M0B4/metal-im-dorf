@@ -1,17 +1,20 @@
 ---
 import { ExternalLink, LockKeyhole } from "@lucide/astro";
 import Layout from "../layouts/Layout.astro";
-import { siteConfig } from "../utils/site";
+import {getSiteSettings} from "../utils/sanity";
+
+const settings = await getSiteSettings();
+const copy = settings.sections.admin;
 ---
 
-<Layout title="Verwaltung | Metal im Dorf" description="Zugang zur Festivalverwaltung." noindex>
+<Layout title={`${copy.title} | ${settings.siteName}`} description={copy.intro} settings={settings} noindex>
   <section class="shell admin-page">
     <LockKeyhole size={34} stroke-width={1.8} aria-hidden="true" />
-    <span class="section-kicker">Verwaltung</span>
-    <h1>Redaktionsbereich</h1>
-    <p>Hier geht es zur Verwaltung der Festivalinhalte.</p>
-    <a class="metal-button" href={siteConfig.studioUrl} target="_blank" rel="noreferrer">
-      Sanity öffnen
+    <span class="section-kicker">{copy.kicker}</span>
+    <h1>{copy.title}</h1>
+    <p>{copy.intro}</p>
+    <a class="metal-button" href={settings.contact.studioUrl} target="_blank" rel="noreferrer">
+      {copy.buttonLabel}
       <ExternalLink size={17} stroke-width={2} />
     </a>
   </section>

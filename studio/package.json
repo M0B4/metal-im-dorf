@@ -12,6 +12,7 @@
     "import:facebook": "sanity exec scripts/import-facebook.mjs --with-user-token",
     "publish:facebook": "sanity exec scripts/publish-facebook.mjs --with-user-token",
     "delete:empty-facebook": "sanity exec scripts/delete-empty-facebook.mjs --with-user-token",
+    "sync:site-content": "sanity exec scripts/sync-site-content.mjs --with-user-token",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy"
   },

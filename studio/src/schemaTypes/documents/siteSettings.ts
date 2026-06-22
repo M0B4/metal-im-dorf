@@ -24,8 +24,8 @@ export default defineType({
   type: 'document',
   initialValue: {
     siteName: 'Metal im Dorf',
-    accentColor: '#00A8BB',
-    accentTextColor: '#050505',
+    accentColorPicker: {_type: 'color', hex: '#00A8BB', alpha: 1},
+    accentTextColorPicker: {_type: 'color', hex: '#050505', alpha: 1},
     defaultSeo: {
       title: 'Metal im Dorf',
       description: 'News und aktuelle Infos vom Metal im Dorf Festival.',
@@ -48,22 +48,20 @@ export default defineType({
       nextEvent: {
         kicker: 'Termine',
         title: 'Kommende Veranstaltungen',
-        dateLabel: 'Termin',
         locationLabel: 'Ort',
-        defaultButtonLabel: 'Mehr erfahren',
         emptyText: 'Aktuell sind keine kommenden Veranstaltungen angekündigt.',
       },
       eventPosters: {
         kicker: 'Plakate',
         title: 'Kommende Veranstaltungen',
+        description: 'Plakate und Termine der kommenden Metal im Dorf Veranstaltungen.',
         emptyText: 'Aktuell sind noch keine Veranstaltungsplakate verfügbar.',
       },
       news: {
         kicker: 'News',
         title: 'Aktuelles vom Festival',
         emptyText: 'Keine News verfügbar.',
-        expandLabel: 'Mehr anzeigen',
-        collapseLabel: 'Weniger anzeigen',
+        articleLabel: 'Artikel lesen',
         previousLabel: 'Zurück',
         nextLabel: 'Weiter',
         pageLabel: 'Seite',
@@ -77,6 +75,10 @@ export default defineType({
         placeholderName: 'Wird noch bekannt gegeben',
         defaultGenre: 'Metal',
         unknownTime: 'TBA',
+        showRunningOrder: false,
+        runningOrderKicker: 'Live-Zeiten',
+        runningOrderTitle: 'Running Order',
+        runningOrderEmptyText: 'Die Running Order wird noch bekanntgegeben.',
       },
       history: {
         kicker: 'Archiv',
@@ -89,6 +91,32 @@ export default defineType({
         sideFilterLabel: 'Nebenveranstaltungen',
         filterEmptyText: 'In dieser Kategorie gibt es noch keine Einträge.',
       },
+      eventDetail: {
+        kicker: 'Veranstaltung',
+        backLabel: 'Veranstaltungen',
+        dateLabel: 'Termin',
+        locationLabel: 'Ort',
+        admissionLabel: 'Eintritt',
+        routeLabel: 'Route',
+        directionsLabel: 'Anfahrt',
+        lineupKicker: 'Live',
+        lineupTitle: 'Line-Up',
+        infoKicker: 'Vor deinem Besuch',
+        infoLabel: 'Anreise, Parken, Einlass und weitere Festival-Infos',
+      },
+      historyDetail: {
+        backLabel: 'Zurück zur Übersicht',
+        introTemplate: 'Impressionen und Archivmaterial vom Metal im Dorf {year}.',
+        emptyText: 'Für dieses Jahr ist noch kein Rückblickstext vorhanden.',
+        galleryKicker: 'Galerie',
+        galleryTitle: 'Impressionen & Event-Fotos',
+      },
+      admin: {
+        kicker: 'Verwaltung',
+        title: 'Redaktionsbereich',
+        intro: 'Hier geht es zur Verwaltung der Festivalinhalte.',
+        buttonLabel: 'Sanity öffnen',
+      },
     },
     navigation: {
       newsLabel: 'News',
@@ -97,6 +125,7 @@ export default defineType({
       infoLabel: 'Infos',
       historyLabel: 'Historie',
       legalLabel: 'Impressum',
+      adminLabel: 'Adminbereich',
     },
     footer: {
       description:
@@ -112,6 +141,7 @@ export default defineType({
       facebookUrl: 'https://www.facebook.com/metalimdorf',
       showInstagram: true,
       showFacebook: true,
+      studioUrl: 'https://metal-im-dorf.sanity.studio/',
     },
     notice: {
       enabled: false,
@@ -120,61 +150,39 @@ export default defineType({
     },
   },
   groups: [
-    {name: 'brand', title: 'Marke & SEO', default: true},
-    {name: 'hero', title: 'Startbereich'},
-    {name: 'sections', title: 'Bereiche'},
-    {name: 'navigation', title: 'Navigation'},
+    {name: 'design', title: 'Design & SEO', default: true},
+    {name: 'homepage', title: 'Startseite'},
+    {name: 'pages', title: 'Seiten & Texte'},
+    {name: 'navigation', title: 'Menü'},
     {name: 'footer', title: 'Footer & Kontakt'},
     {name: 'notice', title: 'Hinweisbanner'},
   ],
   fields: [
-    defineField({...requiredText('siteName', 'Name der Website', 'Metal im Dorf'), group: 'brand'}),
-    defineField({
-      name: 'accentColor',
-      title: 'Bisherige Highlight-Farbe',
-      type: 'string',
-      initialValue: '#00A8BB',
-      group: 'brand',
-      hidden: true,
-      validation: Rule =>
-        Rule.required().custom(value =>
-          /^#[0-9a-fA-F]{6}$/.test(value || '') || 'Bitte einen Hex-Farbwert wie #00A8BB eingeben',
-        ),
-    }),
+    defineField({...requiredText('siteName', 'Name der Website', 'Metal im Dorf'), group: 'design'}),
     defineField({
       name: 'accentColorPicker',
       title: 'Highlight-Farbe',
       description: 'Farbe auswählen oder als Hex-Wert eingeben.',
       type: 'color',
-      group: 'brand',
+      group: 'design',
       options: {disableAlpha: true},
-    }),
-    defineField({
-      name: 'accentTextColor',
-      title: 'Bisherige Textfarbe auf Highlights',
-      type: 'string',
-      initialValue: '#050505',
-      group: 'brand',
-      hidden: true,
-      validation: Rule =>
-        Rule.required().custom(value =>
-          /^#[0-9a-fA-F]{6}$/.test(value || '') || 'Bitte einen Hex-Farbwert wie #050505 eingeben',
-        ),
+      validation: Rule => Rule.required(),
     }),
     defineField({
       name: 'accentTextColorPicker',
       title: 'Textfarbe auf Highlights',
       description: 'Für helle Highlights dunkel, für dunkle Highlights hell wählen.',
       type: 'color',
-      group: 'brand',
+      group: 'design',
       options: {disableAlpha: true},
+      validation: Rule => Rule.required(),
     }),
-    defineField({...imageField('logo', 'Logo'), group: 'brand'}),
+    defineField({...imageField('logo', 'Logo'), group: 'design'}),
     defineField({
       name: 'defaultSeo',
       title: 'Standard für Suchmaschinen',
       type: 'object',
-      group: 'brand',
+      group: 'design',
       fields: [
         requiredText('title', 'Seitentitel', 'Metal im Dorf'),
         defineField({
@@ -191,7 +199,7 @@ export default defineType({
       name: 'hero',
       title: 'Hero auf der Startseite',
       type: 'object',
-      group: 'hero',
+      group: 'homepage',
       fields: [
         imageField('image', 'Hintergrundbild'),
         requiredText('kicker', 'Kleine Überschrift', 'Small festival, heavy sound'),
@@ -233,7 +241,7 @@ export default defineType({
       name: 'sections',
       title: 'Überschriften der Bereiche',
       type: 'object',
-      group: 'sections',
+      group: 'pages',
       fields: [
         defineField({
           name: 'nextEvent',
@@ -242,9 +250,7 @@ export default defineType({
           fields: [
             requiredText('kicker', 'Kleine Überschrift', 'Termine'),
             requiredText('title', 'Überschrift', 'Kommende Veranstaltungen'),
-            requiredText('dateLabel', 'Beschriftung des Termins', 'Termin'),
             requiredText('locationLabel', 'Beschriftung des Orts', 'Ort'),
-            requiredText('defaultButtonLabel', 'Standardtext des Links', 'Mehr erfahren'),
             requiredText(
               'emptyText',
               'Text ohne kommende Veranstaltungen',
@@ -260,6 +266,11 @@ export default defineType({
             requiredText('kicker', 'Kleine Überschrift', 'Plakate'),
             requiredText('title', 'Überschrift', 'Kommende Veranstaltungen'),
             requiredText(
+              'description',
+              'Beschreibung für Suchmaschinen',
+              'Plakate und Termine der kommenden Metal im Dorf Veranstaltungen.',
+            ),
+            requiredText(
               'emptyText',
               'Text ohne Plakate',
               'Aktuell sind noch keine Veranstaltungsplakate verfügbar.',
@@ -274,8 +285,7 @@ export default defineType({
             requiredText('kicker', 'Kleine Überschrift', 'News'),
             requiredText('title', 'Überschrift', 'Aktuelles vom Festival'),
             requiredText('emptyText', 'Text ohne Einträge', 'Keine News verfügbar.'),
-            requiredText('expandLabel', 'Text zum Aufklappen', 'Mehr anzeigen'),
-            requiredText('collapseLabel', 'Text zum Einklappen', 'Weniger anzeigen'),
+            requiredText('articleLabel', 'Link zur vollständigen News', 'Artikel lesen'),
             requiredText('previousLabel', 'Vorherige News-Seite', 'Zurück'),
             requiredText('nextLabel', 'Nächste News-Seite', 'Weiter'),
             requiredText('pageLabel', 'Bezeichnung der Seitenzahl', 'Seite'),
@@ -340,6 +350,63 @@ export default defineType({
             ),
           ],
         }),
+        defineField({
+          name: 'eventDetail',
+          title: 'Veranstaltungs-Unterseiten',
+          type: 'object',
+          fields: [
+            requiredText('kicker', 'Kleine Überschrift', 'Veranstaltung'),
+            requiredText('backLabel', 'Zurück-Link', 'Veranstaltungen'),
+            requiredText('dateLabel', 'Beschriftung Termin', 'Termin'),
+            requiredText('locationLabel', 'Beschriftung Ort', 'Ort'),
+            requiredText('admissionLabel', 'Beschriftung Eintritt', 'Eintritt'),
+            requiredText('routeLabel', 'Kleine Beschriftung der Anfahrt', 'Route'),
+            requiredText('directionsLabel', 'Anfahrts-Link', 'Anfahrt'),
+            requiredText('lineupKicker', 'Kleine Line-up-Überschrift', 'Live'),
+            requiredText('lineupTitle', 'Line-up-Überschrift', 'Line-Up'),
+            requiredText('infoKicker', 'Kleine Info-Überschrift', 'Vor deinem Besuch'),
+            requiredText(
+              'infoLabel',
+              'Link zu den Festival-Infos',
+              'Anreise, Parken, Einlass und weitere Festival-Infos',
+            ),
+          ],
+        }),
+        defineField({
+          name: 'historyDetail',
+          title: 'Historien-Unterseiten',
+          type: 'object',
+          fields: [
+            requiredText('backLabel', 'Zurück-Link', 'Zurück zur Übersicht'),
+            requiredText(
+              'introTemplate',
+              'Einleitung',
+              'Impressionen und Archivmaterial vom Metal im Dorf {year}.',
+            ),
+            requiredText(
+              'emptyText',
+              'Text ohne Rückblick',
+              'Für dieses Jahr ist noch kein Rückblickstext vorhanden.',
+            ),
+            requiredText('galleryKicker', 'Kleine Galerie-Überschrift', 'Galerie'),
+            requiredText('galleryTitle', 'Galerie-Überschrift', 'Impressionen & Event-Fotos'),
+          ],
+        }),
+        defineField({
+          name: 'admin',
+          title: 'Adminseite',
+          type: 'object',
+          fields: [
+            requiredText('kicker', 'Kleine Überschrift', 'Verwaltung'),
+            requiredText('title', 'Überschrift', 'Redaktionsbereich'),
+            requiredText(
+              'intro',
+              'Einleitung',
+              'Hier geht es zur Verwaltung der Festivalinhalte.',
+            ),
+            requiredText('buttonLabel', 'Buttontext', 'Sanity öffnen'),
+          ],
+        }),
       ],
     }),
     defineField({
@@ -382,6 +449,7 @@ export default defineType({
         requiredText('infoLabel', 'Festival-Infos', 'Infos'),
         requiredText('historyLabel', 'Historie', 'Historie'),
         requiredText('legalLabel', 'Impressum', 'Impressum'),
+        requiredText('adminLabel', 'Adminbereich', 'Adminbereich'),
       ],
     }),
     defineField({
@@ -425,6 +493,13 @@ export default defineType({
           title: 'Facebook anzeigen',
           type: 'boolean',
           initialValue: true,
+        }),
+        defineField({
+          name: 'studioUrl',
+          title: 'Link zum Adminbereich',
+          type: 'url',
+          initialValue: 'https://metal-im-dorf.sanity.studio/',
+          validation: Rule => Rule.required(),
         }),
       ],
     }),

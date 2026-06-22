@@ -62,6 +62,7 @@ const mobilePagination = paginationItems(0);
         <NewsCard
           item={item}
           index={(page - 1) * NEWS_PAGE_SIZE + index}
+          articleLabel={copy.articleLabel}
         />
       ))}
     </div>

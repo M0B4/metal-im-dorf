@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import MediaLightbox from "../../components/MediaLightbox.astro";
-import { getHistorie } from "../../utils/sanity";
+import { getHistorie, getSiteSettings } from "../../utils/sanity";
 import { urlFor } from "../../utils/image";
 import { PortableText } from "astro-portabletext";
 import { ArrowLeft } from "@lucide/astro";
@@ -17,19 +17,22 @@ export async function getStaticPaths() {
 }
 
 const { item } = Astro.props;
+const settings = await getSiteSettings();
+const copy = settings.sections.historyDetail;
 const displayTitle = item.titel || `Festival ${item.jahr}`;
 
 const lightboxGroup = `history-${item._id}`;
 ---
 
 <Layout 
-  title={`${displayTitle} | Metal im Dorf`}
+  title={`${displayTitle} | ${settings.siteName}`}
   description={`Rückblick und Bildergalerie: ${displayTitle}.`}
+  settings={settings}
 >
   <div class="shell detail-page">
     <a href={sitePath("historie")} class="back-link">
       <ArrowLeft size={17} stroke-width={2.5} aria-hidden="true" />
-      Zurück zur Übersicht
+      {copy.backLabel}
     </a>
 
     <div class="detail-hero">
@@ -54,7 +57,7 @@ const lightboxGroup = `history-${item._id}`;
         <div>
           <span class="section-kicker">{getKategorieLabel(item.kategorie)}</span>
           <h1 class="page-title">{displayTitle}</h1>
-          <p class="page-lede">Impressionen und Archivmaterial vom Metal im Dorf {item.jahr}.</p>
+          <p class="page-lede">{copy.introTemplate.replace("{year}", String(item.jahr))}</p>
         </div>
         
         {item.beschreibung ? (
@@ -62,7 +65,7 @@ const lightboxGroup = `history-${item._id}`;
             <PortableText value={item.beschreibung} />
           </div>
         ) : (
-          <p class="placeholder">Für dieses Jahr ist noch kein Rückblickstext vorhanden.</p>
+          <p class="placeholder">{copy.emptyText}</p>
         )}
       </div>
     </div>
@@ -70,8 +73,8 @@ const lightboxGroup = `history-${item._id}`;
     {item.bilder && item.bilder.length > 0 && (
       <section class="gallery-section">
         <div class="section-heading">
-          <span class="section-kicker">Galerie</span>
-          <h2>Impressionen & Event-Fotos</h2>
+          <span class="section-kicker">{copy.galleryKicker}</span>
+          <h2>{copy.galleryTitle}</h2>
         </div>
         <div class="gallery-grid">
           {item.bilder.map((image, index) => {

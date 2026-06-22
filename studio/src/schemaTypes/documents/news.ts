@@ -23,6 +23,13 @@ export default defineType({
   title: 'News & Ankündigungen',
   type: 'document',
   components: {input: NewsDocumentInput},
+  groups: [
+    {name: 'quick', title: 'Schnelleingabe'},
+    {name: 'content', title: 'News', default: true},
+    {name: 'media', title: 'Bilder'},
+    {name: 'assignment', title: 'Zuordnung'},
+    {name: 'import', title: 'Import-Details'},
+  ],
   fields: [
     defineField({
       name: 'facebookSchnelleingabe',
@@ -30,6 +37,7 @@ export default defineType({
       description:
         'Facebook-Text und heruntergeladene Bilder einfügen. Anschließend oben „Als News übernehmen“ wählen.',
       type: 'object',
+      group: 'quick',
       options: {collapsible: true, collapsed: false},
       fields: [
         defineField({
@@ -65,34 +73,40 @@ export default defineType({
       name: 'titel',
       title: 'Titel',
       type: 'string',
+      group: 'content',
       validation: Rule => Rule.required(),
     }),
     defineField({
       name: 'datum',
       title: 'Datum',
       type: 'date',
+      group: 'content',
     }),
     defineField({
       name: 'veranstaltung',
       title: 'Zugehörige Veranstaltung',
       type: 'reference',
+      group: 'assignment',
       to: [{type: 'veranstaltung'}],
     }),
     defineField({
       name: 'bild',
       title: 'Bild',
+      group: 'media',
       ...imageField,
     }),
     defineField({
       name: 'bilder',
       title: 'Weitere Bilder',
       type: 'array',
+      group: 'media',
       of: [imageField],
     }),
     defineField({
       name: 'inhalt',
       title: 'Inhalt',
       type: 'array',
+      group: 'content',
       of: [
         {type: 'block'},
         imageField,
@@ -102,6 +116,7 @@ export default defineType({
       name: 'facebookQuelle',
       title: 'Facebook-Import',
       type: 'object',
+      group: 'import',
       readOnly: true,
       options: {collapsible: true, collapsed: true},
       fields: [

@@ -4,11 +4,16 @@ export default defineType({
   name: 'band',
   title: 'Bands & Line-up',
   type: 'document',
+  groups: [
+    {name: 'details', title: 'Band', default: true},
+    {name: 'media', title: 'Bild'},
+  ],
   fields: [
     defineField({
       name: 'name',
       title: 'Bandname',
       type: 'string',
+      group: 'details',
       validation: Rule => Rule.custom((name, context) => {
         const parent = context.parent as {platzhalter?: boolean} | undefined
         if (parent?.platzhalter) return true
@@ -21,30 +26,22 @@ export default defineType({
       title: 'Platzhalter',
       description: 'Band wird noch angekündigt – zeigt eine Platzhalter-Karte im Line-Up.',
       type: 'boolean',
+      group: 'details',
       initialValue: false,
     }),
     defineField({
       name: 'genre',
       title: 'Genre',
       type: 'string',
-    }),
-    defineField({
-      name: 'spielzeit',
-      title: 'Spielzeit',
-      description: 'Uhrzeit im Format HH:MM, zum Beispiel 18:30.',
-      type: 'string',
-      placeholder: '18:30',
-      validation: Rule =>
-        Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {
-          name: 'Uhrzeit',
-          invert: false,
-        }).error('Bitte eine gültige Uhrzeit im Format HH:MM eingeben.'),
+      group: 'details',
     }),
     defineField({
       name: 'bild',
       title: 'Bandfoto',
       type: 'image',
+      group: 'media',
       options: {hotspot: true},
+      fields: [defineField({name: 'alt', title: 'Alternativer Text', type: 'string'})],
     }),
   ],
   preview: {

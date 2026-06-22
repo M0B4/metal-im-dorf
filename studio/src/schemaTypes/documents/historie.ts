@@ -21,11 +21,17 @@ export default defineType({
   name: 'historie',
   title: 'Historie & Rückblick',
   type: 'document',
+  groups: [
+    {name: 'overview', title: 'Übersicht', default: true},
+    {name: 'content', title: 'Rückblick'},
+    {name: 'media', title: 'Plakat & Galerie'},
+  ],
   fields: [
     defineField({
       name: 'jahr',
       title: 'Jahr',
       type: 'number',
+      group: 'overview',
       validation: Rule => Rule.required(),
     }),
     defineField({
@@ -33,11 +39,13 @@ export default defineType({
       title: 'Festival-Titel (optional)',
       description: 'Z.B. "10 Jahre Metal im Dorf". Falls leer, wird "Festival [Jahr]" angezeigt.',
       type: 'string',
+      group: 'overview',
     }),
     defineField({
       name: 'slug',
       title: 'URL',
       type: 'slug',
+      group: 'overview',
       options: {
         source: (document) => `${document.jahr || ''}-${document.titel || 'metal-im-dorf'}`,
         maxLength: 96,
@@ -47,6 +55,7 @@ export default defineType({
       name: 'kategorie',
       title: 'Kategorie',
       type: 'string',
+      group: 'overview',
       initialValue: 'hauptfestival',
       options: {
         layout: 'radio',
@@ -61,24 +70,29 @@ export default defineType({
       name: 'veranstaltung',
       title: 'Zugehörige Veranstaltung',
       type: 'reference',
+      group: 'overview',
       to: [{type: 'veranstaltung'}],
     }),
     defineField({
       name: 'plakat',
       title: 'Festival-Plakat',
       type: 'image',
+      group: 'media',
       options: {hotspot: true},
+      fields: [defineField({name: 'alt', title: 'Alternativer Text', type: 'string'})],
     }),
     defineField({
       name: 'beschreibung',
       title: 'Rückblick / Beschreibung',
       type: 'array',
+      group: 'content',
       of: [{type: 'block'}],
     }),
     defineField({
       name: 'bilder',
       title: 'Bildergalerie / Event-Fotos',
       type: 'array',
+      group: 'media',
       of: [imageField],
     }),
   ],

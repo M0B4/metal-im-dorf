@@ -38,8 +38,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   const settings = await loadQuery<Partial<SiteSettings> | null>(
     groq`*[_type == "siteSettings" && _id == "siteSettings"][0] {
       siteName,
-      "accentColor": coalesce(accentColorPicker.hex, accentColor, "#00A8BB"),
-      "accentTextColor": coalesce(accentTextColorPicker.hex, accentTextColor, "#050505"),
+      "accentColor": coalesce(accentColorPicker.hex, "#00A8BB"),
+      "accentTextColor": coalesce(accentTextColorPicker.hex, "#050505"),
       logo ${imageProjection},
       defaultSeo {
         title,
@@ -69,6 +69,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       news: mergeWithDefaults(defaultSiteSettings.sections.news, settings?.sections?.news),
       lineup: mergeWithDefaults(defaultSiteSettings.sections.lineup, settings?.sections?.lineup),
       history: mergeWithDefaults(defaultSiteSettings.sections.history, settings?.sections?.history),
+      eventDetail: mergeWithDefaults(defaultSiteSettings.sections.eventDetail, settings?.sections?.eventDetail),
+      historyDetail: mergeWithDefaults(defaultSiteSettings.sections.historyDetail, settings?.sections?.historyDetail),
+      admin: mergeWithDefaults(defaultSiteSettings.sections.admin, settings?.sections?.admin),
     },
     navigation: mergeWithDefaults(defaultSiteSettings.navigation, settings?.navigation),
     footer: mergeWithDefaults(defaultSiteSettings.footer, settings?.footer),
@@ -218,11 +221,10 @@ export interface Post {
 }
 export async function getBands(): Promise<Band[]> {
   return loadQuery<Band[]>(
-    groq`*[_type == "band"] | order(spielzeit asc) {
+    groq`*[_type == "band"] | order(name asc) {
       _id,
       name,
       genre,
-      spielzeit,
       platzhalter,
       bild ${imageProjection}
     }`,

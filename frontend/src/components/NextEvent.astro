@@ -49,7 +49,7 @@ const copy = settings.sections.nextEvent;
             {event.ticketUrl ? (
               <a class="ticket-link" href={event.ticketUrl} target="_blank" rel="noreferrer">
                 <Ticket size={16} aria-hidden="true" />
-                {event.ticketLabel || "Tickets"}
+                {event.ticketLabel || settings.hero.ticketFallbackLabel}
               </a>
             ) : <span class="event-action-placeholder" />}
           </article>

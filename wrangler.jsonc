@@ -1,12 +1,22 @@
-// Cloudflare Workers (statische Website, kein eigener Server-Code).
-// Workers Builds führt beim Push `npx wrangler deploy` aus; der Build-Befehl unten erzeugt vorher frontend/dist.
+// Cloudflare Worker für metal-im-dorf.de. Workers Builds führt bei jedem Push auf master
+// `npx wrangler deploy` aus; der Build-Befehl unten erzeugt vorher frontend/dist.
 {
   "name": "metal-im-dorf",
+  "main": "worker/index.js",
   "compatibility_date": "2026-11-01",
   "build": { "command": "npm run build -w frontend" },
   "assets": {
     "directory": "./frontend/dist",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
-  }
+    "html_handling": "auto-trailing-slash",
+    // Erst den Worker fragen, damit die www-Umleitung auch für vorhandene Dateien greift.
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "metal-im-dorf.de", "custom_domain": true },
+    { "pattern": "www.metal-im-dorf.de", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "preview_urls": true
 }

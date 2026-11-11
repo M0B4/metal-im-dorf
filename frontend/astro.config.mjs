@@ -9,13 +9,13 @@ const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 
 // Statische Website. Gebaut wird entweder von GitHub Pages (https://m0b4.github.io/metal-im-dorf)
 // oder von Cloudflare (Pages bzw. Workers Builds), das erkennt der Build an den Umgebungsvariablen.
-// Bei Cloudflare liegt die Seite im Wurzelverzeichnis; SITE_URL setzt die eigene Domain.
+// Bei Cloudflare liegt die Seite im Wurzelverzeichnis von https://metal-im-dorf.de (SITE_URL überschreibt das).
 const onCloudflare = Boolean(process.env.CF_PAGES || process.env.WORKERS_CI);
 const hosting = onCloudflare ? "cloudflare" : "github";
 
 export default defineConfig({
   output: "static",
-  site: process.env.SITE_URL || (onCloudflare ? process.env.CF_PAGES_URL : undefined) || "https://m0b4.github.io",
+  site: process.env.SITE_URL || (onCloudflare ? "https://metal-im-dorf.de" : "https://m0b4.github.io"),
   // CSS direkt in die Seite schreiben: kein zusätzlicher Request, der das erste Anzeigen blockiert.
   build: { inlineStylesheets: "always" },
   base: !onCloudflare && process.env.NODE_ENV === "production" ? "/metal-im-dorf" : "/",

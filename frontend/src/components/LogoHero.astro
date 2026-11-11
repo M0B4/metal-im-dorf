@@ -23,29 +23,27 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
     </h1>
     {intro && <p>{intro}</p>}
     {next && place && (
-      <div class="hero-next">
-        <p class="hero-facts">
-          <time datetime={next.beginn}>{formatDateRange(next.beginn, next.ende)}</time>
-          <a href={mapsUrl(...place)} target="_blank" rel="noreferrer">
-            <MapPin size={16} aria-hidden="true" />
-            {place[0]}
-            <span class="sr-only">{NEW_TAB_HINT}</span>
-          </a>
-        </p>
-        {next.nurAbendkasse ? (
-          <p class="hero-box-office"><Ticket size={16} aria-hidden="true" />Tickets an der Abendkasse</p>
-        ) : (
-        <a
-          class="metal-button"
-          href={ticketHref}
-          {...(next.ticketUrl ? { target: "_blank", rel: "noreferrer" } : {})}
-        >
-          <Ticket size={16} aria-hidden="true" />
-          Tickets
-          {next.ticketUrl && <span class="sr-only">{NEW_TAB_HINT}</span>}
+      <p class="hero-facts">
+        <time datetime={next.beginn}>{formatDateRange(next.beginn, next.ende)}</time>
+        <a href={mapsUrl(...place)} target="_blank" rel="noreferrer">
+          <MapPin size={16} aria-hidden="true" />
+          {place[0]}
+          <span class="sr-only">{NEW_TAB_HINT}</span>
         </a>
+        {next.nurAbendkasse ? (
+          <span class="hero-ticket"><Ticket size={16} aria-hidden="true" />Abendkasse</span>
+        ) : (
+          <a
+            class="hero-ticket"
+            href={ticketHref}
+            {...(next.ticketUrl ? { target: "_blank", rel: "noreferrer" } : {})}
+          >
+            <Ticket size={16} aria-hidden="true" />
+            Tickets
+            {next.ticketUrl && <span class="sr-only">{NEW_TAB_HINT}</span>}
+          </a>
         )}
-      </div>
+      </p>
     )}
   </div>
 </section>
@@ -135,13 +133,6 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
     line-height: 1.6;
   }
 
-  .hero-next {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
-    margin-top: 0.25rem;
-  }
-
   .logo-hero .hero-facts {
     display: flex;
     flex-wrap: wrap;
@@ -168,20 +159,15 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
     color: var(--color-accent);
   }
 
-  .logo-hero .hero-box-office {
+  .hero-facts .hero-ticket {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.35rem;
     color: var(--color-accent);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
-  .hero-next .metal-button {
-    gap: 0.45rem;
+  a.hero-ticket:hover {
+    color: #fff;
   }
 
   /* Laufband mit allen kommenden Veranstaltungen, so breit wie die News. Hover/Fokus hält es an,

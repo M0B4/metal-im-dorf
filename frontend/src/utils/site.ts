@@ -14,6 +14,8 @@ export const WEB3FORMS_ACCESS_KEY = "";
 
 export interface SiteSettings {
   intro: string;
+  /** Akzentfarbe als Hex-Code (#rrggbb), leer = Türkis aus global.css. */
+  akzentfarbe?: string;
   email: string;
   instagramUrl?: string;
   facebookUrl?: string;
@@ -53,6 +55,22 @@ export function siteUrl(path = "") {
 }
 
 /** Hinweis für Screenreader bei Links, die einen neuen Tab öffnen. */
+/**
+ * CSS-Variablen für eine Akzentfarbe aus Sanity. Die Schriftfarbe auf Akzentflächen (Buttons) wird
+ * automatisch schwarz oder weiß gewählt, je nachdem was besser lesbar ist.
+ */
+export function accentStyle(hex?: string) {
+  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return "";
+  const channel = (i: number) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+  const onDark = (luminance + 0.05) / (0.0016 + 0.05); // Kontrast zu #050505
+  const onLight = 1.05 / (luminance + 0.05); // Kontrast zu #fff
+  return `--color-accent: ${hex}; --color-accent-contrast: ${onDark >= onLight ? "#050505" : "#fff"};`;
+}
+
 /** Link zur Kartensuche in Google Maps. */
 export function mapsUrl(...parts: Array<string | undefined>) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;

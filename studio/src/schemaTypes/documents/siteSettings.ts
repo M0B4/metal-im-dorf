@@ -14,6 +14,15 @@ export default defineType({
       ],
     }),
     defineField({
+      name: 'akzentfarbe',
+      title: 'Akzentfarbe',
+      description:
+        'Farbe für Buttons, Linien und Hervorhebungen, z. B. passend zum Plakat des Jahres. Als Hex-Code wie #00a8bb (das bisherige Türkis). Leer = Türkis.',
+      type: 'string',
+      validation: (rule) =>
+        rule.regex(/^#[0-9a-fA-F]{6}$/).error('Bitte als Hex-Code mit 6 Zeichen eingeben, z. B. #00a8bb.'),
+    }),
+    defineField({
       name: 'notice',
       title: 'Hinweisbanner',
       description: 'Farbiger Balken oben auf jeder Seite, z. B. bei Wetterwarnungen.',

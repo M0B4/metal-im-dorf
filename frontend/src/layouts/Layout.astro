@@ -7,7 +7,7 @@ import "../styles/global.css";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteNotice from "../components/SiteNotice.astro";
-import { SITE_DESCRIPTION, SITE_NAME, sitePath, siteUrl, type SiteSettings } from "../utils/site";
+import { accentStyle, SITE_DESCRIPTION, SITE_NAME, sitePath, siteUrl, type SiteSettings } from "../utils/site";
 
 interface Props {
   /** Seitentitel ohne Website-Namen; leer auf der Startseite. */
@@ -24,7 +24,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
 
 <!doctype html>
-<html lang="de">
+<html lang="de" style={accentStyle(settings.akzentfarbe) || undefined}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

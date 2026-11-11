@@ -62,6 +62,7 @@ export interface FestivalInfo {
     icon?: string;
     title: string;
     body: PortableTextBlock[];
+    bilder?: SanityImage[];
     linkLabel?: string;
     linkUrl?: string;
   }>;
@@ -114,7 +115,7 @@ export async function getLineupEvent(): Promise<Veranstaltung | null> {
 }
 
 export async function getFestivalInfo(): Promise<FestivalInfo> {
-  const info = await query<Partial<FestivalInfo> | null>(`*[_id == "festivalInfo"][0]{ title, intro, sections }`);
+  const info = await query<Partial<FestivalInfo> | null>(`*[_id == "festivalInfo"][0]{ title, intro, sections[] { ..., bilder[] ${image} } }`);
   return {
     title: info?.title || "Festival-Infos",
     intro: info?.intro,

@@ -64,6 +64,27 @@ export default defineType({
               of: [{type: 'block'}],
               validation: Rule => Rule.required(),
             }),
+            defineField({
+              name: 'bilder',
+              title: 'Bilder',
+              description: 'Optional, z. B. Lageplan oder Anfahrtskizze. Auf der Website zum Vergrößern anklickbar.',
+              type: 'array',
+              options: {layout: 'grid'},
+              of: [
+                defineArrayMember({
+                  type: 'image',
+                  options: {hotspot: true},
+                  fields: [
+                    defineField({
+                      name: 'alt',
+                      title: 'Bildbeschreibung',
+                      description: 'Kurz, was zu sehen ist (für Screenreader und Suchmaschinen).',
+                      type: 'string',
+                    }),
+                  ],
+                }),
+              ],
+            }),
             defineField({name: 'linkLabel', title: 'Linktext', type: 'string'}),
             defineField({
               name: 'linkUrl',
@@ -73,7 +94,7 @@ export default defineType({
             }),
           ],
           preview: {
-            select: {title: 'title', subtitle: 'icon'},
+            select: {title: 'title', subtitle: 'icon', media: 'bilder.0'},
           },
         }),
       ],

@@ -20,10 +20,7 @@ const lightboxGroup = `news-${item._id}`;
 const hasMore = galleryImages.length > 0 || preview.length > 260;
 ---
 
-<article class="news-post" id={anchor}>
-  {item.datum && <time class="news-date" datetime={item.datum}>{formatDate(item.datum)}</time>}
-  <h3>{item.titel}</h3>
-
+<article class:list={["news-post", primaryImage && "news-post--media"]} id={anchor}>
   {primaryImage && (
     <button
       class="news-media"
@@ -35,9 +32,9 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
       aria-label={`Bild vergrößern: ${item.titel}`}
     >
       <img
-        src={imageUrl(primaryImage, 1200)}
-        srcset={srcSet(primaryImage, [480, 760, 1000, 1200])}
-        sizes="(max-width: 800px) 100vw, 760px"
+        src={imageUrl(primaryImage, 440)}
+        srcset={srcSet(primaryImage, [200, 300, 440, 660])}
+        sizes="(max-width: 640px) 100px, 220px"
         width={primaryImage.width}
         height={primaryImage.height}
         alt={primaryImage.alt || item.titel}
@@ -45,6 +42,10 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
       />
     </button>
   )}
+
+  <div class="news-body">
+  {item.datum && <time class="news-date" datetime={item.datum}>{formatDate(item.datum)}</time>}
+  <h3>{item.titel}</h3>
 
   {hasMore ? (
     <>
@@ -104,6 +105,7 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
       </div>
     )
   )}
+  </div>
 </article>
 
 <style>
@@ -113,6 +115,19 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
     padding-block: clamp(1.75rem, 4vw, 2.75rem);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     scroll-margin-top: 5rem;
+  }
+
+  /* Mit Bild: Bild klein links, Text rechts daneben. */
+  .news-post--media {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 0.9rem clamp(1rem, 3vw, 1.75rem);
+    align-items: start;
+  }
+
+  .news-body {
+    display: grid;
+    gap: 0.9rem;
+    min-width: 0;
   }
 
   .news-date {
@@ -142,9 +157,12 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
   }
 
   .news-media {
-    margin-top: 0.25rem;
+    margin-top: 0.3rem;
+    border-color: var(--border);
+    border-radius: var(--radius-subtle);
   }
 
+  .news-media:hover,
   .news-media:focus-visible,
   .news-gallery-item:hover,
   .news-gallery-item:focus-visible {
@@ -253,6 +271,10 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
   }
 
   @media (max-width: 640px) {
+    .news-post--media {
+      grid-template-columns: 100px minmax(0, 1fr);
+    }
+
     .news-gallery {
       grid-template-columns: 1fr;
     }

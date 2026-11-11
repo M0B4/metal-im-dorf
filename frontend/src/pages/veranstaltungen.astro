@@ -2,12 +2,11 @@
 import { Mail, MapPin, Ticket } from "@lucide/astro";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
-import TicketForm from "../components/TicketForm.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDate, formatTime, yearOf } from "../utils/format";
 import { imageUrl } from "../utils/image";
 import { getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
-import { ADDRESS, NEW_TAB_HINT, SITE_NAME, siteUrl } from "../utils/site";
+import { ADDRESS, NEW_TAB_HINT, SITE_NAME, sitePath, siteUrl } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
@@ -93,9 +92,9 @@ const jsonLd = JSON.stringify(
                     <span class="sr-only">{NEW_TAB_HINT}</span>
                   </a>
                 )}
-                <a class="metal-button" href="#tickets" data-ticket-event={event._id}>
+                <a class="metal-button" href={sitePath(`/tickets?veranstaltung=${encodeURIComponent(event._id)}`)}>
                   <Mail size={16} aria-hidden="true" />
-                  Tickets per Mail bestellen
+                  Tickets bestellen
                 </a>
               </div>
             </article>
@@ -105,8 +104,6 @@ const jsonLd = JSON.stringify(
         <p class="placeholder">Aktuell sind keine Veranstaltungen angekündigt.</p>
       )}
     </section>
-
-    {upcoming.length > 0 && <TicketForm events={upcoming} email={settings.email} />}
 
     <section id="vergangen" aria-labelledby="past-title">
       <h2 id="past-title" class="section-title">Vergangene Veranstaltungen</h2>
@@ -129,8 +126,8 @@ const jsonLd = JSON.stringify(
                   group="vergangen"
                 />
                 <figcaption>
-                  <span class="event-meta">{kategorieLabel(item.kategorie)} · {item.year}</span>
                   <strong>{item.title}</strong>
+                  <span class="event-meta">{item.year}</span>
                 </figcaption>
               </figure>
             ))}

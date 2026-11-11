@@ -5,6 +5,7 @@ import { formatDate } from "../utils/format";
 import { imageUrl, srcSet } from "../utils/image";
 import { newsAnchor, plainText } from "../utils/news";
 import type { News } from "../utils/sanity";
+import { sitePath } from "../utils/site";
 
 interface Props {
   item: News;
@@ -20,8 +21,8 @@ const lightboxGroup = `news-${item._id}`;
 const hasMore = galleryImages.length > 0 || preview.length > 260;
 ---
 
-<article class:list={["news-post", primaryImage && "news-post--media"]} id={anchor}>
-  {primaryImage && (
+<article class="news-post" id={anchor}>
+  {primaryImage ? (
     <button
       class="news-media"
       type="button"
@@ -41,6 +42,10 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
         loading={index === 0 ? "eager" : "lazy"}
       />
     </button>
+  ) : (
+    <div class="news-media news-media--empty" aria-hidden="true">
+      <img src={sitePath("/logo.svg")} alt="" width="126" height="35" />
+    </div>
   )}
 
   <div class="news-body">
@@ -117,8 +122,8 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
     scroll-margin-top: 5rem;
   }
 
-  /* Mit Bild: Bild klein links, Text rechts daneben. */
-  .news-post--media {
+  /* Bild (oder Platzhalter mit Logo) klein links, Text rechts daneben: alle Beiträge gleich aufgebaut. */
+  .news-post {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 0.9rem clamp(1rem, 3vw, 1.75rem);
     align-items: start;
@@ -162,7 +167,7 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
     border-radius: var(--radius-subtle);
   }
 
-  .news-media:hover,
+  button.news-media:hover,
   .news-media:focus-visible,
   .news-gallery-item:hover,
   .news-gallery-item:focus-visible {
@@ -176,6 +181,30 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
     height: auto;
     max-height: 80vh;
     object-fit: contain;
+  }
+
+  /* Vorschaubild immer im gleichen Format (4:5), groß gibt es das ganze Bild. */
+  .news-media img {
+    aspect-ratio: 4 / 5;
+    max-height: none;
+    object-fit: cover;
+  }
+
+  .news-media--empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    cursor: default;
+    background:
+      radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 70%),
+      #101012;
+  }
+
+  .news-media--empty img {
+    width: 70%;
+    height: auto;
+    aspect-ratio: auto;
+    opacity: 0.5;
   }
 
   .news-preview {
@@ -271,7 +300,7 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
   }
 
   @media (max-width: 640px) {
-    .news-post--media {
+    .news-post {
       grid-template-columns: 100px minmax(0, 1fr);
     }
 

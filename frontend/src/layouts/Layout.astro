@@ -4,6 +4,8 @@ import "@fontsource/anton";
 import "@fontsource/ibm-plex-mono/600.css";
 import "@fontsource/ibm-plex-mono/700.css";
 import "../styles/global.css";
+import antonLatin from "@fontsource/anton/files/anton-latin-400-normal.woff2?url";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteNotice from "../components/SiteNotice.astro";
@@ -32,6 +34,9 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
     <link rel="icon" href={sitePath("/favicon.ico")} sizes="any" />
     <link rel="icon" type="image/png" sizes="64x64" href={sitePath("/favicon.png")} />
     <link rel="apple-touch-icon" sizes="180x180" href={sitePath("/apple-touch-icon.png")} />
+    <!-- Hauptschriften früh laden, damit Überschriften beim Laden nicht springen. -->
+    <link rel="preload" href={antonLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href={Astro.url} />
     <meta name="description" content={description} />
     <meta property="og:type" content="website" />

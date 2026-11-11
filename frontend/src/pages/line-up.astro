@@ -32,7 +32,7 @@ const bandLinks = (band: Band) =>
 
     {bands.length ? (
       <section class="band-grid" aria-label="Line-Up">
-        {bands.map((band) => (
+        {bands.map((band, index) => (
           <article class:list={["band-card panel", band.platzhalter && "band-card--placeholder"]}>
             {!band.platzhalter && band.bild ? (
               <div class="band-image-wrapper">
@@ -42,7 +42,8 @@ const bandLinks = (band: Band) =>
                   sizes="(max-width: 760px) 50vw, (max-width: 1180px) 33vw, 380px"
                   alt={band.name}
                   class="band-image"
-                  loading="lazy"
+                  loading={index < 3 ? "eager" : "lazy"}
+                  fetchpriority={index === 0 ? "high" : undefined}
                 />
               </div>
             ) : (

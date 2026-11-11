@@ -11,6 +11,8 @@ const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 export default defineConfig({
   output: "static",
   site: "https://m0b4.github.io",
+  // CSS direkt in die Seite schreiben: kein zusätzlicher Request, der das erste Anzeigen blockiert.
+  build: { inlineStylesheets: "always" },
   base: process.env.NODE_ENV === "production" ? "/metal-im-dorf" : "/",
   integrations: [
     sanity({

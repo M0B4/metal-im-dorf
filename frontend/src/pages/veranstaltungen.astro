@@ -1,7 +1,8 @@
 ---
-import { MapPin, Ticket } from "@lucide/astro";
+import { Mail, MapPin, Ticket } from "@lucide/astro";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
+import TicketForm from "../components/TicketForm.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDate, formatTime, yearOf } from "../utils/format";
 import { imageUrl } from "../utils/image";
@@ -105,6 +106,10 @@ const jsonLd = JSON.stringify(
                     <span class="sr-only">{NEW_TAB_HINT}</span>
                   </a>
                 )}
+                <a class="metal-button" href="#tickets" data-ticket-event={event._id}>
+                  <Mail size={16} aria-hidden="true" />
+                  Tickets per Mail bestellen
+                </a>
               </div>
             </article>
           ))}
@@ -113,6 +118,8 @@ const jsonLd = JSON.stringify(
         <p class="placeholder">Aktuell sind keine Veranstaltungen angekündigt.</p>
       )}
     </section>
+
+    {upcoming.length > 0 && <TicketForm events={upcoming} email={settings.email} />}
 
     <section id="vergangen" aria-labelledby="past-title">
       <h2 id="past-title" class="section-title">Vergangene Veranstaltungen</h2>

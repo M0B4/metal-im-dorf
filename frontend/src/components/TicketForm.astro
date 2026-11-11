@@ -1,0 +1,261 @@
+---
+// Ticketbestellung per E-Mail. Die Website ist statisch, deshalb zwei Wege:
+// - Mit WEB3FORMS_ACCESS_KEY (site.ts) schickt Web3Forms die Bestellung direkt als Mail an uns.
+// - Ohne Schlüssel öffnet das Formular das Mailprogramm der Besucher mit fertig ausgefüllter Mail.
+import { Send } from "@lucide/astro";
+import { formatDate } from "../utils/format";
+import type { Veranstaltung } from "../utils/sanity";
+import { sitePath, WEB3FORMS_ACCESS_KEY } from "../utils/site";
+
+interface Props {
+  events: Veranstaltung[];
+  email: string;
+}
+
+const { events, email } = Astro.props;
+const useService = WEB3FORMS_ACCESS_KEY.length > 0;
+const eventLabel = (event: Veranstaltung) => `${event.titel} (${formatDate(event.beginn)})`;
+---
+
+<section id="tickets" class="ticket-section" aria-labelledby="tickets-title">
+  <h2 id="tickets-title" class="section-title">Tickets bestellen</h2>
+  <p class="ticket-lede">
+    Schick uns deine Bestellung, wir melden uns per E-Mail mit allen Infos zu Bezahlung und Abholung.
+    Du kannst uns auch direkt an <a href={`mailto:${email}`}>{email}</a> schreiben.
+  </p>
+
+  <form
+    class="ticket-form panel"
+    method="post"
+    action={useService ? "https://api.web3forms.com/submit" : `mailto:${email}`}
+    enctype={useService ? undefined : "text/plain"}
+    data-mode={useService ? "service" : "mail"}
+    data-email={email}
+  >
+    {useService && (
+      <>
+        <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+        <input type="hidden" name="subject" value="Ticketbestellung über die Website" />
+        <input type="hidden" name="from_name" value="Metal im Dorf Website" />
+        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </>
+    )}
+
+    <div class="field">
+      <label for="ticket-event">Veranstaltung</label>
+      <select id="ticket-event" name="Veranstaltung" required>
+        {events.map((event) => (
+          <option value={eventLabel(event)} data-event-id={event._id}>{eventLabel(event)}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="field field-small">
+      <label for="ticket-count">Anzahl Tickets</label>
+      <input id="ticket-count" name="Anzahl" type="number" min="1" max="20" value="1" inputmode="numeric" required />
+    </div>
+
+    <div class="field">
+      <label for="ticket-name">Name</label>
+      <input id="ticket-name" name="name" type="text" autocomplete="name" required />
+    </div>
+
+    <div class="field">
+      <label for="ticket-email">E-Mail</label>
+      <input id="ticket-email" name="email" type="email" autocomplete="email" required />
+    </div>
+
+    <div class="field field-wide">
+      <label for="ticket-message">Nachricht <span class="optional">(optional)</span></label>
+      <textarea id="ticket-message" name="Nachricht" rows="4"></textarea>
+    </div>
+
+    <p class="ticket-privacy field-wide">
+      {useService
+        ? "Deine Angaben werden über den Formulardienst Web3Forms an uns gesendet und nur für deine Bestellung genutzt."
+        : "Beim Absenden öffnet sich dein Mailprogramm mit der fertigen Bestellung, du musst sie nur noch abschicken."}
+      {" "}Mehr dazu in der <a href={sitePath("/datenschutz")}>Datenschutzerklärung</a>.
+    </p>
+
+    <div class="ticket-actions field-wide">
+      <button class="metal-button" type="submit">
+        <Send size={16} aria-hidden="true" />
+        Bestellung senden
+      </button>
+      <p class="ticket-status" role="status" aria-live="polite"></p>
+    </div>
+  </form>
+</section>
+
+<style>
+  .ticket-section {
+    display: grid;
+    gap: 1.25rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .ticket-lede {
+    max-width: 62ch;
+    margin: 0;
+    color: #c8c8cf;
+    line-height: 1.65;
+  }
+
+  .ticket-lede a,
+  .ticket-privacy a {
+    color: var(--color-accent);
+  }
+
+  .ticket-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+    max-width: 760px;
+    padding: clamp(1rem, 3vw, 1.6rem);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .field-wide {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .optional {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 2.8rem;
+    padding: 0.6rem 0.75rem;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-subtle);
+    font: inherit;
+  }
+
+  select option {
+    color: #fff;
+    background: #111;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--color-accent);
+  }
+
+  .botcheck {
+    display: none;
+  }
+
+  .ticket-privacy {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .ticket-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+  }
+
+  .ticket-actions .metal-button {
+    gap: 0.45rem;
+    cursor: pointer;
+  }
+
+  .ticket-actions .metal-button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .ticket-status {
+    margin: 0;
+    color: #fff;
+  }
+
+  .ticket-status.is-error {
+    color: #fca5a5;
+  }
+
+  @media (max-width: 600px) {
+    .ticket-form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>(".ticket-form");
+  const select = form?.querySelector<HTMLSelectElement>("#ticket-event");
+  const status = form?.querySelector<HTMLElement>(".ticket-status");
+  const submit = form?.querySelector<HTMLButtonElement>("button[type=submit]");
+
+  // „Tickets bestellen“-Links an den Veranstaltungen wählen die passende Veranstaltung vor.
+  document.querySelectorAll<HTMLAnchorElement>("[data-ticket-event]").forEach((link) => {
+    link.addEventListener("click", () => {
+      const option = select?.querySelector<HTMLOptionElement>(`option[data-event-id="${link.dataset.ticketEvent}"]`);
+      if (option && select) select.value = option.value;
+    });
+  });
+
+  const setStatus = (text: string, error = false) => {
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-error", error);
+  };
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+
+    if (form.dataset.mode === "mail") {
+      const body = ["Veranstaltung", "Anzahl", "name", "email", "Nachricht"]
+        .map((key) => `${key === "name" ? "Name" : key === "email" ? "E-Mail" : key}: ${data.get(key) ?? ""}`)
+        .join("\n");
+      const subject = `Ticketbestellung: ${data.get("Anzahl")} × ${data.get("Veranstaltung")}`;
+      window.location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      setStatus("Dein Mailprogramm sollte sich jetzt öffnen. Bitte schick die Mail dort ab.");
+      return;
+    }
+
+    if (submit) submit.disabled = true;
+    setStatus("Wird gesendet …");
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: data,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message);
+      form.reset();
+      setStatus("Danke! Deine Bestellung ist bei uns angekommen, wir melden uns per E-Mail.");
+    } catch {
+      setStatus(`Das hat leider nicht geklappt. Schreib uns bitte direkt an ${form.dataset.email}.`, true);
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+</script>

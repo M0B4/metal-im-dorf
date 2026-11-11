@@ -46,10 +46,24 @@ export default defineType({
           return !ende || !beginn || ende >= beginn ? true : 'Das Ende muss nach dem Beginn liegen.'
         }),
     }),
+    defineField({
+      name: 'einlass',
+      title: 'Einlass',
+      description: 'Optional, z. B. 17:00',
+      type: 'string',
+      validation: (rule) =>
+        rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/).error('Bitte als HH:MM eingeben, z. B. 17:00.'),
+    }),
     defineField({name: 'ort', title: 'Ort', description: 'Für kommende Veranstaltungen.', type: 'string'}),
     defineField({name: 'adresse', title: 'Adresse', description: 'Optional, für den Karten-Link.', type: 'string'}),
     defineField({name: 'bild', title: 'Plakat', type: 'image'}),
     defineField({name: 'kurzbeschreibung', title: 'Kurzer Text', description: 'Optional.', type: 'text', rows: 3}),
+    defineField({
+      name: 'preis',
+      title: 'Eintritt',
+      description: 'Optional, z. B. „25 € Vorverkauf, 30 € Abendkasse“ oder „Eintritt frei“.',
+      type: 'string',
+    }),
     defineField({name: 'ticketUrl', title: 'Ticket-Link', description: 'Optional.', type: 'url'}),
     defineField({
       name: 'ticketLabel',

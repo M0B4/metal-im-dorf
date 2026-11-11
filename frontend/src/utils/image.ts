@@ -13,6 +13,11 @@ export function croppedImageUrl(source: SanityImageSource, width: number, qualit
   return builder.image(source).width(width).auto("format").quality(quality).url();
 }
 
+/** Vorschaubild beim Teilen (WhatsApp, Facebook …): JPEG, weil nicht jede App WebP/AVIF zeigt. */
+export function shareImageUrl(source: SanityImageSource) {
+  return builder.image(source).ignoreImageParams().width(1200).format("jpg").quality(82).url();
+}
+
 export function srcSet(source: SanityImageSource, widths: number[], cropped = false, quality?: number) {
   return widths.map((w) => `${(cropped ? croppedImageUrl : imageUrl)(source, w, quality)} ${w}w`).join(", ");
 }

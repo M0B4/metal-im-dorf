@@ -36,6 +36,7 @@ export interface Band {
   genre?: string;
   platzhalter?: boolean;
   bild?: SanityImage;
+  link?: string;
   spielzeit?: string;
 }
 
@@ -45,9 +46,11 @@ export interface Veranstaltung {
   kategorie: Kategorie;
   beginn: string;
   ende?: string;
+  einlass?: string;
   ort?: string;
   adresse?: string;
   kurzbeschreibung?: string;
+  preis?: string;
   bild?: SanityImage;
   ticketUrl?: string;
   ticketLabel?: string;
@@ -98,7 +101,7 @@ export function getNews(): Promise<News[]> {
   }`);
 }
 
-const eventFields = `_id, titel, kategorie, beginn, ende, ort, adresse, kurzbeschreibung, bild ${image}, ticketUrl, ticketLabel`;
+const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, bild ${image}, ticketUrl, ticketLabel`;
 
 export function getEvents(): Promise<Veranstaltung[]> {
   return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) { ${eventFields} }`);
@@ -109,7 +112,7 @@ export async function getLineupEvent(): Promise<Veranstaltung | null> {
   const upcoming = await query<Veranstaltung[]>(`*[_type == "veranstaltung" && coalesce(ende, beginn) >= now()]
     | order(beginn asc) {
       ${eventFields},
-      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, bild ${image} } }
+      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, link, bild ${image} } }
     }`);
   return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0] ?? null;
 }
@@ -121,6 +124,12 @@ export async function getFestivalInfo(): Promise<FestivalInfo> {
     intro: info?.intro,
     sections: info?.sections ?? [],
   };
+}
+
+/** Nächste kommende Veranstaltung, das Hauptfestival hat Vorrang. */
+export function nextEvent(events: Veranstaltung[], now = Date.now()) {
+  const upcoming = events.filter((event) => !isPast(event, now));
+  return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0];
 }
 
 export function isPast(event: Pick<Veranstaltung, "beginn" | "ende">, now = Date.now()) {

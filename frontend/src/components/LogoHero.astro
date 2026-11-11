@@ -1,14 +1,19 @@
 ---
-import { formatDate } from "../utils/format";
+import { MapPin, Ticket } from "@lucide/astro";
+import { formatDate, formatDateRange } from "../utils/format";
 import type { Veranstaltung } from "../utils/sanity";
-import { SITE_NAME, sitePath } from "../utils/site";
+import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, sitePath } from "../utils/site";
 
 interface Props {
   intro: string;
   events: Veranstaltung[];
+  /** Nächstes Festival: Datum, Ort und Ticket-Button direkt unter dem Logo. */
+  next?: Veranstaltung;
 }
 
-const { intro, events } = Astro.props;
+const { intro, events, next } = Astro.props;
+const place = next && (next.ort ? [next.ort, next.adresse] : ADDRESS);
+const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=${encodeURIComponent(next._id)}`));
 ---
 
 <section class="logo-hero">
@@ -17,6 +22,27 @@ const { intro, events } = Astro.props;
       <img class="logo-hero-logo" src={sitePath("/logo.svg")} alt={SITE_NAME} width="560" height="157" fetchpriority="high" />
     </h1>
     {intro && <p>{intro}</p>}
+    {next && place && (
+      <div class="hero-next">
+        <p class="hero-facts">
+          <time datetime={next.beginn}>{formatDateRange(next.beginn, next.ende)}</time>
+          <a href={mapsUrl(...place)} target="_blank" rel="noreferrer">
+            <MapPin size={16} aria-hidden="true" />
+            {place[0]}
+            <span class="sr-only">{NEW_TAB_HINT}</span>
+          </a>
+        </p>
+        <a
+          class="metal-button"
+          href={ticketHref}
+          {...(next.ticketUrl ? { target: "_blank", rel: "noreferrer" } : {})}
+        >
+          <Ticket size={16} aria-hidden="true" />
+          Tickets
+          {next.ticketUrl && <span class="sr-only">{NEW_TAB_HINT}</span>}
+        </a>
+      </div>
+    )}
   </div>
 </section>
 
@@ -103,6 +129,43 @@ const { intro, events } = Astro.props;
     color: #e4e4e7;
     font-size: clamp(0.95rem, 1.8vw, 1.1rem);
     line-height: 1.6;
+  }
+
+  .hero-next {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    margin-top: 0.25rem;
+  }
+
+  .logo-hero .hero-facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem 1.25rem;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .hero-facts a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .hero-facts a:hover {
+    color: var(--color-accent);
+  }
+
+  .hero-next .metal-button {
+    gap: 0.45rem;
   }
 
   /* Laufband mit allen kommenden Veranstaltungen, so breit wie die News. Hover/Fokus hält es an,

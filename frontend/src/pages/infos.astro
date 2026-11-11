@@ -4,6 +4,7 @@ import {
   CircleParking,
   Info,
   Mail,
+  MapPin,
   Route,
   ScrollText,
   ShieldCheck,
@@ -16,7 +17,7 @@ import MediaLightbox from "../components/MediaLightbox.astro";
 import Layout from "../layouts/Layout.astro";
 import {imageUrl, srcSet} from "../utils/image";
 import {getFestivalInfo, getSiteSettings} from "../utils/sanity";
-import {sitePath} from "../utils/site";
+import {ADDRESS, mapsUrl, NEW_TAB_HINT, sitePath} from "../utils/site";
 
 const [info, settings] = await Promise.all([getFestivalInfo(), getSiteSettings()]);
 const icons = {
@@ -39,6 +40,12 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
     <header class="page-header">
       <h1 class="page-title">{info.title}</h1>
       {info.intro && <p class="page-lede">{info.intro}</p>}
+      <a class="info-map" href={mapsUrl(...ADDRESS)} target="_blank" rel="noreferrer">
+        <MapPin size={18} aria-hidden="true" />
+        {ADDRESS.join(", ")}
+        <span class="info-map-hint">In Google Maps öffnen</span>
+        <span class="sr-only">{NEW_TAB_HINT}</span>
+      </a>
     </header>
 
     <div class="info-grid">
@@ -100,6 +107,30 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
     max-width: 780px;
   }
 
+  .info-map {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    margin-top: 1rem;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .info-map :global(svg) {
+    color: var(--color-accent);
+  }
+  .info-map-hint {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .info-map:hover .info-map-hint {
+    text-decoration: underline;
+  }
   .info-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

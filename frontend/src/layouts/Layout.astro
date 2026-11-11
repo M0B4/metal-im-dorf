@@ -47,7 +47,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
   </head>
   <body style={`--rough-texture-url: url("${sitePath("/rough-texture.webp")}")`}>
     <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
-    <SiteHeader currentPath={currentPath} />
+    <SiteHeader currentPath={currentPath} settings={settings} />
     <SiteNotice notice={settings.notice} />
     <main class="site-main" id="inhalt" tabindex="-1"><slot /></main>
     <SiteFooter settings={settings} />

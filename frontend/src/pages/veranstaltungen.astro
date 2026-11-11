@@ -3,18 +3,17 @@ import { Mail, MapPin, Ticket } from "@lucide/astro";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
-import { formatDate, formatTime, yearOf } from "../utils/format";
-import { imageUrl } from "../utils/image";
-import { getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
-import { ADDRESS, NEW_TAB_HINT, SITE_NAME, sitePath, siteUrl } from "../utils/site";
+import { formatDateRange, formatTime, yearOf } from "../utils/format";
+import { imageUrl, shareImageUrl } from "../utils/image";
+import { getEvents, getSiteSettings, isPast, nextEvent, type Kategorie } from "../utils/sanity";
+import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, sitePath, siteUrl } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
 
 const kategorieLabel = (kategorie: Kategorie) =>
   kategorie === "nebenveranstaltung" ? "Nebenveranstaltung" : "Hauptfestival";
-const mapsUrl = (...parts: Array<string | undefined>) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;
+const share = nextEvent(events)?.bild;
 
 // Vergangen ist, was laut Datum vorbei ist: neueste zuerst.
 const past = events
@@ -46,13 +45,14 @@ const jsonLd = JSON.stringify(
     ...(event.bild && { image: [imageUrl(event.bild, 1200)] }),
     ...(event.kurzbeschreibung && { description: event.kurzbeschreibung }),
     ...(event.ticketUrl && { offers: { "@type": "Offer", url: event.ticketUrl } }),
+    ...(event.einlass && { doorTime: event.einlass }),
     organizer: { "@type": "Organization", name: SITE_NAME, url: siteUrl() },
     url: siteUrl("/veranstaltungen"),
   })),
 ).replace(/</g, "\\u003c");
 ---
 
-<Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." settings={settings}>
+<Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." image={share && shareImageUrl(share)} settings={settings}>
   {upcoming.length > 0 && <script is:inline slot="head" type="application/ld+json" set:html={jsonLd} />}
   <h1 class="sr-only">Veranstaltungen</h1>
   <div class="shell events-page">
@@ -75,8 +75,17 @@ const jsonLd = JSON.stringify(
                 <span class="event-meta">{kategorieLabel(event.kategorie)}</span>
                 <h3>{event.titel}</h3>
                 <p class="event-date">
-                  <time datetime={event.beginn}>{formatDate(event.beginn)}, {formatTime(event.beginn)}</time>
+                  <time datetime={event.beginn}>{formatDateRange(event.beginn, event.ende)}</time>
                 </p>
+                <dl class="event-facts">
+                  {event.einlass && (
+                    <div><dt>Einlass</dt><dd>{formatTime(event.einlass)}</dd></div>
+                  )}
+                  <div><dt>Beginn</dt><dd>{formatTime(event.beginn)}</dd></div>
+                  {event.preis && (
+                    <div><dt>Eintritt</dt><dd>{event.preis}</dd></div>
+                  )}
+                </dl>
                 {event.ort && (
                   <a class="event-place" href={mapsUrl(event.ort, event.adresse)} target="_blank" rel="noreferrer">
                     <MapPin size={16} aria-hidden="true" />
@@ -199,6 +208,33 @@ const jsonLd = JSON.stringify(
     margin: 0;
     color: #fff;
     font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .event-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+    margin: 0;
+  }
+
+  .event-facts div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .event-facts dt {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .event-facts dd {
+    margin: 0;
+    color: #fff;
     font-weight: 600;
   }
 

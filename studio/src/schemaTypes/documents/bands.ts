@@ -24,6 +24,12 @@ export default defineType({
       initialValue: false,
     }),
     defineField({name: 'genre', title: 'Genre', type: 'string'}),
+    defineField({
+      name: 'link',
+      title: 'Link zum Reinhören',
+      description: 'Optional, z. B. Bandcamp, YouTube, Spotify oder Instagram. Der Bandname im Line-Up verlinkt dorthin.',
+      type: 'url',
+    }),
     defineField({name: 'bild', title: 'Bandfoto', type: 'image', options: {hotspot: true}}),
   ],
   preview: {

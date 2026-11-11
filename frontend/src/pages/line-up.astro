@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { formatTime } from "../utils/format";
-import { croppedImageUrl, srcSet } from "../utils/image";
+import { ExternalLink } from "@lucide/astro";
+import { croppedImageUrl, shareImageUrl, srcSet } from "../utils/image";
 import { getLineupEvent, getSiteSettings, type Band } from "../utils/sanity";
+import { NEW_TAB_HINT } from "../utils/site";
 
 const [event, settings] = await Promise.all([getLineupEvent(), getSiteSettings()]);
 const bands: Band[] = (event?.lineup ?? [])
@@ -10,7 +12,7 @@ const bands: Band[] = (event?.lineup ?? [])
   .map((slot) => ({ ...slot.band!, spielzeit: slot.spielzeit }));
 ---
 
-<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} settings={settings}>
+<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} image={event?.bild && shareImageUrl(event.bild)} settings={settings}>
   <div class="shell page">
     <header class="page-header">
       <h1 class="page-title">Line-Up</h1>
@@ -40,7 +42,15 @@ const bands: Band[] = (event?.lineup ?? [])
 
             <div class="band-info">
               <span class="genre-tag">{band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}</span>
-              <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
+              <h2>
+                {band.platzhalter ? "Wird noch bekannt gegeben" : band.link ? (
+                  <a class="band-link" href={band.link} target="_blank" rel="noreferrer">
+                    {band.name}
+                    <ExternalLink size={16} aria-hidden="true" />
+                    <span class="sr-only">{NEW_TAB_HINT}</span>
+                  </a>
+                ) : band.name}
+              </h2>
               {band.spielzeit && <p>{formatTime(band.spielzeit)}</p>}
             </div>
           </article>
@@ -150,6 +160,26 @@ const bands: Band[] = (event?.lineup ?? [])
     text-transform: uppercase;
   }
 
+  .band-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+    text-decoration: none;
+  }
+  .band-link :global(svg) {
+    flex: none;
+    color: var(--color-accent);
+  }
+  .band-link:hover {
+    color: var(--color-accent);
+  }
+  /* Die ganze Karte ist klickbar, wenn die Band einen Link hat. */
+  .band-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
   .band-card h2 {
     margin: 0;
     color: #fff;

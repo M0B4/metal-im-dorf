@@ -25,16 +25,20 @@ npm run check    # Typprüfung
 npm run build    # Website bauen (frontend/dist)
 ```
 
-Ein Push auf `master` veröffentlicht die Website über `.github/workflows/deploy.yml`. Das Studio wird mit `npm run deploy -w studio` aktualisiert.
+Ein Push auf `master` veröffentlicht die Website über Cloudflare Workers Builds. Das Studio wird mit `npm run deploy -w studio` aktualisiert.
 
 ### Cloudflare (metal-im-dorf.de)
 
 Die Website läuft als Cloudflare Worker „metal-im-dorf“ (`wrangler.jsonc`, `worker/index.js`). Bei jedem Push auf `master` baut Workers Builds die Seite und veröffentlicht sie unter https://metal-im-dorf.de; www.metal-im-dorf.de leitet dorthin um. Der Build erkennt Cloudflare an `WORKERS_CI` und baut dann ohne Unterordner `/metal-im-dorf`, die Datenschutzerklärung nennt Cloudflare als Hoster. Den Vertrag zur Auftragsverarbeitung von Cloudflare im Dashboard bestätigen.
 
-### Sofort veröffentlichen (optional)
+### Inhalte aus Sanity neu veröffentlichen
 
-Ohne Zusatz baut GitHub die Seite alle zehn Minuten neu. Für sofortige Updates in Sanity unter *API → Webhooks* einen Webhook für veröffentlichte Dokumente anlegen:
+Änderungen in Sanity erscheinen erst nach einem neuen Build. Der Workflow `.github/workflows/deploy.yml` baut täglich um 3 Uhr (UTC) neu und lässt sich jederzeit unter *Actions → Website veröffentlichen → Run workflow* starten. Er braucht das Repository-Secret `CLOUDFLARE_API_TOKEN` (Cloudflare → My Profile → API Tokens → Vorlage „Edit Cloudflare Workers“).
+
+Für sofortige Updates in Sanity unter *API → Webhooks* einen Webhook für veröffentlichte Dokumente anlegen:
 
 - URL: `https://api.github.com/repos/M0B4/metal-im-dorf/dispatches`
 - Header: `Authorization: Bearer <GitHub-Token mit Zugriff auf Actions>` und `Accept: application/vnd.github+json`
 - Payload: `{ "event_type": "sanity-content-update" }`
+
+Die alte Adresse m0b4.github.io/metal-im-dorf leitet per GitHub Pages auf metal-im-dorf.de um (`.github/redirect`).

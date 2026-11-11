@@ -10,9 +10,19 @@ interface Props {
   fallback: string;
   group: string;
   sizes?: string;
+  /** Sofort und bevorzugt laden (Plakat ganz oben auf der Seite). */
+  priority?: boolean;
 }
 
-const { image, alt, fallback, group, sizes = "(max-width: 900px) 50vw, 33vw" } = Astro.props;
+// Standard passt zum Raster der vergangenen Veranstaltungen: 2 Spalten bis 900px, sonst 3 in max. 1180px.
+const {
+  image,
+  alt,
+  fallback,
+  group,
+  sizes = "(max-width: 900px) calc(50vw - 1.5rem), 380px",
+  priority = false,
+} = Astro.props;
 ---
 
 {image ? (
@@ -26,13 +36,14 @@ const { image, alt, fallback, group, sizes = "(max-width: 900px) 50vw, 33vw" } =
     aria-label={`${alt} vergrößern`}
   >
     <img
-      src={imageUrl(image, 720)}
-      srcset={srcSet(image, [320, 480, 720, 960])}
+      src={imageUrl(image, 720, 76)}
+      srcset={srcSet(image, [240, 360, 480, 720, 960], false, 76)}
       sizes={sizes}
       width={image.width}
       height={image.height}
       alt={alt}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      fetchpriority={priority ? "high" : undefined}
     />
   </button>
 ) : (

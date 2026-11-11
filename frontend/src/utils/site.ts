@@ -29,8 +29,21 @@ export const defaultSiteSettings: SiteSettings = {
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/** Pfad innerhalb der Website, berücksichtigt den GitHub-Pages-Unterordner. */
+/**
+ * Pfad innerhalb der Website, berücksichtigt den GitHub-Pages-Unterordner.
+ * Seitenpfade enden immer mit "/", sonst leitet GitHub Pages bei jedem Klick erst um.
+ */
 export function sitePath(path = "") {
-  if (!path) return basePath || "/";
-  return `${basePath}${path.startsWith("/") ? path : `/${path}`}`;
+  const [, pathname = "", rest = ""] = path.match(/^([^?#]*)(.*)$/) ?? [];
+  let full = `${basePath}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
+  if (!full.endsWith("/") && !/\.[a-z0-9]+$/i.test(full)) full += "/";
+  return `${full}${rest}`;
 }
+
+/** Absolute URL, z. B. für Vorschaubilder beim Teilen und strukturierte Daten. */
+export function siteUrl(path = "") {
+  return new URL(sitePath(path), import.meta.env.SITE).href;
+}
+
+/** Hinweis für Screenreader bei Links, die einen neuen Tab öffnen. */
+export const NEW_TAB_HINT = "(öffnet in neuem Tab)";

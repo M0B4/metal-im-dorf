@@ -4,7 +4,9 @@ import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDate, formatTime, yearOf } from "../utils/format";
+import { imageUrl } from "../utils/image";
 import { getArchive, getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
+import { ADDRESS, NEW_TAB_HINT, SITE_NAME, siteUrl } from "../utils/site";
 
 const [events, archive, settings] = await Promise.all([getEvents(), getArchive(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
@@ -38,23 +40,49 @@ const past = [
     image: entry.plakat,
   })),
 ].sort((a, b) => b.year - a.year || b.sort.localeCompare(a.sort));
+
+// Strukturierte Daten, damit Suchmaschinen die Termine direkt anzeigen können.
+const jsonLd = JSON.stringify(
+  upcoming.map((event) => ({
+    "@context": "https://schema.org",
+    "@type": "MusicEvent",
+    name: event.titel,
+    startDate: event.beginn,
+    ...(event.ende && { endDate: event.ende }),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: {
+      "@type": "Place",
+      name: event.ort || ADDRESS[0],
+      address: event.adresse || ADDRESS[1],
+    },
+    ...(event.bild && { image: [imageUrl(event.bild, 1200)] }),
+    ...(event.kurzbeschreibung && { description: event.kurzbeschreibung }),
+    ...(event.ticketUrl && { offers: { "@type": "Offer", url: event.ticketUrl } }),
+    organizer: { "@type": "Organization", name: SITE_NAME, url: siteUrl() },
+    url: siteUrl("/veranstaltungen"),
+  })),
+).replace(/</g, "\\u003c");
 ---
 
 <Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." settings={settings}>
+  {upcoming.length > 0 && <script is:inline slot="head" type="application/ld+json" set:html={jsonLd} />}
+  <h1 class="sr-only">Veranstaltungen</h1>
   <div class="shell events-page">
     <section id="kommend" aria-labelledby="upcoming-title">
       <h2 id="upcoming-title" class="section-title">Kommende Veranstaltungen</h2>
 
       {upcoming.length ? (
         <div class="upcoming-list">
-          {upcoming.map((event) => (
+          {upcoming.map((event, index) => (
             <article class="upcoming">
               <Poster
                 image={event.bild}
                 alt={event.bild?.alt || `Plakat ${event.titel}`}
                 fallback={String(yearOf(event.beginn))}
                 group="kommend"
-                sizes="(max-width: 700px) 100vw, 360px"
+                sizes="(max-width: 700px) calc(100vw - 2rem), 360px"
+                priority={index === 0}
               />
               <div class="upcoming-info">
                 <span class="event-meta">{kategorieLabel(event.kategorie)}</span>
@@ -66,6 +94,7 @@ const past = [
                   <a class="event-place" href={mapsUrl(event.ort, event.adresse)} target="_blank" rel="noreferrer">
                     <MapPin size={16} aria-hidden="true" />
                     {[event.ort, event.adresse].filter(Boolean).join(", ")}
+                    <span class="sr-only">{NEW_TAB_HINT}</span>
                   </a>
                 )}
                 {event.kurzbeschreibung && <p class="event-text">{event.kurzbeschreibung}</p>}
@@ -73,6 +102,7 @@ const past = [
                   <a class="metal-button" href={event.ticketUrl} target="_blank" rel="noreferrer">
                     <Ticket size={16} aria-hidden="true" />
                     {event.ticketLabel || "Tickets"}
+                    <span class="sr-only">{NEW_TAB_HINT}</span>
                   </a>
                 )}
               </div>
@@ -90,9 +120,9 @@ const past = [
       {past.length ? (
         <>
           <div class="filter" role="group" aria-label="Vergangene Veranstaltungen filtern">
-            <button class="filter-button is-active" type="button" data-filter="alle">Alle</button>
-            <button class="filter-button" type="button" data-filter="hauptfestival">Hauptfestival</button>
-            <button class="filter-button" type="button" data-filter="nebenveranstaltung">Nebenveranstaltungen</button>
+            <button class="filter-button is-active" type="button" data-filter="alle" aria-pressed="true">Alle</button>
+            <button class="filter-button" type="button" data-filter="hauptfestival" aria-pressed="false">Hauptfestival</button>
+            <button class="filter-button" type="button" data-filter="nebenveranstaltung" aria-pressed="false">Nebenveranstaltungen</button>
           </div>
 
           <div class="past-grid">
@@ -291,7 +321,10 @@ const past = [
   buttons.forEach((button) => {
     button.addEventListener("click", () => {
       const filter = button.dataset.filter;
-      buttons.forEach((other) => other.classList.toggle("is-active", other === button));
+      buttons.forEach((other) => {
+        other.classList.toggle("is-active", other === button);
+        other.setAttribute("aria-pressed", String(other === button));
+      });
       items.forEach((item) => {
         item.hidden = filter !== "alle" && item.dataset.category !== filter;
       });

@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { SITE_NAME, STUDIO_URL, sitePath, type SiteSettings } from "../utils/site";
+import { NEW_TAB_HINT, SITE_NAME, STUDIO_URL, sitePath, type SiteSettings } from "../utils/site";
 
 interface Props {
   settings: SiteSettings;
@@ -10,6 +10,7 @@ const { settings } = Astro.props;
 const links = [
   { label: "Historie", href: sitePath("/veranstaltungen#vergangen") },
   { label: "Impressum", href: sitePath("/impressum") },
+  { label: "Datenschutz", href: sitePath("/datenschutz") },
   { label: "Adminbereich", href: STUDIO_URL },
 ];
 ---
@@ -17,14 +18,14 @@ const links = [
 <footer class="site-footer">
   <div class="shell--narrow footer-inner">
     {(settings.instagramUrl || settings.facebookUrl) && (
-      <div class="footer-socials" aria-label="Social Media">
+      <div class="footer-socials" role="group" aria-label="Social Media">
         {settings.instagramUrl && (
-          <a href={settings.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram">
+          <a href={settings.instagramUrl} target="_blank" rel="noreferrer" aria-label={`Instagram ${NEW_TAB_HINT}`} title="Instagram">
             <Icon name="simple-icons:instagram" size={22} />
           </a>
         )}
         {settings.facebookUrl && (
-          <a href={settings.facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook" title="Facebook">
+          <a href={settings.facebookUrl} target="_blank" rel="noreferrer" aria-label={`Facebook ${NEW_TAB_HINT}`} title="Facebook">
             <Icon name="simple-icons:facebook" size={22} />
           </a>
         )}
@@ -88,7 +89,7 @@ const links = [
 
   .footer-copy {
     margin: 0.5rem 0 0;
-    color: #52525b;
+    color: #85858e;
     font-size: 0.78rem;
   }
 </style>

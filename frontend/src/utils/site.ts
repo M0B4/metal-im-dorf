@@ -5,6 +5,13 @@ export const SITE_DESCRIPTION = "News, Termine und Line-Up vom Metal im Dorf Fes
 export const STUDIO_URL = "https://metal-im-dorf.sanity.studio/";
 export const ADDRESS = ["Opfermoor Niederdorla", "An der Oberrothe, 99988 Niederdorla"];
 
+/**
+ * Zugangsschlüssel von Web3Forms (web3forms.com) für das Ticketformular. Der Schlüssel ist öffentlich
+ * und legt fest, an welche Mailadresse die Bestellungen gehen. Leer = das Formular öffnet stattdessen
+ * das Mailprogramm der Besucher mit fertig ausgefüllter Mail an die Kontaktadresse.
+ */
+export const WEB3FORMS_ACCESS_KEY = "";
+
 export interface SiteSettings {
   intro: string;
   email: string;

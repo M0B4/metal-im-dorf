@@ -42,7 +42,6 @@ export default defineConfig({
               .title('Website-Einstellungen')
               .id('siteSettings')
               .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
-            S.documentTypeListItem('historie').title('Archiv: frühere Plakate'),
           ]),
     }),
   ],

@@ -42,11 +42,20 @@ const { intro, event } = Astro.props;
 )}
 
 <style>
+  /* Logo-Bereich als eigene Fläche: hellerer Grund mit Akzent-Schein hinter dem Logo und Akzentlinie unten. */
   .logo-hero {
     position: relative;
     display: grid;
     place-items: center;
-    padding: clamp(2rem, 6vw, 4.5rem) 1rem;
+    /* Bis direkt unter die Menüleiste ziehen (gleicht den oberen Abstand von <main> aus). */
+    margin-top: calc(-1 * clamp(1.25rem, 3vw, 2.5rem));
+    padding: clamp(2.5rem, 8vw, 6rem) 1rem;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 55% 70% at 50% 45%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%),
+      linear-gradient(180deg, #19191c 0%, #0e0e10 100%);
+    border-bottom: 3px solid var(--color-accent);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
   }
 
   .logo-hero-content {
@@ -64,6 +73,7 @@ const { intro, event } = Astro.props;
 
   .logo-hero-logo {
     display: block;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.7));
     width: min(560px, 80vw);
     height: auto;
   }

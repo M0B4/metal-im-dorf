@@ -3,7 +3,7 @@
 // kein Tracking, Schriften lokal, Bilder vom Sanity-CDN). Vor dem Livegang rechtlich prüfen lassen.
 import Layout from "../layouts/Layout.astro";
 import { getSiteSettings } from "../utils/sanity";
-import { ADDRESS, SITE_NAME } from "../utils/site";
+import { ADDRESS, SITE_NAME, WEB3FORMS_ACCESS_KEY } from "../utils/site";
 
 const settings = await getSiteSettings();
 ---
@@ -79,6 +79,32 @@ const settings = await getSiteSettings();
           Wenn du uns schreibst, nutzen wir deine Angaben nur, um deine Anfrage zu beantworten
           (Art. 6 Abs. 1 lit. b und f DSGVO), und löschen sie, sobald sie nicht mehr gebraucht werden.
         </p>
+      </section>
+
+      <section>
+        <h2>Ticketbestellung</h2>
+        <p>
+          Über das Formular auf der Seite Veranstaltungen kannst du Tickets bestellen. Dafür fragen wir die
+          Veranstaltung, die Anzahl, deinen Namen, deine E-Mail-Adresse und optional eine Nachricht ab. Wir nutzen
+          diese Angaben nur, um deine Bestellung zu bearbeiten und uns wegen Bezahlung und Abholung bei dir zu melden
+          (Art. 6 Abs. 1 lit. b DSGVO). Wir löschen sie, sobald die Veranstaltung vorbei ist und keine gesetzlichen
+          Aufbewahrungspflichten mehr bestehen.
+        </p>
+        {WEB3FORMS_ACCESS_KEY ? (
+          <p>
+            Das Formular wird über den Dienst Web3Forms der Web3Creative (Indien) an uns gesendet. Dabei verarbeitet
+            Web3Forms deine Angaben und deine IP-Adresse, auch über Dienstleister wie Amazon Web Services und
+            Cloudflare und zur Spam-Abwehr (Art. 6 Abs. 1 lit. f DSGVO), und speichert die Einsendungen bis zu drei
+            Jahre. Für die Übermittlung außerhalb der EU gelten die EU-Standardvertragsklauseln. Mehr dazu in der
+            <a href="https://web3forms.com/privacy">Datenschutzerklärung von Web3Forms</a>.
+          </p>
+        ) : (
+          <p>
+            Beim Absenden öffnet sich dein eigenes Mailprogramm mit einer fertigen E-Mail an uns. Über die Website
+            selbst werden dabei keine Daten übertragen, erst wenn du die Mail abschickst, erhalten wir sie über
+            deinen E-Mail-Anbieter.
+          </p>
+        )}
       </section>
 
       <section>

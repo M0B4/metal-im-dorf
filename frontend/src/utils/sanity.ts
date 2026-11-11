@@ -54,15 +54,6 @@ export interface Veranstaltung {
   lineup?: Array<{ _key: string; spielzeit?: string; band?: Band }>;
 }
 
-/** Plakate früherer Jahre, die nicht als Veranstaltung angelegt sind. */
-export interface ArchivEintrag {
-  _id: string;
-  jahr: number;
-  titel?: string;
-  kategorie: Kategorie;
-  plakat?: SanityImage;
-}
-
 export interface FestivalInfo {
   title: string;
   intro?: string;
@@ -110,12 +101,6 @@ const eventFields = `_id, titel, kategorie, beginn, ende, ort, adresse, kurzbesc
 
 export function getEvents(): Promise<Veranstaltung[]> {
   return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) { ${eventFields} }`);
-}
-
-export function getArchive(): Promise<ArchivEintrag[]> {
-  return query(`*[_type == "historie"] | order(jahr desc) {
-    _id, jahr, titel, "kategorie": coalesce(kategorie, "hauptfestival"), plakat ${image}
-  }`);
 }
 
 /** Nächste kommende Veranstaltung mit Line-Up, das Hauptfestival hat Vorrang. */

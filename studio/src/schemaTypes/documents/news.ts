@@ -51,7 +51,8 @@ export default defineType({
     defineField({
       name: 'bilder',
       title: 'Weitere Bilder',
-      description: 'Optional. Erscheinen, wenn man auf der Website „Zeige mehr“ klickt.',
+      description:
+        'Optional. Erscheinen, wenn man auf der Website „Zeige mehr“ klickt. Mehrere Bilder auf einmal: Dateien markieren und zusammen auf dieses Feld ziehen.',
       type: 'array',
       options: {layout: 'grid'},
       of: [

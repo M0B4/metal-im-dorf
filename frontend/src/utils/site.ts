@@ -25,6 +25,15 @@ export interface SiteSettings {
     linkLabel?: string;
     linkUrl?: string;
   };
+  impressum: {
+    veranstalter: string;
+    /** Anschrift, eine Zeile pro Eintrag. */
+    anschrift: string[];
+    vertreten?: string;
+    telefon?: string;
+    /** Verantwortlich nach § 18 Abs. 2 MStV, eine Zeile pro Eintrag; leer = Veranstalter und Anschrift. */
+    verantwortlich: string[];
+  };
 }
 
 export const defaultSiteSettings: SiteSettings = {
@@ -34,6 +43,7 @@ export const defaultSiteSettings: SiteSettings = {
   instagramUrl: "https://www.instagram.com/metalimdorf",
   facebookUrl: "https://www.facebook.com/metalimdorf",
   notice: { enabled: false },
+  impressum: { veranstalter: SITE_NAME, anschrift: ADDRESS, verantwortlich: [] },
 };
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");

@@ -1,9 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getSiteSettings } from "../utils/sanity";
-import { ADDRESS, SITE_NAME } from "../utils/site";
+import { SITE_NAME } from "../utils/site";
 
 const settings = await getSiteSettings();
+const { veranstalter, anschrift, vertreten, telefon, verantwortlich } = settings.impressum;
+// Nur ein Name eingetragen: Anschrift des Veranstalters dazu, wie bei § 18 MStV verlangt.
+const verantwortlichZeilen =
+  verantwortlich.length === 0 ? [veranstalter, ...anschrift]
+  : verantwortlich.length === 1 ? [...verantwortlich, ...anschrift]
+  : verantwortlich;
 ---
 
 <Layout
@@ -21,23 +27,23 @@ const settings = await getSiteSettings();
       <section>
         <h2>Veranstalter</h2>
         <p>
-          {SITE_NAME}<br />
-          {ADDRESS.map((line) => <>{line}<br /></>)}
+          {[veranstalter, ...anschrift].map((line) => <>{line}<br /></>)}
         </p>
+        {vertreten && <p>Vertreten durch: {vertreten}</p>}
       </section>
 
       <section>
         <h2>Kontakt</h2>
         <p>
           E-Mail: <a href={`mailto:${settings.email}`}>{settings.email}</a>
+          {telefon && <><br />Telefon: <a href={`tel:${telefon.replace(/[^\d+]/g, "")}`}>{telefon}</a></>}
         </p>
       </section>
 
       <section>
         <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
         <p>
-          {SITE_NAME}<br />
-          {ADDRESS.map((line) => <>{line}<br /></>)}
+          {verantwortlichZeilen.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 

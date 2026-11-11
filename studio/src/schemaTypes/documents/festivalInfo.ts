@@ -6,13 +6,6 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'kicker',
-      title: 'Kleine Überschrift',
-      type: 'string',
-      initialValue: 'Gut vorbereitet',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
       name: 'title',
       title: 'Überschrift',
       type: 'string',

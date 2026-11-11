@@ -1,150 +1,37 @@
-# Clean Astro + Sanity app
+# Metal im Dorf
 
-This template includes an [Astro](https://astro.build/) app with a [Sanity Studio](https://www.sanity.io/) – an open-source React application that connects to your Sanity project’s hosted dataset. The Studio is configured locally and can then be deployed for content collaboration.
+Website und Redaktions-Studio für das Metal im Dorf Festival.
 
-## Features
+- **Website:** https://m0b4.github.io/metal-im-dorf (Astro, statisch, GitHub Pages)
+- **Studio:** https://metal-im-dorf.sanity.studio (Sanity, hier werden Inhalte gepflegt)
 
-- Fetch content as data from [the Sanity Content Lake](https://www.sanity.io/docs/datastore)
-- [Visual Editing](https://www.sanity.io/docs/visual-editing) with click-to-edit overlays powered by the [Presentation tool](https://www.sanity.io/docs/visual-editing/configuring-the-presentation-tool)
-- Render block content with [Portable Text](https://www.sanity.io/docs/presenting-block-text)
-- Manage and create content with the intuitive [Sanity Studio](https://www.sanity.io/docs/sanity-studio)
-- Crop and render images with [Sanity Image URLs](https://www.sanity.io/docs/presenting-images)
-- Optimized images with automatic WebP/AVIF format selection, responsive `srcset`, and no layout shift
-- SEO-ready with `<meta>` description, Open Graph, and Twitter Card tags on every page, with per-post overrides via a dedicated SEO field in the Studio
-- Custom 404 page for missing posts and invalid routes
+## Inhalte pflegen
 
-## Demo
+Im Studio gibt es:
 
-https://template-astro-clean.sanity.build
+- **News:** Überschrift, Datum (ist automatisch heute), Text und optional Bilder. Veröffentlichen, fertig.
+- **Veranstaltungen:** mit Plakat. Kommende stehen oben auf der Seite „Veranstaltungen“, vergangene rutschen automatisch in den Rückblick. Das Line-Up der nächsten Veranstaltung erscheint auf der Seite „Line-Up“.
+- **Bands:** für das Line-Up.
+- **Festival-Infos** und **Website-Einstellungen** (Text auf der Startseite, Hinweisbanner, Kontakt).
+- **Archiv: frühere Plakate:** nur für alte Jahre, die nicht als Veranstaltung angelegt sind.
 
-## Getting Started
+Veröffentlichte Inhalte sind spätestens nach zehn Minuten auf der Website.
 
-### Install the template
+## Entwickeln
 
-#### 1. Initialize template with Sanity CLI
-
-Run the command in your Terminal to initialize this template on your local computer.
-
-See the documentation if you are [having issues with the CLI](https://www.sanity.io/help/cli-errors).
-
-```shell
-npm create sanity@latest -- --template sanity-io/sanity-template-astro-clean
+```sh
+npm install
+npm run dev      # Website auf http://localhost:4321, Studio auf http://localhost:3333
+npm run check    # Typprüfung
+npm run build    # Website bauen (frontend/dist)
 ```
 
-#### 2. Run Studio and Astro app locally
+Ein Push auf `master` veröffentlicht die Website über `.github/workflows/deploy.yml`. Das Studio wird mit `npm run deploy -w studio` aktualisiert.
 
-Navigate to the template directory using `cd <your app name>`, and start the development servers by running the following command
+### Sofort veröffentlichen (optional)
 
-```shell
-npm run dev
-```
+Ohne Zusatz baut GitHub die Seite alle zehn Minuten neu. Für sofortige Updates in Sanity unter *API → Webhooks* einen Webhook für veröffentlichte Dokumente anlegen:
 
-#### 3. Open the app and sign in to the Studio
-
-Open the Astro app running locally in your browser on [http://localhost:4321](http://localhost:4321).
-
-Open the Studio running locally in your browser on [http://localhost:3333](http://localhost:3333). You should now see a screen prompting you to log in to the Studio. Use the same service (Google, GitHub, or email) that you used when you logged in to the CLI.
-
-### Adding content with Sanity
-
-#### 1. Publish your first document
-
-The template comes pre-defined with a schema containing a `Post` document type.
-
-From the Studio, click "+ Create" and select the `Post` document type. Go ahead and create and publish the document.
-
-Your content should now appear in your Astro app ([http://localhost:4321](http://localhost:4321))
-
-#### 2. Extending the Sanity schema
-
-The schema for the `Post` document type is defined in the `studio/src/schemaTypes/documents/post.ts` file. You can [add more document types](https://www.sanity.io/docs/schema-types) to the schema to suit your needs.
-
-### Deploying your application and inviting editors
-
-#### 1. Deploy Sanity Studio
-
-Your Astro frontend (`/frontend`) and Sanity Studio (`/studio`) are still only running on your local computer.
-
-Back in your Studio directory (`/studio`), run the following command to deploy your Sanity Studio.
-
-```shell
-cd studio/
-npx sanity deploy
-```
-
-#### 2. Deploy Astro app to Vercel
-
-You have the freedom to deploy your Astro app to your hosting provider of choice. With Vercel and GitHub being a popular choice, we'll cover the basics of that approach.
-
-1. Create a GitHub repository from this project. [Learn more](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github).
-2. Create a new Vercel project and connect it to your Github repository.
-3. Set the `Root Directory` to your Astro app.
-4. Configure your Environment Variables.
-
-#### 3. Invite a collaborator
-
-Now that you’ve deployed your Astro application and Sanity Studio, you can optionally invite a collaborator to your Studio. Open up [Manage](https://www.sanity.io/manage), select your project and click "Invite project members"
-
-They will be able to access the deployed Studio, where you can collaborate together on creating content.
-
-## Environment variables
-
-`PUBLIC_SANITY_STUDIO_URL` in `frontend/.env` is intentionally blank for local development (it defaults to `http://localhost:3333`). Before deploying to production, set it to your deployed Studio URL (e.g. `https://your-studio.sanity.studio`). Stega encoding uses this value to generate "Open in Studio" links from the visual editing overlays — leaving it blank in production will cause those links to point to localhost instead of the live Studio.
-
-`PUBLIC_SANITY_VISUAL_EDITING_ENABLED` controls the entire visual editing system. Set it to `"true"` for local development and staging environments where editors use the Presentation tool. **In production, omit it or set it to `"false"` — this switches to the published content perspective, disables stega encoding, and removes `data-sanity` attributes from the rendered HTML.**
-
-## Veröffentlichungen und Vorschau
-
-Die GitHub-Pages-Action baut die Website automatisch alle zehn Minuten neu. Zusätzlich kann Sanity den Build sofort auslösen:
-
-1. In GitHub einen fein eingeschränkten Token mit Zugriff auf `Actions` für dieses Repository anlegen.
-2. In Sanity unter `API > Webhooks` einen Webhook für `create`, `update` und `delete` veröffentlichter Dokumente anlegen.
-3. Als URL `https://api.github.com/repos/OWNER/REPOSITORY/dispatches` verwenden.
-4. Header `Authorization: Bearer TOKEN` und `Accept: application/vnd.github+json` setzen.
-5. Als JSON-Payload `{ "event_type": "sanity-content-update" }` senden.
-
-Für Entwürfe lokal Frontend und Studio gemeinsam starten. Im Frontend werden benötigt:
-
-```env
-SANITY_API_READ_TOKEN="VIEWER_TOKEN"
-PUBLIC_SANITY_VISUAL_EDITING_ENABLED="true"
-PUBLIC_SANITY_STUDIO_URL="http://localhost:3333"
-```
-
-Im Studio zeigt `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` auf diese Vorschau. Ein Lesetoken darf niemals als `PUBLIC_*` Variable gesetzt oder in den öffentlichen GitHub-Pages-Build eingebunden werden.
-
-## Visual Editing notes
-
-Stega encoding handles **string fields** (e.g. `title`, `excerpt`) automatically — invisible metadata is embedded in the string values returned by the Sanity client, and the visual editing overlay detects them in the DOM.
-
-**Non-string fields** (objects and arrays) are not stega-encodable and require explicit `data-sanity` attributes on their rendered elements. Use `createDataAttribute` from `@sanity/visual-editing-csm` to generate these:
-
-```ts
-import { createDataAttribute } from "@sanity/visual-editing-csm";
-
-const dataAttr = createDataAttribute({
-  projectId: "your-project-id",
-  dataset: "production",
-  baseUrl: "http://localhost:3333", // studio URL
-  id: post._id,
-  type: post._type,
-});
-```
-
-Then attach to the relevant element:
-
-```html
-<!-- image (object reference) -->
-<img data-sanity={dataAttr.scope("mainImage").toString()} ... />
-
-<!-- body (PortableText array) -->
-<div data-sanity={dataAttr.scope("body").toString()}>...</div>
-```
-
-## Resources
-
-- [Sanity documentation](https://www.sanity.io/docs/)
-- [Astro documentation](https://docs.astro.build/en/getting-started/)
-- [Join the Sanity Community](https://snty.link/community)
-- [Learn Sanity](https://www.sanity.io/learn)
-- [Visual Editing with Astro and Sanity](https://www.sanity.io/guides/sanity-astro-blog)
+- URL: `https://api.github.com/repos/M0B4/metal-im-dorf/dispatches`
+- Header: `Authorization: Bearer <GitHub-Token mit Zugriff auf Actions>` und `Accept: application/vnd.github+json`
+- Payload: `{ "event_type": "sanity-content-update" }`

@@ -1,19 +1,19 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getSiteSettings } from "../utils/sanity";
+import { ADDRESS, SITE_NAME } from "../utils/site";
 
 const settings = await getSiteSettings();
 ---
 
 <Layout
-  title={`${settings.navigation.legalLabel} | ${settings.siteName}`}
-  description={`Impressum und rechtliche Angaben zu ${settings.siteName}.`}
+  title="Impressum"
+  description={`Impressum und rechtliche Angaben zu ${SITE_NAME}.`}
   settings={settings}
 >
   <section class="shell legal-page">
     <header class="page-header">
-      <span class="section-kicker">Rechtliches</span>
-      <h1 class="page-title">{settings.navigation.legalLabel}</h1>
+      <h1 class="page-title">Impressum</h1>
       <p class="page-lede">Angaben gemäß § 5 TMG</p>
     </header>
 
@@ -21,23 +21,23 @@ const settings = await getSiteSettings();
       <section class="space-y-2">
         <h2 class="text-xl font-bold text-white">Veranstalter</h2>
         <p>
-          {settings.siteName}<br />
-          {settings.contact.address.map((line) => <>{line}<br /></>)}
+          {SITE_NAME}<br />
+          {ADDRESS.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 
       <section class="space-y-2">
         <h2 class="text-xl font-bold text-white">Kontakt</h2>
         <p>
-          E-Mail: <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
+          E-Mail: <a href={`mailto:${settings.email}`}>{settings.email}</a>
         </p>
       </section>
 
       <section class="space-y-2">
         <h2 class="text-xl font-bold text-white">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
         <p>
-          {settings.siteName}<br />
-          {settings.contact.address.map((line) => <>{line}<br /></>)}
+          {SITE_NAME}<br />
+          {ADDRESS.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 

@@ -1,15 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getSiteSettings } from "../utils/sanity";
+import { sitePath } from "../utils/site";
 
-const base = import.meta.env.BASE_URL;
+const settings = await getSiteSettings();
 ---
 
-<Layout title="Seite nicht gefunden | Metal im Dorf">
+<Layout title="Seite nicht gefunden" settings={settings}>
   <section class="shell error-page">
-    <span class="section-kicker">404</span>
     <h1 class="page-title">Seite nicht gefunden</h1>
     <p class="page-lede">Diese Seite existiert nicht oder wurde verschoben.</p>
-    <a class="metal-button" href={base}>Zur Startseite</a>
+    <a class="metal-button" href={sitePath("/")}>Zur Startseite</a>
   </section>
 </Layout>
 

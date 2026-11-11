@@ -1,14 +1,12 @@
 import type { PortableTextBlock } from "@portabletext/types";
-import type { News, SanityImage } from "./sanity";
+import type { News } from "./sanity";
 
-export const NEWS_PAGE_SIZE = 12;
+/** So viele News sind anfangs sichtbar; "Weitere News" blendet jeweils so viele weitere ein. */
+export const NEWS_BATCH_SIZE = 8;
 
-export function getTextBlocks(content?: PortableTextBlock[]) {
-  return content?.filter((block) => block._type === "block") ?? [];
-}
-
-export function portableTextToPlainText(content?: PortableTextBlock[]) {
-  return getTextBlocks(content)
+export function plainText(content?: PortableTextBlock[]) {
+  return (content ?? [])
+    .filter((block) => block._type === "block")
     .flatMap((block) => block.children ?? [])
     .map((child) => ("text" in child ? child.text : ""))
     .join(" ")
@@ -16,12 +14,6 @@ export function portableTextToPlainText(content?: PortableTextBlock[]) {
     .trim();
 }
 
-export function getNewsImages(item: News): SanityImage[] {
-  const inlineImages = (item.inhalt?.filter((block) => block._type === "image") ?? []) as unknown as SanityImage[];
-
-  return [
-    ...(item.bild ? [item.bild] : []),
-    ...(item.bilder ?? []),
-    ...inlineImages,
-  ];
+export function newsAnchor(item: Pick<News, "_id">) {
+  return `news-${item._id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }

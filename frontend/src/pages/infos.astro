@@ -32,17 +32,16 @@ const icons = {
 const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url;
 ---
 
-<Layout title={`${info.title} | ${settings.siteName}`} description={info.intro} settings={settings}>
+<Layout title={info.title} description={info.intro} settings={settings}>
   <div class="shell info-page">
     <header class="page-header">
-      <span class="section-kicker">{info.kicker}</span>
       <h1 class="page-title">{info.title}</h1>
-      <p class="page-lede">{info.intro}</p>
+      {info.intro && <p class="page-lede">{info.intro}</p>}
     </header>
 
     <div class="info-grid">
       {info.sections.map((section) => {
-        const IconComponent = icons[section.icon] || Info;
+        const IconComponent = icons[section.icon as keyof typeof icons] || Info;
         const href = resolveLink(section.linkUrl);
         return (
           <article class="info-card">

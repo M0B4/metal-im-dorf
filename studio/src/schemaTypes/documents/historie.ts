@@ -1,116 +1,40 @@
 import {defineField, defineType} from 'sanity'
 
-const imageField = {
-  type: 'image',
-  options: {hotspot: true},
-  fields: [
-    defineField({
-      name: 'alt',
-      title: 'Alternativer Text',
-      type: 'string',
-    }),
-    defineField({
-      name: 'caption',
-      title: 'Bildtitel / Caption',
-      type: 'string',
-    }),
-  ],
-}
-
+// Plakate von früheren Veranstaltungen, die nicht als „Veranstaltung“ angelegt sind.
+// Neue Veranstaltungen immer unter „Veranstaltungen“ anlegen, sie landen später automatisch im Rückblick.
 export default defineType({
   name: 'historie',
-  title: 'Historie & Rückblick',
+  title: 'Archiv-Plakat',
   type: 'document',
-  groups: [
-    {name: 'overview', title: 'Übersicht', default: true},
-    {name: 'content', title: 'Rückblick'},
-    {name: 'media', title: 'Plakat & Galerie'},
-  ],
   fields: [
-    defineField({
-      name: 'jahr',
-      title: 'Jahr',
-      type: 'number',
-      group: 'overview',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
-      name: 'titel',
-      title: 'Festival-Titel (optional)',
-      description: 'Z.B. "10 Jahre Metal im Dorf". Falls leer, wird "Festival [Jahr]" angezeigt.',
-      type: 'string',
-      group: 'overview',
-    }),
-    defineField({
-      name: 'slug',
-      title: 'URL',
-      type: 'slug',
-      group: 'overview',
-      options: {
-        source: (document) => `${document.jahr || ''}-${document.titel || 'metal-im-dorf'}`,
-        maxLength: 96,
-      },
-    }),
+    defineField({name: 'jahr', title: 'Jahr', type: 'number', validation: (rule) => rule.required().integer()}),
+    defineField({name: 'titel', title: 'Name', description: 'Optional, sonst wird das Jahr gezeigt.', type: 'string'}),
     defineField({
       name: 'kategorie',
-      title: 'Kategorie',
+      title: 'Art',
       type: 'string',
-      group: 'overview',
       initialValue: 'hauptfestival',
       options: {
         layout: 'radio',
+        direction: 'horizontal',
         list: [
           {title: 'Hauptfestival', value: 'hauptfestival'},
           {title: 'Nebenveranstaltung', value: 'nebenveranstaltung'},
         ],
       },
-      validation: Rule => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'veranstaltung',
-      title: 'Zugehörige Veranstaltung',
-      type: 'reference',
-      group: 'overview',
-      to: [{type: 'veranstaltung'}],
-    }),
-    defineField({
-      name: 'plakat',
-      title: 'Festival-Plakat',
-      type: 'image',
-      group: 'media',
-      options: {hotspot: true},
-      fields: [defineField({name: 'alt', title: 'Alternativer Text', type: 'string'})],
-    }),
-    defineField({
-      name: 'beschreibung',
-      title: 'Rückblick / Beschreibung',
-      type: 'array',
-      group: 'content',
-      of: [{type: 'block'}],
-    }),
-    defineField({
-      name: 'bilder',
-      title: 'Bildergalerie / Event-Fotos',
-      type: 'array',
-      group: 'media',
-      of: [imageField],
-    }),
+    defineField({name: 'plakat', title: 'Plakat', type: 'image'}),
   ],
+  orderings: [{title: 'Neueste zuerst', name: 'jahrDesc', by: [{field: 'jahr', direction: 'desc'}]}],
   preview: {
-    select: {
-      title: 'titel',
-      subtitle: 'jahr',
-      category: 'kategorie',
-      media: 'plakat',
-    },
-    prepare(selection) {
-      const {title, subtitle, category, media} = selection;
-      const categoryLabel = category === 'nebenveranstaltung' ? 'Nebenveranstaltung' : 'Hauptfestival';
-      return {
-        title: title || (subtitle ? `Festival ${subtitle}` : 'Kein Jahr angegeben'),
-        subtitle: [subtitle?.toString(), categoryLabel].filter(Boolean).join(' · '),
-        media,
-      }
-    },
+    select: {titel: 'titel', jahr: 'jahr', kategorie: 'kategorie', media: 'plakat'},
+    prepare: ({titel, jahr, kategorie, media}) => ({
+      title: titel || String(jahr ?? 'Ohne Jahr'),
+      subtitle: [jahr, kategorie === 'nebenveranstaltung' ? 'Nebenveranstaltung' : 'Hauptfestival']
+        .filter(Boolean)
+        .join(' · '),
+      media,
+    }),
   },
 })

@@ -1,65 +1,28 @@
-// Loading environment variables from .env files
-// https://docs.astro.build/en/guides/configuring-astro/#environment-variables
-import { loadEnv } from "vite";
-const {
-    PUBLIC_SANITY_STUDIO_PROJECT_ID,
-    PUBLIC_SANITY_STUDIO_DATASET,
-    PUBLIC_SANITY_STUDIO_URL,
-} = loadEnv(
-    import.meta.env.MODE, process.cwd(), "");
 import { defineConfig } from "astro/config";
-
-const projectId = PUBLIC_SANITY_STUDIO_PROJECT_ID;
-const dataset = PUBLIC_SANITY_STUDIO_DATASET;
-const studioUrl = PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333";
-
+import { loadEnv } from "vite";
 import sanity from "@sanity/astro";
-import icon from "astro-icon";
 import sitemap from "@astrojs/sitemap";
-
-// Change this depending on your hosting provider (Vercel, Netlify etc)
-// https://docs.astro.build/en/guides/server-side-rendering/#adding-an-adapter
-// Server adapters removed for static GitHub Pages builds
-
+import icon from "astro-icon";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://astro.build/config
-export default defineConfig({
-    // Use static output for GitHub Pages
-    output: "static",
-    site: "https://m0b4.github.io",
-    base: import.meta.env.PROD ? '/metal-im-dorf' : '/',
-    integrations: [
-        sitemap({
-            filter: (page) => !page.includes('/admin'),
-        }),
-        icon({
-            include: {
-                "simple-icons": ["instagram", "facebook"],
-            },
-        }),
-        sanity({
-            projectId,
-            dataset,
-            // useCdn should be true for static builds to fetch public assets
-            useCdn: true,
-            apiVersion: "2026-03-26", // Set to date of setup to use the latest API version
-            stega: {
-                studioUrl,
-            },
-        }),
-    ],
-    vite: {
-        optimizeDeps: {
-            include: [
-                "lodash/isObject.js",
-                "lodash/groupBy.js",
-                "lodash/keyBy.js",
-                "lodash/partition.js",
-                "lodash/sortedIndex.js",
-            ],
-        },
+const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 
-        plugins: [tailwindcss()],
-    },
+// Statische Website für GitHub Pages unter https://m0b4.github.io/metal-im-dorf
+export default defineConfig({
+  output: "static",
+  site: "https://m0b4.github.io",
+  base: process.env.NODE_ENV === "production" ? "/metal-im-dorf" : "/",
+  integrations: [
+    sanity({
+      projectId: env.PUBLIC_SANITY_STUDIO_PROJECT_ID || "hrgrzj9i",
+      dataset: env.PUBLIC_SANITY_STUDIO_DATASET || "production",
+      useCdn: false,
+      apiVersion: "2026-03-26",
+    }),
+    sitemap(),
+    icon({ include: { "simple-icons": ["instagram", "facebook"] } }),
+  ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

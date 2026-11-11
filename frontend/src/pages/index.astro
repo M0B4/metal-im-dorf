@@ -1,35 +1,14 @@
 ---
-import FestivalHero from "../components/FestivalHero.astro";
-import NextEvent from "../components/NextEvent.astro";
+import LogoHero from "../components/LogoHero.astro";
 import NewsSection from "../components/NewsSection.astro";
 import Layout from "../layouts/Layout.astro";
-import { getNews, getSiteSettings, getUpcomingEvents } from "../utils/sanity";
+import { getEvents, getNews, getSiteSettings, isPast } from "../utils/sanity";
 
-const [news, settings, upcomingEvents] = await Promise.all([
-  getNews(),
-  getSiteSettings(),
-  getUpcomingEvents(),
-]);
+const [news, settings, events] = await Promise.all([getNews(), getSiteSettings(), getEvents()]);
+const nextEvent = events.find((event) => !isPast(event));
 ---
 
-<Layout
-  title={settings.defaultSeo.title}
-  description={settings.defaultSeo.description}
-  settings={settings}
->
-  <div class="shell home">
-    <FestivalHero event={upcomingEvents[0]} settings={settings} />
-
-    <NextEvent events={upcomingEvents} settings={settings} />
-
-    <NewsSection news={news} settings={settings} />
-  </div>
+<Layout settings={settings}>
+  <LogoHero intro={settings.intro} event={nextEvent} />
+  <NewsSection news={news} />
 </Layout>
-
-<style>
-  .home {
-    display: grid;
-    gap: clamp(2rem, 5vw, 4rem);
-  }
-
-</style>

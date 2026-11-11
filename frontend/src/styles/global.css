@@ -4,23 +4,17 @@
 @theme {
   --font-sans: "Inter Variable", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
+  --font-display: "Anton", "Impact", sans-serif;
 
-  --color-white: #fff;
-  --color-black: #050505;
-  --color-gray-200: #e4e4e7;
-  --color-gray-600: #71717a;
   --color-accent: #00a8bb;
-  --color-festival-ash: #151515;
 }
 
 :root {
   color-scheme: dark;
   --page-max: 1180px;
+  --feed-max: 760px;
   --border: rgba(255, 255, 255, 0.12);
   --muted: #a1a1aa;
-  --surface: rgba(16, 16, 16, 0.82);
-  --surface-strong: rgba(5, 5, 5, 0.94);
-  --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.28);
   --color-accent-contrast: #050505;
   --radius-subtle: 3px;
 }
@@ -42,7 +36,7 @@ body {
   color: #f4f4f5;
   background-color: #050505;
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24)),
+    linear-gradient(rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.72)),
     var(--rough-texture-url);
   background-repeat: repeat;
   background-attachment: fixed;
@@ -88,32 +82,27 @@ img {
   margin-inline: auto;
 }
 
-.section-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.85rem;
-  color: #a1a1aa;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.shell--narrow {
+  width: min(var(--feed-max), calc(100vw - 2rem));
+  margin-inline: auto;
 }
 
-.section-kicker::before {
-  width: 2.4rem;
-  height: 2px;
-  content: "";
-  background: var(--color-accent);
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
 .page-title {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.35rem, 6.5vw, 5.35rem);
-  font-weight: 950;
-  line-height: 0.92;
+  font-size: clamp(2.35rem, 6.5vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
 }
 
 .page-lede {
@@ -319,18 +308,6 @@ body.lightbox-open {
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slideUp 0.55s ease-out backwards;
-}
 
 @media (prefers-reduced-motion: reduce) {
   *,

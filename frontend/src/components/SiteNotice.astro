@@ -1,14 +1,15 @@
 ---
-import {ArrowRight} from "@lucide/astro";
-import {sitePath, type SiteSettings} from "../utils/site";
+import { ArrowRight } from "@lucide/astro";
+import { sitePath, type SiteSettings } from "../utils/site";
 
 interface Props {
   notice: SiteSettings["notice"];
 }
 
-const {notice} = Astro.props;
+const { notice } = Astro.props;
 const href = notice.linkUrl?.startsWith("/") ? sitePath(notice.linkUrl) : notice.linkUrl;
 ---
+
 
 {notice.enabled && notice.text && (
   <aside class="site-notice" aria-label="Wichtiger Hinweis">

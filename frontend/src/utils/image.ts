@@ -1,30 +1,18 @@
-import { createImageUrlBuilder } from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url";
+import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 import { sanityClient } from "sanity:client";
 
 const builder = createImageUrlBuilder(sanityClient);
 
-export function urlFor(source: SanityImageSource) {
-  return builder.image(source);
+/** Bild-URL ohne Zuschnitt aus dem Studio (Plakate und News-Bilder immer vollständig zeigen). */
+export function imageUrl(source: SanityImageSource, width: number, quality = 84) {
+  return builder.image(source).ignoreImageParams().width(width).auto("format").quality(quality).url();
 }
 
-export function urlForUncropped(source: SanityImageSource) {
-  return builder.image(source).ignoreImageParams();
+/** Bild-URL mit dem im Studio gesetzten Ausschnitt (Bandfotos). */
+export function croppedImageUrl(source: SanityImageSource, width: number, quality = 82) {
+  return builder.image(source).width(width).auto("format").quality(quality).url();
 }
 
-/**
- * Generates a responsive srcset string using Sanity's image CDN.
- * Widths should be in ascending order.
- */
-export function buildSrcSet(
-  source: SanityImageSource,
-  widths: number[],
-  quality = 80,
-): string {
-  return widths
-    .map(
-      (w) =>
-        `${builder.image(source).width(w).auto("format").quality(quality).url()} ${w}w`,
-    )
-    .join(", ");
+export function srcSet(source: SanityImageSource, widths: number[], cropped = false) {
+  return widths.map((w) => `${(cropped ? croppedImageUrl : imageUrl)(source, w)} ${w}w`).join(", ");
 }

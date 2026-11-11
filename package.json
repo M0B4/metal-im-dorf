@@ -2,21 +2,20 @@
   "name": "metal-im-dorf",
   "private": true,
   "description": "Website und Sanity Studio für Metal im Dorf",
-  "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=studio\"",
-    "check": "npm run astro --workspace=frontend -- check",
-    "build": "npm run build --workspace=frontend && npm run build --workspace=studio"
-  },
-  "keywords": ["festival", "astro", "sanity"],
+  "type": "module",
   "workspaces": [
-    "studio",
-    "frontend"
+    "frontend",
+    "studio"
   ],
+  "scripts": {
+    "dev": "concurrently -n web,studio \"npm run dev -w frontend\" \"npm run dev -w studio\"",
+    "build": "npm run build -w frontend",
+    "check": "npm run check -w frontend"
+  },
   "engines": {
     "node": ">=22.12.0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
-  },
-  "type": "module"
+  }
 }

@@ -1,29 +1,13 @@
 {
   "name": "metal-im-dorf-studio",
   "private": true,
-  "version": "1.0.0",
-  "main": "package.json",
   "license": "UNLICENSED",
   "scripts": {
     "dev": "sanity dev",
-    "start": "sanity start",
     "build": "sanity build",
-    "import:facebook:dry": "node scripts/import-facebook.mjs --dry-run --limit=5",
-    "import:facebook": "sanity exec scripts/import-facebook.mjs --with-user-token",
-    "publish:facebook": "sanity exec scripts/publish-facebook.mjs --with-user-token",
-    "delete:empty-facebook": "sanity exec scripts/delete-empty-facebook.mjs --with-user-token",
-    "sync:site-content": "sanity exec scripts/sync-site-content.mjs --with-user-token",
-    "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy": "sanity deploy"
   },
-  "keywords": [
-    "sanity"
-  ],
   "dependencies": {
-    "@sanity/code-input": "^7.1.0",
-    "@sanity/color-input": "^6.0.7",
-    "@sanity/ui": "^3.2.0",
-    "@sanity/vision": "^5.31.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "sanity": "^5.31.1",
@@ -31,15 +15,13 @@
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^6.0.0",
-    "@types/node": "^20.0.0",
     "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
-    "prettier": "^3.8.2",
     "typescript": "^6.0.2"
   },
   "prettier": {
     "semi": false,
-    "printWidth": 100,
+    "printWidth": 120,
     "bracketSpacing": false,
     "singleQuote": true
   }

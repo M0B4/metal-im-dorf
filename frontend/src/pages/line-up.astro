@@ -1,41 +1,33 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import RunningOrder from "../components/RunningOrder.astro";
-import { getCurrentLineup, getSiteSettings } from "../utils/sanity";
-import { buildSrcSet, urlFor } from "../utils/image";
+import { formatTime } from "../utils/format";
+import { croppedImageUrl, srcSet } from "../utils/image";
+import { getLineupEvent, getSiteSettings, type Band } from "../utils/sanity";
 
-const [{bands, event}, settings] = await Promise.all([getCurrentLineup(), getSiteSettings()]);
-const copy = settings.sections.lineup;
+const [event, settings] = await Promise.all([getLineupEvent(), getSiteSettings()]);
+const bands: Band[] = (event?.lineup ?? [])
+  .filter((slot) => slot.band)
+  .map((slot) => ({ ...slot.band!, spielzeit: slot.spielzeit }));
 ---
 
-<Layout title={`${copy.title} | ${settings.siteName}`} description={copy.intro} settings={settings}>
+<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} settings={settings}>
   <div class="shell page">
     <header class="page-header">
-      <span class="section-kicker">{copy.kicker}</span>
-      <h1 class="page-title">{copy.title}</h1>
-      <p class="page-lede">{copy.intro}</p>
+      <h1 class="page-title">Line-Up</h1>
       {event && <p class="lineup-event">{event.titel}</p>}
     </header>
 
-    {copy.showRunningOrder && <RunningOrder bands={bands} copy={copy} />}
-
     {bands.length ? (
-      <section class="band-grid" aria-label="Festival Line-Up">
+      <section class="band-grid" aria-label="Line-Up">
         {bands.map((band, index) => (
           <article class:list={["band-card panel", band.platzhalter && "band-card--placeholder"]}>
             <div class="band-slot">{String(index + 1).padStart(2, "0")}</div>
-            {band.platzhalter ? (
-              <div class="band-image-wrapper band-placeholder-image">
-                <span>TBA</span>
-              </div>
-            ) : band.bild ? (
+            {!band.platzhalter && band.bild ? (
               <div class="band-image-wrapper">
                 <img
-                  src={urlFor(band.bild).width(640).auto("format").quality(82).url()}
-                  srcset={buildSrcSet(band.bild, [320, 480, 640, 800], 80)}
+                  src={croppedImageUrl(band.bild, 640)}
+                  srcset={srcSet(band.bild, [320, 480, 640, 800], true)}
                   sizes="(max-width: 760px) 50vw, (max-width: 1180px) 33vw, 380px"
-                  width={band.bild.width}
-                  height={band.bild.height}
                   alt={band.name}
                   class="band-image"
                   loading="lazy"
@@ -43,22 +35,20 @@ const copy = settings.sections.lineup;
               </div>
             ) : (
               <div class="band-image-wrapper band-placeholder-image">
-                <span>{band.name?.slice(0, 2) ?? "MI"}</span>
+                <span>{band.platzhalter ? "TBA" : band.name?.slice(0, 2)}</span>
               </div>
             )}
 
             <div class="band-info">
-              <span class:list={["genre-tag", band.platzhalter && "genre-tag--placeholder"]}>
-                {band.platzhalter ? copy.placeholderGenre : band.genre || copy.defaultGenre}
-              </span>
-              <h2>{band.platzhalter ? copy.placeholderName : band.name}</h2>
-              <p>{band.spielzeit || copy.unknownTime}</p>
+              <span class="genre-tag">{band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}</span>
+              <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
+              <p>{band.spielzeit ? formatTime(band.spielzeit) : "TBA"}</p>
             </div>
           </article>
         ))}
       </section>
     ) : (
-      <p class="placeholder">{copy.emptyText}</p>
+      <p class="placeholder">Das Line-Up wird bald bekanntgegeben.</p>
     )}
   </div>
 </Layout>
@@ -171,11 +161,6 @@ const copy = settings.sections.lineup;
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-  }
-
-  .genre-tag--placeholder {
-    color: #a1a1aa;
-    border-color: rgba(255, 255, 255, 0.18);
   }
 
   .band-card h2 {

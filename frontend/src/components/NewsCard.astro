@@ -1,182 +1,276 @@
 ---
-import { ArrowUpRight } from "@lucide/astro";
-import type { News } from "../utils/sanity";
+import { ChevronDown } from "@lucide/astro";
+import { PortableText } from "astro-portabletext";
 import { formatDate } from "../utils/format";
-import { buildSrcSet, urlForUncropped } from "../utils/image";
-import { portableTextToPlainText } from "../utils/news";
-import { sitePath } from "../utils/site";
+import { imageUrl, srcSet } from "../utils/image";
+import { newsAnchor, plainText } from "../utils/news";
+import type { News } from "../utils/sanity";
 
 interface Props {
   item: News;
   index: number;
-  articleLabel: string;
 }
 
-const { item, index, articleLabel } = Astro.props;
-const preview = portableTextToPlainText(item.inhalt);
-const articleUrl = sitePath(`/news/artikel/${encodeURIComponent(item._id)}`);
+const { item, index } = Astro.props;
+const text = (item.inhalt ?? []).filter((block) => block._type === "block");
+const preview = plainText(text);
+const [primaryImage, ...galleryImages] = [...(item.bild ? [item.bild] : []), ...(item.bilder ?? [])];
+const anchor = newsAnchor(item);
+const lightboxGroup = `news-${item._id}`;
+const hasMore = galleryImages.length > 0 || preview.length > 260;
 ---
 
-<a class="news-tile panel" href={articleUrl} aria-label={`${item.titel} lesen`}>
-  {item.bild && (
-    <div class="news-media">
+<article class="news-post" id={anchor}>
+  {item.datum && <time class="news-date" datetime={item.datum}>{formatDate(item.datum)}</time>}
+  <h3>{item.titel}</h3>
+
+  {primaryImage && (
+    <button
+      class="news-media"
+      type="button"
+      data-lightbox-group={lightboxGroup}
+      data-full-src={imageUrl(primaryImage, 2000, 90)}
+      data-alt={primaryImage.alt || item.titel}
+      data-caption={primaryImage.alt || item.titel}
+      aria-label={`Bild vergrößern: ${item.titel}`}
+    >
       <img
-        src={urlForUncropped(item.bild).width(720).auto("format").quality(84).url()}
-        srcset={buildSrcSet(item.bild, [240, 360, 520, 720], 82)}
-        sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 25vw"
-        width={item.bild.width}
-        height={item.bild.height}
-        alt={item.bild.caption || item.bild.alt || item.titel}
+        src={imageUrl(primaryImage, 1200)}
+        srcset={srcSet(primaryImage, [480, 760, 1000, 1200])}
+        sizes="(max-width: 800px) 100vw, 760px"
+        width={primaryImage.width}
+        height={primaryImage.height}
+        alt={primaryImage.alt || item.titel}
         loading={index === 0 ? "eager" : "lazy"}
       />
-    </div>
+    </button>
   )}
 
-  <div class="news-body">
-    <span class="news-date">{formatDate(item.datum)}</span>
-    <h3>{item.titel}</h3>
-    {preview && <p>{preview}</p>}
-    <span class="news-read-more">
-      {articleLabel}
-      <ArrowUpRight size={17} stroke-width={2.4} aria-hidden="true" />
-    </span>
-  </div>
-</a>
+  {hasMore ? (
+    <>
+      {preview && <p class="news-preview">{preview}</p>}
+      <div class="news-full" id={`${anchor}-inhalt`} hidden>
+        {text.length > 0 && (
+          <div class="news-content prose prose-invert max-w-none">
+            <PortableText value={text} />
+          </div>
+        )}
+
+        {galleryImages.length > 0 && (
+          <div class="news-gallery">
+            {galleryImages.map((image, imageIndex) => {
+              const alt = image.alt || `${item.titel} Bild ${imageIndex + 2}`;
+              return (
+                <button
+                  class="news-gallery-item"
+                  type="button"
+                  data-lightbox-group={lightboxGroup}
+                  data-full-src={imageUrl(image, 2000, 90)}
+                  data-alt={alt}
+                  data-caption={alt}
+                  aria-label={`${alt} vergrößern`}
+                >
+                  <img
+                    src={imageUrl(image, 760)}
+                    alt={alt}
+                    loading="lazy"
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <button
+        class="news-more"
+        type="button"
+        aria-expanded="false"
+        aria-controls={`${anchor}-inhalt`}
+        data-news-toggle
+      >
+        <span class="news-more-open">Zeige mehr</span>
+        <span class="news-more-close">Zeige weniger</span>
+        <ChevronDown size={16} stroke-width={2.5} aria-hidden="true" />
+      </button>
+    </>
+  ) : (
+    text.length > 0 && (
+      <div class="news-content prose prose-invert max-w-none">
+        <PortableText value={text} />
+      </div>
+    )
+  )}
+</article>
 
 <style>
-  .news-tile {
+  .news-post {
     display: grid;
-    min-width: 0;
-    aspect-ratio: 1 / 1.08;
-    grid-template-rows: minmax(0, 55%) minmax(0, 1fr);
-    overflow: hidden;
-    color: inherit;
-    text-decoration: none;
-    transition: transform 180ms ease, border-color 180ms ease;
+    gap: 0.9rem;
+    padding-block: clamp(1.75rem, 4vw, 2.75rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    scroll-margin-top: 5rem;
   }
 
-  .news-tile:not(:has(.news-media)) {
-    grid-template-rows: minmax(0, 1fr);
-  }
-
-  .news-tile:hover,
-  .news-tile:focus-visible {
-    border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
-    outline: none;
-    transform: translateY(-3px);
-  }
-
-  .news-media {
-    display: flex;
-    min-width: 0;
-    min-height: 0;
-    align-items: center;
-    justify-content: center;
-    padding: 0.6rem;
-    overflow: hidden;
-    background: #090909;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .news-media img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: filter 220ms ease, transform 220ms ease;
-  }
-
-  .news-tile:hover .news-media img {
-    filter: contrast(1.05);
-    transform: scale(1.01);
-  }
-
-  .news-body {
-    display: flex;
-    min-height: 0;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 0.9rem 1rem 1rem;
-    overflow: hidden;
-  }
-
-  .news-date,
-  .news-read-more {
-    color: #a1a1aa;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
+  .news-date {
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   h3 {
-    display: -webkit-box;
     margin: 0;
-    overflow: hidden;
     color: #fff;
-    font-size: clamp(1.05rem, 1.7vw, 1.45rem);
-    font-weight: 950;
-    line-height: 1.08;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    font-size: clamp(1.6rem, 4vw, 2.3rem);
+    line-height: 1.1;
   }
 
-  p {
+  .news-media,
+  .news-gallery-item {
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: #0a0a0a;
+    border: 1px solid transparent;
+  }
+
+  .news-media {
+    margin-top: 0.25rem;
+  }
+
+  .news-media:focus-visible,
+  .news-gallery-item:hover,
+  .news-gallery-item:focus-visible {
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .news-media img,
+  .news-gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+  }
+
+  .news-preview {
     display: -webkit-box;
     margin: 0;
     overflow: hidden;
-    color: #b9b9c1;
-    font-size: 0.82rem;
-    line-height: 1.45;
+    color: #c4c4cc;
+    font-size: 1.02rem;
+    line-height: 1.7;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
   }
 
-  .news-read-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-top: auto;
+  .news-post.is-open .news-preview {
+    display: none;
   }
 
-  .news-read-more :global(svg) {
+  .news-full {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .news-full[hidden] {
+    display: none;
+  }
+
+  .news-content {
+    color: #d4d4d8;
+    font-size: clamp(1rem, 1.5vw, 1.06rem);
+    line-height: 1.7;
+  }
+
+  .news-content :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .news-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .news-content :global(a) {
     color: var(--color-accent);
   }
 
+  .news-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .news-more {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.25rem;
+    padding: 0.65rem 1.1rem;
+    color: #fff;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-subtle);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+
+  .news-more :global(svg) {
+    transition: transform 150ms ease;
+  }
+
+  .news-more-close,
+  .news-more[aria-expanded="true"] .news-more-open {
+    display: none;
+  }
+
+  .news-more[aria-expanded="true"] .news-more-close {
+    display: inline;
+  }
+
+  .news-more[aria-expanded="true"] :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .news-more:hover,
+  .news-more:focus-visible {
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
   @media (max-width: 640px) {
-    .news-tile {
-      aspect-ratio: 1 / 1.2;
-      grid-template-rows: minmax(0, 52%) minmax(0, 1fr);
-    }
-
-    .news-media {
-      padding: 0.4rem;
-    }
-
-    .news-body {
-      gap: 0.35rem;
-      padding: 0.6rem;
-    }
-
-    .news-date,
-    .news-read-more {
-      font-size: 0.58rem;
-      letter-spacing: 0.04em;
-    }
-
-    h3 {
-      font-size: 0.9rem;
-      line-height: 1.08;
-    }
-
-    p {
-      display: none;
-    }
-
-    .news-read-more svg {
-      width: 14px;
-      height: 14px;
+    .news-gallery {
+      grid-template-columns: 1fr;
     }
   }
 </style>
+
+<script>
+  function setNewsOpen(button: HTMLButtonElement, open: boolean) {
+    const post = button.closest<HTMLElement>(".news-post");
+    const content = document.getElementById(button.getAttribute("aria-controls") || "");
+    button.setAttribute("aria-expanded", String(open));
+    post?.classList.toggle("is-open", open);
+    if (content) content.hidden = !open;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-news-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      setNewsOpen(button, open);
+      if (!open) button.closest(".news-post")?.scrollIntoView({ block: "start" });
+    });
+  });
+</script>

@@ -1,143 +1,69 @@
-import {defineField, defineType, type StringRule} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
 
-const timeValidation = (Rule: StringRule) =>
-  Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {name: 'Uhrzeit'})
-    .error('Bitte eine gültige Uhrzeit im Format HH:MM eingeben.')
+const kategorien = [
+  {title: 'Hauptfestival', value: 'hauptfestival'},
+  {title: 'Nebenveranstaltung', value: 'nebenveranstaltung'},
+]
 
+// Kommende Veranstaltungen stehen oben auf der Seite „Veranstaltungen“, vergangene
+// wandern automatisch mit ihrem Plakat zu „Vergangene Veranstaltungen“.
 export default defineType({
   name: 'veranstaltung',
-  title: 'Veranstaltungen',
+  title: 'Veranstaltung',
   type: 'document',
-  groups: [
-    {name: 'overview', title: 'Übersicht', default: true},
-    {name: 'schedule', title: 'Termin & Ort'},
-    {name: 'lineup', title: 'Line-up'},
-    {name: 'content', title: 'Inhalt & Bild'},
-    {name: 'links', title: 'Tickets & Anfahrt'},
-  ],
   fields: [
     defineField({
       name: 'titel',
-      title: 'Name der Veranstaltung',
+      title: 'Name',
       type: 'string',
-      group: 'overview',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
-      name: 'slug',
-      title: 'URL',
-      type: 'slug',
-      group: 'overview',
-      options: {source: 'titel', maxLength: 96},
-      validation: Rule => Rule.required(),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'kategorie',
-      title: 'Kategorie',
+      title: 'Art',
       type: 'string',
-      group: 'overview',
       initialValue: 'hauptfestival',
-      options: {
-        layout: 'radio',
-        list: [
-          {title: 'Hauptfestival', value: 'hauptfestival'},
-          {title: 'Nebenveranstaltung', value: 'nebenveranstaltung'},
-        ],
-      },
-      validation: Rule => Rule.required(),
+      options: {layout: 'radio', direction: 'horizontal', list: kategorien},
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'beginn',
       title: 'Beginn',
       type: 'datetime',
-      group: 'schedule',
-      validation: Rule => Rule.required(),
+      options: {dateFormat: 'DD.MM.YYYY', timeFormat: 'HH:mm'},
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'ende',
       title: 'Ende',
+      description: 'Optional, z. B. bei mehrtägigen Veranstaltungen.',
       type: 'datetime',
-      group: 'schedule',
-      validation: Rule =>
-        Rule.custom((value, context) => {
-          const begin = (context.document as {beginn?: string})?.beginn
-          return !value || !begin || new Date(value) >= new Date(begin)
-            ? true
-            : 'Das Ende muss nach dem Beginn liegen.'
+      options: {dateFormat: 'DD.MM.YYYY', timeFormat: 'HH:mm'},
+      validation: (rule) =>
+        rule.custom((ende, context) => {
+          const beginn = (context.document as {beginn?: string} | undefined)?.beginn
+          return !ende || !beginn || ende >= beginn ? true : 'Das Ende muss nach dem Beginn liegen.'
         }),
     }),
-    defineField({
-      name: 'ort',
-      title: 'Veranstaltungsort',
-      type: 'string',
-      group: 'schedule',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
-      name: 'adresse',
-      title: 'Adresse',
-      type: 'string',
-      group: 'schedule',
-    }),
-    defineField({
-      name: 'kurzbeschreibung',
-      title: 'Kurzbeschreibung',
-      type: 'text',
-      rows: 3,
-      group: 'content',
-    }),
-    defineField({
-      name: 'beschreibung',
-      title: 'Ausführliche Beschreibung',
-      description: 'Erscheint auf der automatisch erzeugten Veranstaltungsseite.',
-      type: 'array',
-      group: 'content',
-      of: [{type: 'block'}],
-    }),
-    defineField({
-      name: 'bild',
-      title: 'Veranstaltungsbild',
-      type: 'image',
-      group: 'content',
-      options: {hotspot: true},
-      fields: [defineField({name: 'alt', title: 'Alternativer Text', type: 'string'})],
-    }),
-    defineField({
-      name: 'istAktuell',
-      title: 'Aktuelle Veranstaltung',
-      description: 'Verknüpft diese Veranstaltung mit Startseite und Line-up-Seite.',
-      type: 'boolean',
-      group: 'overview',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'ticketUrl',
-      title: 'Ticket- oder Informationslink',
-      type: 'url',
-      group: 'links',
-    }),
+    defineField({name: 'ort', title: 'Ort', type: 'string', validation: (rule) => rule.required()}),
+    defineField({name: 'adresse', title: 'Adresse', description: 'Optional, für den Karten-Link.', type: 'string'}),
+    defineField({name: 'bild', title: 'Plakat', type: 'image'}),
+    defineField({name: 'kurzbeschreibung', title: 'Kurzer Text', description: 'Optional.', type: 'text', rows: 3}),
+    defineField({name: 'ticketUrl', title: 'Ticket-Link', description: 'Optional.', type: 'url'}),
     defineField({
       name: 'ticketLabel',
-      title: 'Beschriftung des Links',
+      title: 'Text auf dem Ticket-Button',
       type: 'string',
-      group: 'links',
-      initialValue: 'Mehr erfahren',
-    }),
-    defineField({
-      name: 'mapUrl',
-      title: 'Karten- oder Anfahrtslink',
-      description: 'Optional. Ohne Angabe wird automatisch eine Google-Maps-Suche erzeugt.',
-      type: 'url',
-      group: 'links',
+      initialValue: 'Tickets',
+      hidden: ({document}) => !document?.ticketUrl,
     }),
     defineField({
       name: 'lineup',
-      title: 'Line-up & Running Order',
-      description: 'Die Reihenfolge kann per Drag-and-drop geändert werden.',
+      title: 'Line-Up',
+      description: 'Erscheint auf der Seite „Line-Up“ für die nächste Veranstaltung. Reihenfolge per Ziehen ändern.',
       type: 'array',
-      group: 'lineup',
       of: [
-        defineField({
+        defineArrayMember({
           name: 'lineupSlot',
           title: 'Auftritt',
           type: 'object',
@@ -147,22 +73,22 @@ export default defineType({
               title: 'Band',
               type: 'reference',
               to: [{type: 'band'}],
-              validation: Rule => Rule.required(),
+              validation: (rule) => rule.required(),
             }),
             defineField({
               name: 'spielzeit',
               title: 'Spielzeit',
-              description: 'Uhrzeit im Format HH:MM, zum Beispiel 18:30.',
+              description: 'Optional, z. B. 18:30',
               type: 'string',
-              placeholder: '18:30',
-              validation: timeValidation,
+              validation: (rule) =>
+                rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/).error('Bitte als HH:MM eingeben, z. B. 18:30.'),
             }),
           ],
           preview: {
             select: {title: 'band.name', subtitle: 'spielzeit', media: 'band.bild'},
             prepare: ({title, subtitle, media}) => ({
               title: title || 'Band auswählen',
-              subtitle: subtitle ? `${subtitle} Uhr` : 'Spielzeit offen',
+              subtitle: subtitle ? `${subtitle} Uhr` : undefined,
               media,
             }),
           },
@@ -170,16 +96,11 @@ export default defineType({
       ],
     }),
   ],
-  orderings: [
-    {title: 'Termin, neu zuerst', name: 'dateDesc', by: [{field: 'beginn', direction: 'desc'}]},
-  ],
   preview: {
-    select: {title: 'titel', date: 'beginn', location: 'ort', current: 'istAktuell', media: 'bild'},
-    prepare: ({title, date, location, current, media}) => ({
-      title: `${current ? 'Aktuell · ' : ''}${title || 'Unbenannte Veranstaltung'}`,
-      subtitle: [date ? new Date(date).toLocaleDateString('de-DE') : undefined, location]
-        .filter(Boolean)
-        .join(' · '),
+    select: {title: 'titel', beginn: 'beginn', ort: 'ort', media: 'bild'},
+    prepare: ({title, beginn, ort, media}) => ({
+      title: title || 'Ohne Namen',
+      subtitle: [beginn && new Date(beginn).toLocaleDateString('de-DE'), ort].filter(Boolean).join(' · '),
       media,
     }),
   },

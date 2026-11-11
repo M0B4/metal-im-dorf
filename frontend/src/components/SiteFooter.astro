@@ -1,207 +1,94 @@
 ---
 import { Icon } from "astro-icon/components";
-import { sitePath, type SiteSettings } from "../utils/site";
-import { urlFor } from "../utils/image";
+import { SITE_NAME, STUDIO_URL, sitePath, type SiteSettings } from "../utils/site";
 
 interface Props {
   settings: SiteSettings;
 }
 
 const { settings } = Astro.props;
-const logoUrl = settings.logo
-  ? urlFor(settings.logo).height(160).auto("format").quality(90).url()
-  : sitePath("/logo.svg");
+const links = [
+  { label: "Historie", href: sitePath("/veranstaltungen#vergangen") },
+  { label: "Impressum", href: sitePath("/impressum") },
+  { label: "Adminbereich", href: STUDIO_URL },
+];
 ---
 
 <footer class="site-footer">
-  <div class="shell footer-grid">
-    <div class="footer-brand">
-      <img src={logoUrl} alt={settings.logo?.alt || settings.siteName} class="footer-logo" />
-      <p>{settings.footer.description}</p>
-    </div>
-    <div class="footer-navigation">
-      <h2>{settings.footer.navigationTitle}</h2>
-      <a class="legal-link" href={sitePath("/impressum")}>{settings.navigation.legalLabel}</a>
-      <a class="admin-link" href={sitePath("/admin")}>{settings.navigation.adminLabel}</a>
-    </div>
-    <div class="footer-contact">
-      <h2>{settings.footer.contactTitle}</h2>
-      <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
-      {settings.contact.address.map((line) => <span class="address-line">{line}</span>)}
-    </div>
-    {(settings.contact.showInstagram || settings.contact.showFacebook) && <div class="footer-social-block">
-      <h2>{settings.footer.socialTitle}</h2>
-      <div class="footer-socials">
-        {settings.contact.showInstagram && <a href={settings.contact.instagramUrl} target="_blank" rel="noreferrer">
-          <Icon name="simple-icons:instagram" size={21} />
-          <span>Instagram</span>
-        </a>}
-        {settings.contact.showFacebook && <a href={settings.contact.facebookUrl} target="_blank" rel="noreferrer">
-          <Icon name="simple-icons:facebook" size={21} />
-          <span>Facebook</span>
-        </a>}
+  <div class="shell--narrow footer-inner">
+    {(settings.instagramUrl || settings.facebookUrl) && (
+      <div class="footer-socials" aria-label="Social Media">
+        {settings.instagramUrl && (
+          <a href={settings.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram">
+            <Icon name="simple-icons:instagram" size={22} />
+          </a>
+        )}
+        {settings.facebookUrl && (
+          <a href={settings.facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook" title="Facebook">
+            <Icon name="simple-icons:facebook" size={22} />
+          </a>
+        )}
       </div>
-    </div>}
-  </div>
-  <div class="shell footer-bottom">
-    <span>
-      © {new Date().getFullYear()} {settings.footer.copyright || settings.siteName}
-    </span>
+    )}
+
+    <a class="footer-mail" href={`mailto:${settings.email}`}>{settings.email}</a>
+
+    <nav class="footer-links" aria-label="Weitere Seiten">
+      {links.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
+
+    <p class="footer-copy">© {new Date().getFullYear()} {SITE_NAME}</p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    padding: 2.25rem 0 1.15rem;
-    background: rgba(5, 5, 5, 0.92);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .footer-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
-
-  .footer-logo {
-    width: auto;
-    height: 2.6rem;
-    margin-bottom: 0.7rem;
-  }
-
-  .site-footer p,
-  .site-footer a,
-  .site-footer span {
-    display: block;
-    color: #a1a1aa;
-    font-size: 0.92rem;
-    line-height: 1.65;
-    text-decoration: none;
-  }
-
-  .site-footer a:hover { color: var(--color-accent); }
-
-  .footer-navigation {
-    display: grid;
-    align-content: start;
-    gap: 0.25rem;
-  }
-
-  .site-footer h2 {
-    margin: 0 0 0.85rem;
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .footer-socials {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
-  }
-
-  .site-footer .footer-socials a {
-    display: flex;
-    min-height: 2.8rem;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.55rem 0.7rem;
-    color: #f4f4f5;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .site-footer .footer-socials a:hover {
-    color: var(--color-accent-contrast);
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-
-  .site-footer .footer-socials span {
-    color: inherit;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .footer-bottom {
-    margin-top: 1.4rem;
-    padding-top: 0.9rem;
+    padding: 2.5rem 0 2rem;
+    background: #050505;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .footer-bottom span {
-    color: #71717a;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .footer-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
   }
 
-  @media (max-width: 760px) {
-    .site-footer {
-      padding: 1.15rem 0 0.75rem;
-    }
+  .footer-socials {
+    display: flex;
+    gap: 1.25rem;
+  }
 
-    .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 0.7rem;
-    }
+  .footer-socials a {
+    color: #d4d4d8;
+    transition: color 150ms ease;
+  }
 
-    .footer-logo {
-      display: block;
-      height: 2rem;
-      margin: 0 auto;
-    }
+  .footer-mail,
+  .footer-links a {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
 
-    .footer-brand p,
-    .footer-navigation h2,
-    .footer-contact h2,
-    .footer-contact .address-line,
-    .footer-social-block h2 {
-      display: none;
-    }
+  .footer-socials a:hover,
+  .footer-mail:hover,
+  .footer-links a:hover {
+    color: var(--color-accent);
+  }
 
-    .footer-navigation {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+  }
 
-    .footer-navigation .admin-link {
-      margin-left: auto;
-      text-align: right;
-    }
-
-    .site-footer p,
-    .site-footer a,
-    .site-footer span {
-      font-size: 0.8rem;
-      line-height: 1.4;
-    }
-
-    .footer-socials {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.55rem;
-    }
-
-    .site-footer .footer-socials a {
-      min-height: 2.5rem;
-      justify-content: center;
-      gap: 0.45rem;
-      padding: 0.4rem 0.5rem;
-    }
-
-    .footer-bottom {
-      margin-top: 0.7rem;
-      padding-top: 0.65rem;
-    }
+  .footer-copy {
+    margin: 0.5rem 0 0;
+    color: #52525b;
+    font-size: 0.78rem;
   }
 </style>

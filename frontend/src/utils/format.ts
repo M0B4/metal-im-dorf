@@ -1,69 +1,27 @@
-export function formatDate(date?: string) {
-  if (!date) return "Aktuell";
+const TIME_ZONE = "Europe/Berlin";
 
-  const value = new Date(date);
-  if (Number.isNaN(value.getTime())) return "Aktuell";
-
-  return value.toLocaleDateString("de-DE", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+function toDate(value?: string) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-const timeFormatter = new Intl.DateTimeFormat("de-DE", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Europe/Berlin",
-});
+/** "4. Juni 2027" */
+export function formatDate(value?: string) {
+  const date = toDate(value);
+  if (!date) return "";
+  return date.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric", timeZone: TIME_ZONE });
+}
 
-export function formatTime(value: string) {
+/** "20:00 Uhr" für Datums-Zeitwerte oder "18:30"-Angaben aus der Running Order. */
+export function formatTime(value?: string) {
+  if (!value) return "";
   if (/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return `${value} Uhr`;
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : `${timeFormatter.format(date)} Uhr`;
+  const date = toDate(value);
+  if (!date) return value;
+  return `${date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: TIME_ZONE })} Uhr`;
 }
 
-export function formatEventDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Berlin",
-  }).format(date);
-}
-
-export function formatCompactEventDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "Europe/Berlin",
-  }).format(date);
-}
-
-export function formatEventDay(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--";
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit",
-    timeZone: "Europe/Berlin",
-  }).format(date);
-}
-
-export function formatEventMonthYear(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("de-DE", {
-    month: "short",
-    year: "numeric",
-    timeZone: "Europe/Berlin",
-  }).format(date);
+export function yearOf(value: string) {
+  return Number(new Intl.DateTimeFormat("de-DE", { year: "numeric", timeZone: TIME_ZONE }).format(new Date(value)));
 }

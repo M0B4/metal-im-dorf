@@ -1,0 +1,142 @@
+---
+import { Ticket } from "@lucide/astro";
+import { formatDate } from "../utils/format";
+import type { Veranstaltung } from "../utils/sanity";
+import { SITE_NAME, sitePath } from "../utils/site";
+
+interface Props {
+  intro: string;
+  event?: Veranstaltung;
+}
+
+const { intro, event } = Astro.props;
+---
+
+<section class="logo-hero">
+  <div class="logo-hero-content">
+    <h1>
+      <img class="logo-hero-logo" src={sitePath("/logo.svg")} alt={SITE_NAME} fetchpriority="high" />
+    </h1>
+    {intro && <p>{intro}</p>}
+  </div>
+</section>
+
+{event && (
+  <aside class="next-event" aria-label="Nächste Veranstaltung">
+    <div class="shell--narrow next-event-inner">
+      <span class="next-event-label">Nächste Veranstaltung</span>
+      <a class="next-event-main" href={sitePath("/veranstaltungen")}>
+        <time datetime={event.beginn}>{formatDate(event.beginn)}</time>
+        <strong>{event.titel}</strong>
+        {event.ort && <span>{event.ort}</span>}
+      </a>
+      {event.ticketUrl && (
+        <a class="next-event-ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
+          <Ticket size={16} aria-hidden="true" />
+          {event.ticketLabel || "Tickets"}
+        </a>
+      )}
+    </div>
+  </aside>
+)}
+
+<style>
+  .logo-hero {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: clamp(2rem, 6vw, 4.5rem) 1rem;
+  }
+
+  .logo-hero-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .logo-hero h1 {
+    margin: 0;
+  }
+
+  .logo-hero-logo {
+    display: block;
+    width: min(560px, 80vw);
+    height: auto;
+  }
+
+  .logo-hero p {
+    max-width: 52ch;
+    margin: 0;
+    color: #e4e4e7;
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+    line-height: 1.6;
+  }
+
+  .next-event {
+    background: #0c0c0c;
+    border-block: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .next-event-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    padding-block: 0.9rem;
+  }
+
+  .next-event-label {
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .next-event-main {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    min-width: 0;
+    color: #f4f4f5;
+    text-decoration: none;
+  }
+
+  .next-event-main:hover strong {
+    color: var(--color-accent);
+  }
+
+  .next-event-main time,
+  .next-event-main span {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+  }
+
+  .next-event-main strong {
+    font-weight: 700;
+    transition: color 150ms ease;
+  }
+
+  .next-event-ticket {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border-radius: var(--radius-subtle);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .next-event-ticket:hover {
+    filter: brightness(1.1);
+  }
+</style>

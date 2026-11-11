@@ -1,24 +1,300 @@
 ---
-import UpcomingPosters from "../components/UpcomingPosters.astro";
+import { MapPin, Ticket } from "@lucide/astro";
+import MediaLightbox from "../components/MediaLightbox.astro";
+import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
-import {getSiteSettings, getUpcomingEvents} from "../utils/sanity";
+import { formatDate, formatTime, yearOf } from "../utils/format";
+import { getArchive, getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
 
-const [events, settings] = await Promise.all([getUpcomingEvents(), getSiteSettings()]);
-const copy = settings.sections.eventPosters;
+const [events, archive, settings] = await Promise.all([getEvents(), getArchive(), getSiteSettings()]);
+const upcoming = events.filter((event) => !isPast(event));
+
+const kategorieLabel = (kategorie: Kategorie) =>
+  kategorie === "nebenveranstaltung" ? "Nebenveranstaltung" : "Hauptfestival";
+const mapsUrl = (...parts: Array<string | undefined>) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;
+
+// Vergangene Veranstaltungen plus Archiv-Plakate früherer Jahre. Ein Archiv-Eintrag
+// ersetzt eine vergangene Veranstaltung derselben Kategorie im selben Jahr.
+const inArchive = (year: number, kategorie: Kategorie) =>
+  archive.some((entry) => entry.jahr === year && entry.kategorie === kategorie);
+const past = [
+  ...events
+    .filter((event) => isPast(event) && !inArchive(yearOf(event.beginn), event.kategorie))
+    .map((event) => ({
+      id: event._id,
+      year: yearOf(event.beginn),
+      sort: event.beginn,
+      kategorie: event.kategorie,
+      title: event.titel,
+      image: event.bild,
+    })),
+  ...archive.map((entry) => ({
+    id: entry._id,
+    year: entry.jahr,
+    sort: `${entry.jahr}`,
+    kategorie: entry.kategorie,
+    title: entry.titel || String(entry.jahr),
+    image: entry.plakat,
+  })),
+].sort((a, b) => b.year - a.year || b.sort.localeCompare(a.sort));
 ---
 
-<Layout
-  title={`${copy.title} | ${settings.siteName}`}
-  description={copy.description}
-  settings={settings}
->
+<Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." settings={settings}>
   <div class="shell events-page">
-    <UpcomingPosters events={events} settings={settings} />
+    <section id="kommend" aria-labelledby="upcoming-title">
+      <h2 id="upcoming-title" class="section-title">Kommende Veranstaltungen</h2>
+
+      {upcoming.length ? (
+        <div class="upcoming-list">
+          {upcoming.map((event) => (
+            <article class="upcoming">
+              <Poster
+                image={event.bild}
+                alt={event.bild?.alt || `Plakat ${event.titel}`}
+                fallback={String(yearOf(event.beginn))}
+                group="kommend"
+                sizes="(max-width: 700px) 100vw, 360px"
+              />
+              <div class="upcoming-info">
+                <span class="event-meta">{kategorieLabel(event.kategorie)}</span>
+                <h3>{event.titel}</h3>
+                <p class="event-date">
+                  <time datetime={event.beginn}>{formatDate(event.beginn)}, {formatTime(event.beginn)}</time>
+                </p>
+                {event.ort && (
+                  <a class="event-place" href={mapsUrl(event.ort, event.adresse)} target="_blank" rel="noreferrer">
+                    <MapPin size={16} aria-hidden="true" />
+                    {[event.ort, event.adresse].filter(Boolean).join(", ")}
+                  </a>
+                )}
+                {event.kurzbeschreibung && <p class="event-text">{event.kurzbeschreibung}</p>}
+                {event.ticketUrl && (
+                  <a class="metal-button" href={event.ticketUrl} target="_blank" rel="noreferrer">
+                    <Ticket size={16} aria-hidden="true" />
+                    {event.ticketLabel || "Tickets"}
+                  </a>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p class="placeholder">Aktuell sind keine Veranstaltungen angekündigt.</p>
+      )}
+    </section>
+
+    <section id="vergangen" aria-labelledby="past-title">
+      <h2 id="past-title" class="section-title">Vergangene Veranstaltungen</h2>
+
+      {past.length ? (
+        <>
+          <div class="filter" role="group" aria-label="Vergangene Veranstaltungen filtern">
+            <button class="filter-button is-active" type="button" data-filter="alle">Alle</button>
+            <button class="filter-button" type="button" data-filter="hauptfestival">Hauptfestival</button>
+            <button class="filter-button" type="button" data-filter="nebenveranstaltung">Nebenveranstaltungen</button>
+          </div>
+
+          <div class="past-grid">
+            {past.map((item) => (
+              <figure class="past-item" data-category={item.kategorie}>
+                <Poster
+                  image={item.image}
+                  alt={`Plakat ${item.title}`}
+                  fallback={String(item.year)}
+                  group="vergangen"
+                />
+                <figcaption>
+                  <span class="event-meta">{kategorieLabel(item.kategorie)} · {item.year}</span>
+                  <strong>{item.title}</strong>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p class="placeholder">Noch keine vergangenen Veranstaltungen.</p>
+      )}
+    </section>
   </div>
+
+  <MediaLightbox />
 </Layout>
 
 <style>
   .events-page {
     display: grid;
+    gap: clamp(3rem, 7vw, 5rem);
+  }
+
+  section {
+    display: grid;
+    gap: 1.25rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .section-title {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    line-height: 1.05;
+  }
+
+  .event-meta {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .upcoming-list {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .upcoming {
+    display: grid;
+    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    gap: clamp(1.25rem, 4vw, 2.5rem);
+    align-items: start;
+  }
+
+  .upcoming-info {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+  }
+
+  .upcoming-info h3 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1;
+  }
+
+  .event-date {
+    margin: 0;
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .event-place {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #c8c8cf;
+    text-decoration: none;
+  }
+
+  .event-place:hover {
+    color: var(--color-accent);
+  }
+
+  .event-text {
+    max-width: 60ch;
+    margin: 0;
+    color: #c8c8cf;
+    line-height: 1.65;
+  }
+
+  .upcoming-info .metal-button {
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-button {
+    min-height: 2.6rem;
+    padding: 0.6rem 0.9rem;
+    color: #d4d4d8;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .filter-button:hover,
+  .filter-button.is-active {
+    color: var(--color-accent-contrast);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .past-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+  }
+
+  .past-item {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+  }
+
+  .past-item[hidden] {
+    display: none;
+  }
+
+  .past-item figcaption {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .past-item strong {
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 1.8vw, 1.35rem);
+    font-weight: 400;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .past-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .upcoming {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .filter-button {
+      flex: 1 1 0;
+      padding-inline: 0.3rem;
+      font-size: 0.6rem;
+    }
   }
 </style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-button");
+  const items = document.querySelectorAll<HTMLElement>(".past-item");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.filter;
+      buttons.forEach((other) => other.classList.toggle("is-active", other === button));
+      items.forEach((item) => {
+        item.hidden = filter !== "alle" && item.dataset.category !== filter;
+      });
+    });
+  });
+</script>

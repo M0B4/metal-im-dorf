@@ -87,7 +87,7 @@ const jsonLd = JSON.stringify(
                   )}
                 </dl>
                 {event.ort && (
-                  <a class="event-place" href={mapsUrl(event.ort, event.adresse)} target="_blank" rel="noreferrer">
+                  <a class="event-place" href={event.kartenLink || mapsUrl(event.ort, event.adresse)} target="_blank" rel="noreferrer">
                     <MapPin size={16} aria-hidden="true" />
                     {[event.ort, event.adresse].filter(Boolean).join(", ")}
                     <span class="sr-only">{NEW_TAB_HINT}</span>

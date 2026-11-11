@@ -56,6 +56,8 @@ export interface Veranstaltung {
   einlass?: string;
   ort?: string;
   adresse?: string;
+  /** Eigener Google-Maps-Link aus dem Studio, sonst wird einer aus Ort und Adresse erstellt. */
+  kartenLink?: string;
   kurzbeschreibung?: string;
   preis?: string;
   /** Wie es Tickets gibt: Bestellformular der Website, externer Ticketshop oder nur Abendkasse. */
@@ -112,7 +114,7 @@ export function getNews(): Promise<News[]> {
   }`);
 }
 
-const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, ${image("bild")}, ticketUrl,
+const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kartenLink, kurzbeschreibung, preis, ${image("bild")}, ticketUrl,
   "vorverkauf": coalesce(vorverkauf, select(nurAbendkasse == true => "abendkasse", defined(ticketUrl) => "extern", "formular"))`;
 
 export function getEvents(): Promise<Veranstaltung[]> {

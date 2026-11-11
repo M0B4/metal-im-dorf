@@ -1,11 +1,11 @@
 ---
 import TicketForm from "../components/TicketForm.astro";
 import Layout from "../layouts/Layout.astro";
-import { getEvents, getSiteSettings, hasPresale, isPast } from "../utils/sanity";
+import { getEvents, getSiteSettings, hasTicketForm, isPast } from "../utils/sanity";
 import { sitePath } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
-const upcoming = events.filter((event) => !isPast(event) && hasPresale(event));
+const upcoming = events.filter((event) => !isPast(event) && hasTicketForm(event));
 ---
 
 <Layout title="Tickets" description="Tickets für Metal im Dorf per E-Mail bestellen." settings={settings}>

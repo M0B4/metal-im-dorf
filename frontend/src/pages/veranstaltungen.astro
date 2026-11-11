@@ -5,8 +5,8 @@ import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDateRange, formatTime, yearOf } from "../utils/format";
 import { imageUrl, shareImageUrl } from "../utils/image";
-import { getEvents, getSiteSettings, hasPresale, isPast, nextEvent, type Kategorie } from "../utils/sanity";
-import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, sitePath, siteUrl } from "../utils/site";
+import { getEvents, getSiteSettings, isPast, nextEvent, ticketLink, type Kategorie } from "../utils/sanity";
+import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, siteUrl } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
@@ -44,7 +44,7 @@ const jsonLd = JSON.stringify(
     },
     ...(event.bild && { image: [imageUrl(event.bild, 1200)] }),
     ...(event.kurzbeschreibung && { description: event.kurzbeschreibung }),
-    ...(event.ticketUrl && { offers: { "@type": "Offer", url: event.ticketUrl } }),
+    ...(ticketLink(event) && { offers: { "@type": "Offer", url: new URL(ticketLink(event)!.href, siteUrl()).href } }),
     ...(event.einlass && { doorTime: event.einlass }),
     organizer: { "@type": "Organization", name: SITE_NAME, url: siteUrl() },
     url: siteUrl("/veranstaltungen"),
@@ -68,7 +68,7 @@ const jsonLd = JSON.stringify(
                 alt={event.bild?.alt || `Plakat ${event.titel}`}
                 fallback={String(yearOf(event.beginn))}
                 group="kommend"
-                sizes="(max-width: 700px) calc(100vw - 2rem), 360px"
+                sizes="(max-width: 700px) 260px, 300px"
                 priority={index === 0}
               />
               <div class="upcoming-info">
@@ -94,21 +94,22 @@ const jsonLd = JSON.stringify(
                   </a>
                 )}
                 {event.kurzbeschreibung && <p class="event-text">{event.kurzbeschreibung}</p>}
-                {event.nurAbendkasse ? (
-                  <p class="box-office"><Ticket size={16} aria-hidden="true" />Tickets nur an der Abendkasse</p>
-                ) : event.ticketUrl && (
-                  <a class="metal-button" href={event.ticketUrl} target="_blank" rel="noreferrer">
-                    <Ticket size={16} aria-hidden="true" />
-                    {event.ticketLabel || "Tickets"}
-                    <span class="sr-only">{NEW_TAB_HINT}</span>
-                  </a>
-                )}
-                {hasPresale(event) && (
-                  <a class="metal-button" href={sitePath(`/tickets?veranstaltung=${encodeURIComponent(event._id)}`)}>
-                    <Mail size={16} aria-hidden="true" />
-                    Tickets bestellen
-                  </a>
-                )}
+                {(() => {
+                  const link = ticketLink(event);
+                  if (!link) return <p class="box-office"><Ticket size={16} aria-hidden="true" />Tickets nur an der Abendkasse</p>;
+                  return link.external ? (
+                    <a class="metal-button" href={link.href} target="_blank" rel="noreferrer">
+                      <Ticket size={16} aria-hidden="true" />
+                      Tickets
+                      <span class="sr-only">{NEW_TAB_HINT}</span>
+                    </a>
+                  ) : (
+                    <a class="metal-button" href={link.href}>
+                      <Mail size={16} aria-hidden="true" />
+                      Tickets bestellen
+                    </a>
+                  );
+                })()}
               </div>
             </article>
           ))}
@@ -177,7 +178,7 @@ const jsonLd = JSON.stringify(
   .event-meta {
     color: var(--color-accent);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -190,7 +191,7 @@ const jsonLd = JSON.stringify(
 
   .upcoming {
     display: grid;
-    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
     gap: clamp(1.25rem, 4vw, 2.5rem);
     align-items: start;
   }
@@ -230,7 +231,7 @@ const jsonLd = JSON.stringify(
   .event-facts dt {
     color: var(--color-accent);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -249,7 +250,7 @@ const jsonLd = JSON.stringify(
     margin: 0.5rem 0 0;
     color: var(--color-accent);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -259,7 +260,7 @@ const jsonLd = JSON.stringify(
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: #c8c8cf;
+    color: var(--color-text-soft);
     text-decoration: none;
   }
 
@@ -270,7 +271,7 @@ const jsonLd = JSON.stringify(
   .event-text {
     max-width: 60ch;
     margin: 0;
-    color: #c8c8cf;
+    color: var(--color-text-soft);
     line-height: 1.65;
   }
 
@@ -288,13 +289,13 @@ const jsonLd = JSON.stringify(
   .filter-button {
     min-height: 2.6rem;
     padding: 0.6rem 0.9rem;
-    color: #d4d4d8;
+    color: var(--color-text-soft);
     cursor: pointer;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: var(--radius-subtle);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -347,13 +348,17 @@ const jsonLd = JSON.stringify(
     .upcoming {
       grid-template-columns: 1fr;
     }
+
+    /* Plakat auf dem Handy etwas kleiner, damit Name, Datum und Tickets schneller zu sehen sind. */
+    .upcoming > :global(.poster) {
+      width: min(100%, 260px);
+    }
   }
 
   @media (max-width: 480px) {
     .filter-button {
-      flex: 1 1 0;
-      padding-inline: 0.3rem;
-      font-size: 0.6rem;
+      flex: 1 1 auto;
+      padding-inline: 0.6rem;
     }
   }
 </style>

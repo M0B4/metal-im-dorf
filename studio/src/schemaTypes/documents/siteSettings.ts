@@ -17,10 +17,12 @@ export default defineType({
       name: 'akzentfarbe',
       title: 'Akzentfarbe',
       description:
-        'Farbe für Buttons, Linien und Hervorhebungen, z. B. passend zum Plakat des Jahres. Als Hex-Code wie #00a8bb (das bisherige Türkis). Leer = Türkis.',
-      type: 'string',
-      validation: (rule) =>
-        rule.regex(/^#[0-9a-fA-F]{6}$/).error('Bitte als Hex-Code mit 6 Zeichen eingeben, z. B. #00a8bb.'),
+        'Farbe für Buttons, Linien und Hervorhebungen, z. B. passend zum Plakat des Jahres. Eine der Vorschläge anklicken oder frei wählen. Leer = Türkis.',
+      type: 'color',
+      options: {
+        disableAlpha: true,
+        colorList: ['#00a8bb', '#d62828', '#f77f00', '#fcbf49', '#7cb518', '#9d4edd', '#e5e5e5'],
+      },
     }),
     defineField({
       name: 'notice',

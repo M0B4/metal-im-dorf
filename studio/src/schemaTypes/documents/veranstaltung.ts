@@ -55,7 +55,14 @@ export default defineType({
         rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/).error('Bitte als HH:MM eingeben, z. B. 17:00.'),
     }),
     defineField({name: 'ort', title: 'Ort', description: 'Für kommende Veranstaltungen.', type: 'string'}),
-    defineField({name: 'adresse', title: 'Adresse', description: 'Optional, für den Karten-Link.', type: 'string'}),
+    defineField({name: 'adresse', title: 'Adresse', description: 'Optional, wird neben dem Ort angezeigt.', type: 'string'}),
+    defineField({
+      name: 'kartenLink',
+      title: 'Google-Maps-Link',
+      description:
+        'Optional. In Google Maps den Ort suchen, auf „Teilen“ tippen und den Link hier einfügen. Leer = Link wird aus Ort und Adresse erstellt.',
+      type: 'url',
+    }),
     defineField({name: 'bild', title: 'Plakat', type: 'image'}),
     defineField({name: 'kurzbeschreibung', title: 'Kurzer Text', description: 'Optional.', type: 'text', rows: 3}),
     defineField({

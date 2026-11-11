@@ -18,31 +18,31 @@ const settings = await getSiteSettings();
     </header>
 
     <div class="legal-content panel">
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Veranstalter</h2>
+      <section>
+        <h2>Veranstalter</h2>
         <p>
           {SITE_NAME}<br />
           {ADDRESS.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Kontakt</h2>
+      <section>
+        <h2>Kontakt</h2>
         <p>
           E-Mail: <a href={`mailto:${settings.email}`}>{settings.email}</a>
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <section>
+        <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
         <p>
           {SITE_NAME}<br />
           {ADDRESS.map((line) => <>{line}<br /></>)}
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Haftung für Inhalte</h2>
+      <section>
+        <h2>Haftung für Inhalte</h2>
         <p class="leading-relaxed">
           Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den
           allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht
@@ -57,8 +57,8 @@ const settings = await getSiteSettings();
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Haftung für Links</h2>
+      <section>
+        <h2>Haftung für Links</h2>
         <p class="leading-relaxed">
           Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben.
           Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der
@@ -68,8 +68,8 @@ const settings = await getSiteSettings();
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="text-xl font-bold text-white">Urheberrecht</h2>
+      <section>
+        <h2>Urheberrecht</h2>
         <p class="leading-relaxed">
           Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem
           deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung
@@ -81,35 +81,3 @@ const settings = await getSiteSettings();
     </div>
   </section>
 </Layout>
-
-<style>
-  .legal-page {
-    display: grid;
-    max-width: 860px;
-    gap: 2rem;
-  }
-
-  .legal-content {
-    display: grid;
-    gap: 2rem;
-    padding: clamp(1rem, 3vw, 1.6rem);
-    color: #d4d4d8;
-  }
-
-  .legal-content h2 {
-    margin: 0 0 0.5rem;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 950;
-    letter-spacing: 0;
-  }
-
-  .legal-content p {
-    margin: 0;
-    line-height: 1.75;
-  }
-
-  .legal-content a {
-    color: var(--color-accent);
-  }
-</style>

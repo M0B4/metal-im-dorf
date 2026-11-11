@@ -30,7 +30,7 @@ export interface SiteSettings {
 export const defaultSiteSettings: SiteSettings = {
   intro:
     "Das kleine Metal-Festival am Opfermoor Vogtei: direkt, laut und ohne Umwege. Hier findest du aktuelle Ansagen, Bands und Rückblicke.",
-  email: "metalimdorf@gmx.de",
+  email: "metal-im-dorf@t-online.de",
   instagramUrl: "https://www.instagram.com/metalimdorf",
   facebookUrl: "https://www.facebook.com/metalimdorf",
   notice: { enabled: false },
@@ -54,7 +54,6 @@ export function siteUrl(path = "") {
   return new URL(sitePath(path), import.meta.env.SITE).href;
 }
 
-/** Hinweis für Screenreader bei Links, die einen neuen Tab öffnen. */
 /**
  * CSS-Variablen für eine Akzentfarbe aus Sanity. Die Schriftfarbe auf Akzentflächen (Buttons) wird
  * automatisch schwarz oder weiß gewählt, je nachdem was besser lesbar ist.
@@ -76,4 +75,5 @@ export function mapsUrl(...parts: Array<string | undefined>) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;
 }
 
+/** Hinweis für Screenreader bei Links, die einen neuen Tab öffnen. */
 export const NEW_TAB_HINT = "(öffnet in neuem Tab)";

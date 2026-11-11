@@ -74,6 +74,10 @@ export default defineType({
                 defineArrayMember({
                   type: 'image',
                   options: {hotspot: true},
+                  validation: (rule) =>
+                    rule.custom((image: {asset?: unknown} | undefined) =>
+                      image?.asset ? true : 'Bitte ein Bild hochladen oder den leeren Eintrag löschen.',
+                    ),
                   fields: [
                     defineField({
                       name: 'alt',

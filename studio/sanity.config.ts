@@ -1,5 +1,6 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
+import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from './src/schemaTypes'
 
 // Diese Dokumente gibt es nur einmal: sie öffnen direkt und können nicht neu angelegt werden.
@@ -11,6 +12,7 @@ export default defineConfig({
   projectId: 'hrgrzj9i',
   dataset: 'production',
   plugins: [
+    colorInput(),
     structureTool({
       structure: (S) =>
         S.list()

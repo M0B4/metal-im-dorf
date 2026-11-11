@@ -1,13 +1,17 @@
 import type { PortableTextBlock } from "@portabletext/types";
 import { sanityClient } from "sanity:client";
-import { defaultSiteSettings, type SiteSettings } from "./site";
+import { defaultSiteSettings, sitePath, type SiteSettings } from "./site";
 
 // Die Website wird statisch gebaut und liest immer die zuletzt veröffentlichten Inhalte.
 function query<T>(groq: string): Promise<T> {
   return sanityClient.fetch<T>(groq, {}, { perspective: "published", useCdn: false });
 }
 
-const image = `{ ..., "width": asset->metadata.dimensions.width, "height": asset->metadata.dimensions.height }`;
+// Bilder ohne hochgeladene Datei (leere Einträge im Studio) werden übersprungen, damit ein
+// unvollständiger Eintrag nie den ganzen Build abbricht.
+const imageFields = `{ ..., "width": asset->metadata.dimensions.width, "height": asset->metadata.dimensions.height }`;
+const image = (field: string) => `"${field}": select(defined(${field}.asset) => ${field} ${imageFields})`;
+const images = (field: string) => `"${field}": ${field}[defined(asset)] ${imageFields}`;
 
 export interface SanityImage {
   _type: "image";
@@ -20,6 +24,7 @@ export interface SanityImage {
 }
 
 export type Kategorie = "hauptfestival" | "nebenveranstaltung";
+export type Vorverkauf = "formular" | "extern" | "abendkasse";
 
 export interface News {
   _id: string;
@@ -53,10 +58,10 @@ export interface Veranstaltung {
   adresse?: string;
   kurzbeschreibung?: string;
   preis?: string;
-  nurAbendkasse?: boolean;
+  /** Wie es Tickets gibt: Bestellformular der Website, externer Ticketshop oder nur Abendkasse. */
+  vorverkauf: Vorverkauf;
   bild?: SanityImage;
   ticketUrl?: string;
-  ticketLabel?: string;
   lineup?: Array<{ _key: string; spielzeit?: string; band?: Band }>;
 }
 
@@ -84,7 +89,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     notice?: SiteSettings["notice"];
   } | null>(`*[_id == "siteSettings"][0]{
     "intro": hero.intro,
-    akzentfarbe,
+    "akzentfarbe": select(defined(akzentfarbe.hex) => akzentfarbe.hex, akzentfarbe),
     "email": contact.email,
     "instagramUrl": contact.instagramUrl,
     "facebookUrl": contact.facebookUrl,
@@ -103,11 +108,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
 export function getNews(): Promise<News[]> {
   return query(`*[_type == "news"] | order(datum desc, _createdAt desc) {
-    _id, titel, datum, bild ${image}, bilder[] ${image}, inhalt
+    _id, titel, datum, ${image("bild")}, ${images("bilder")}, inhalt
   }`);
 }
 
-const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, nurAbendkasse, bild ${image}, ticketUrl, ticketLabel`;
+const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, ${image("bild")}, ticketUrl,
+  "vorverkauf": coalesce(vorverkauf, select(nurAbendkasse == true => "abendkasse", defined(ticketUrl) => "extern", "formular"))`;
 
 export function getEvents(): Promise<Veranstaltung[]> {
   return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) { ${eventFields} }`);
@@ -118,13 +124,13 @@ export async function getLineupEvent(): Promise<Veranstaltung | null> {
   const upcoming = await query<Veranstaltung[]>(`*[_type == "veranstaltung" && coalesce(ende, beginn) >= now()]
     | order(beginn asc) {
       ${eventFields},
-      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, links, bild ${image} } }
+      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, links, ${image("bild")} } }
     }`);
   return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0] ?? null;
 }
 
 export async function getFestivalInfo(): Promise<FestivalInfo> {
-  const info = await query<Partial<FestivalInfo> | null>(`*[_id == "festivalInfo"][0]{ title, intro, sections[] { ..., bilder[] ${image} } }`);
+  const info = await query<Partial<FestivalInfo> | null>(`*[_id == "festivalInfo"][0]{ title, intro, sections[] { ..., ${images("bilder")} } }`);
   return {
     title: info?.title || "Festival-Infos",
     intro: info?.intro,
@@ -138,9 +144,16 @@ export function nextEvent(events: Veranstaltung[], now = Date.now()) {
   return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0];
 }
 
-/** Vorverkauf über die Website: nicht bei „Nur Abendkasse“. */
-export function hasPresale(event: Pick<Veranstaltung, "nurAbendkasse">) {
-  return !event.nurAbendkasse;
+/** Ziel des Ticket-Buttons: externer Shop oder das Bestellformular der Website. Leer bei „Nur Abendkasse“. */
+export function ticketLink(event: Pick<Veranstaltung, "_id" | "vorverkauf" | "ticketUrl">) {
+  if (event.vorverkauf === "abendkasse") return undefined;
+  if (event.vorverkauf === "extern" && event.ticketUrl) return { href: event.ticketUrl, external: true };
+  return { href: sitePath(`/tickets?veranstaltung=${encodeURIComponent(event._id)}`), external: false };
+}
+
+/** Bestellung über das Formular der Website. */
+export function hasTicketForm(event: Pick<Veranstaltung, "vorverkauf" | "ticketUrl">) {
+  return event.vorverkauf === "formular" || (event.vorverkauf === "extern" && !event.ticketUrl);
 }
 
 export function isPast(event: Pick<Veranstaltung, "beginn" | "ende">, now = Date.now()) {

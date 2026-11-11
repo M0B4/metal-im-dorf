@@ -26,7 +26,7 @@ export default defineType({
     defineField({
       name: 'bild',
       title: 'Bild',
-      description: 'Optional. Wird groß über dem Text gezeigt.',
+      description: 'Optional. Erscheint klein links neben dem Text, ein Klick vergrößert es.',
       type: 'image',
     }),
     defineField({
@@ -54,7 +54,15 @@ export default defineType({
       description: 'Optional. Erscheinen, wenn man auf der Website „Zeige mehr“ klickt.',
       type: 'array',
       options: {layout: 'grid'},
-      of: [defineArrayMember({type: 'image'})],
+      of: [
+        defineArrayMember({
+          type: 'image',
+          validation: (rule) =>
+            rule.custom((image: {asset?: unknown} | undefined) =>
+              image?.asset ? true : 'Bitte ein Bild hochladen oder den leeren Eintrag löschen.',
+            ),
+        }),
+      ],
     }),
   ],
   orderings: [{title: 'Neueste zuerst', name: 'datumDesc', by: [{field: 'datum', direction: 'desc'}]}],

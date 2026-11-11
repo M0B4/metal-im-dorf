@@ -13,6 +13,10 @@
   color-scheme: dark;
   --page-max: 1180px;
   --feed-max: 760px;
+  /* Grundfarben: hier ändern statt in den einzelnen Komponenten. */
+  --color-bg: #050505;
+  --color-text: #f4f4f5;
+  --color-text-soft: #d4d4d8;
   --border: rgba(255, 255, 255, 0.12);
   --muted: #a1a1aa;
   --color-accent-contrast: #050505;
@@ -24,7 +28,7 @@
 }
 
 html {
-  background: #050505;
+  background: var(--color-bg);
   font-family: var(--font-sans);
   text-size-adjust: 100%;
   scroll-behavior: smooth;
@@ -33,18 +37,14 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  color: #f4f4f5;
-  background-color: #050505;
+  color: var(--color-text);
+  background-color: var(--color-bg);
   background-image:
     linear-gradient(rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.72)),
     var(--rough-texture-url);
   background-repeat: repeat;
   background-attachment: fixed;
   background-size: 512px 512px;
-}
-
-body::before {
-  content: none;
 }
 
 a {
@@ -89,12 +89,12 @@ img {
 }
 
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
   background: #303030;
-  border: 2px solid #050505;
+  border: 2px solid var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -132,7 +132,7 @@ h3 {
 .page-lede {
   max-width: 62ch;
   margin: 1rem 0 0;
-  color: #c8c8cf;
+  color: var(--color-text-soft);
   font-size: clamp(1rem, 2vw, 1.15rem);
   line-height: 1.65;
 }
@@ -153,7 +153,7 @@ h3 {
   background: var(--color-accent);
   border: 1px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
   border-radius: var(--radius-subtle);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-decoration: none;
@@ -169,7 +169,7 @@ h3 {
 
 .placeholder {
   padding: 2rem;
-  color: #a1a1aa;
+  color: var(--muted);
   background: rgba(255, 255, 255, 0.035);
   border: 1px dashed rgba(255, 255, 255, 0.16);
   border-radius: var(--radius-subtle);
@@ -243,7 +243,7 @@ body.lightbox-open {
   width: min(100%, 760px);
   min-height: 1.5rem;
   margin-top: 0.85rem;
-  color: #d4d4d8;
+  color: var(--color-text-soft);
   font-size: 0.88rem;
   line-height: 1.5;
   text-align: center;
@@ -253,7 +253,7 @@ body.lightbox-open {
   margin-right: 0.55rem;
   color: var(--color-accent);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 800;
 }
 
@@ -307,41 +307,6 @@ body.lightbox-open {
   right: 0.5rem;
 }
 
-@media (max-width: 640px) {
-  .media-lightbox {
-    padding: 0.75rem;
-  }
-
-  .media-lightbox-dialog {
-    width: 100%;
-  }
-
-  .media-lightbox-stage {
-    height: calc(100dvh - 1.5rem);
-    max-height: calc(100dvh - 1.5rem);
-  }
-
-  .media-lightbox-image {
-    height: 100%;
-    max-height: none;
-  }
-
-  .media-lightbox-prev {
-    left: 0.5rem;
-  }
-
-  .media-lightbox-next {
-    right: 0.5rem;
-  }
-
-  .media-lightbox-close {
-    top: 0.5rem;
-    right: 0.5rem;
-    z-index: 2;
-  }
-}
-
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -350,4 +315,40 @@ body.lightbox-open {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
   }
+}
+
+/* Impressum und Datenschutz */
+.legal-page {
+  display: grid;
+  max-width: 860px;
+  gap: 2rem;
+}
+
+.legal-content {
+  display: grid;
+  gap: 2rem;
+  padding: clamp(1rem, 3vw, 1.6rem);
+  color: var(--color-text-soft);
+}
+
+.legal-content section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.legal-content h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.legal-content p {
+  margin: 0;
+  line-height: 1.75;
+}
+
+.legal-content a {
+  color: var(--color-accent);
 }

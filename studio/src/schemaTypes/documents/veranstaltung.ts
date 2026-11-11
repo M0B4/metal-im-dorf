@@ -65,25 +65,32 @@ export default defineType({
       type: 'string',
     }),
     defineField({
-      name: 'nurAbendkasse',
-      title: 'Nur Abendkasse',
-      description: 'Kein Vorverkauf: Die Website zeigt „Tickets nur an der Abendkasse“ statt der Ticketbestellung.',
-      type: 'boolean',
-      initialValue: false,
+      name: 'vorverkauf',
+      title: 'Tickets',
+      description: 'Wie es Tickets gibt. Davon hängt der Ticket-Button auf der Website ab.',
+      type: 'string',
+      initialValue: 'formular',
+      options: {
+        layout: 'radio',
+        list: [
+          {title: 'Bestellung über die Website (Formular)', value: 'formular'},
+          {title: 'Externer Ticketshop (Link)', value: 'extern'},
+          {title: 'Nur Abendkasse', value: 'abendkasse'},
+        ],
+      },
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'ticketUrl',
-      title: 'Ticket-Link',
-      description: 'Optional.',
+      title: 'Link zum Ticketshop',
       type: 'url',
-      hidden: ({document}) => Boolean(document?.nurAbendkasse),
-    }),
-    defineField({
-      name: 'ticketLabel',
-      title: 'Text auf dem Ticket-Button',
-      type: 'string',
-      initialValue: 'Tickets',
-      hidden: ({document}) => !document?.ticketUrl,
+      hidden: ({document}) => document?.vorverkauf !== 'extern',
+      validation: (rule) =>
+        rule.custom((url, context) =>
+          (context.document as {vorverkauf?: string} | undefined)?.vorverkauf !== 'extern' || url
+            ? true
+            : 'Bitte den Link zum Ticketshop eintragen.',
+        ),
     }),
     defineField({
       name: 'lineup',

@@ -10,10 +10,9 @@ Website und Redaktions-Studio für das Metal im Dorf Festival.
 Im Studio gibt es:
 
 - **News:** Überschrift, Datum (ist automatisch heute), Text und optional Bilder. Veröffentlichen, fertig.
-- **Veranstaltungen:** mit Plakat. Kommende stehen oben auf der Seite „Veranstaltungen“, vergangene rutschen automatisch in den Rückblick. Das Line-Up der nächsten Veranstaltung erscheint auf der Seite „Line-Up“.
+- **Veranstaltungen:** mit Plakat. Kommende stehen oben auf der Seite „Veranstaltungen“, vergangene rutschen automatisch in den Rückblick. Das Line-Up der nächsten Veranstaltung erscheint auf der Seite „Line-Up“. Unter „Tickets“ wählst du, ob über das Formular der Website bestellt wird, über einen externen Ticketshop oder nur an der Abendkasse.
 - **Bands:** für das Line-Up.
-- **Festival-Infos** und **Website-Einstellungen** (Text auf der Startseite, Hinweisbanner, Kontakt).
-- **Archiv: frühere Plakate:** nur für alte Jahre, die nicht als Veranstaltung angelegt sind.
+- **Festival-Infos** und **Website-Einstellungen** (Text auf der Startseite, Akzentfarbe, Hinweisbanner, Kontakt).
 
 Veröffentlichte Inhalte sind spätestens nach zehn Minuten auf der Website.
 

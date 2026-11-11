@@ -5,7 +5,7 @@ import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDateRange, formatTime, yearOf } from "../utils/format";
 import { imageUrl, shareImageUrl } from "../utils/image";
-import { getEvents, getSiteSettings, isPast, nextEvent, type Kategorie } from "../utils/sanity";
+import { getEvents, getSiteSettings, hasPresale, isPast, nextEvent, type Kategorie } from "../utils/sanity";
 import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, sitePath, siteUrl } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
@@ -94,17 +94,21 @@ const jsonLd = JSON.stringify(
                   </a>
                 )}
                 {event.kurzbeschreibung && <p class="event-text">{event.kurzbeschreibung}</p>}
-                {event.ticketUrl && (
+                {event.nurAbendkasse ? (
+                  <p class="box-office"><Ticket size={16} aria-hidden="true" />Tickets nur an der Abendkasse</p>
+                ) : event.ticketUrl && (
                   <a class="metal-button" href={event.ticketUrl} target="_blank" rel="noreferrer">
                     <Ticket size={16} aria-hidden="true" />
                     {event.ticketLabel || "Tickets"}
                     <span class="sr-only">{NEW_TAB_HINT}</span>
                   </a>
                 )}
-                <a class="metal-button" href={sitePath(`/tickets?veranstaltung=${encodeURIComponent(event._id)}`)}>
-                  <Mail size={16} aria-hidden="true" />
-                  Tickets bestellen
-                </a>
+                {hasPresale(event) && (
+                  <a class="metal-button" href={sitePath(`/tickets?veranstaltung=${encodeURIComponent(event._id)}`)}>
+                    <Mail size={16} aria-hidden="true" />
+                    Tickets bestellen
+                  </a>
+                )}
               </div>
             </article>
           ))}
@@ -236,6 +240,19 @@ const jsonLd = JSON.stringify(
     margin: 0;
     color: #fff;
     font-weight: 600;
+  }
+
+  .box-office {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0.5rem 0 0;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .event-place {

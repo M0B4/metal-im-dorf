@@ -30,13 +30,15 @@ export interface News {
   inhalt?: PortableTextBlock[];
 }
 
+export type BandLinkKey = "website" | "facebook" | "instagram" | "spotify" | "bandcamp" | "youtube";
+
 export interface Band {
   _id: string;
   name?: string;
   genre?: string;
   platzhalter?: boolean;
   bild?: SanityImage;
-  link?: string;
+  links?: Partial<Record<BandLinkKey, string>>;
   spielzeit?: string;
 }
 
@@ -51,6 +53,7 @@ export interface Veranstaltung {
   adresse?: string;
   kurzbeschreibung?: string;
   preis?: string;
+  nurAbendkasse?: boolean;
   bild?: SanityImage;
   ticketUrl?: string;
   ticketLabel?: string;
@@ -101,7 +104,7 @@ export function getNews(): Promise<News[]> {
   }`);
 }
 
-const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, bild ${image}, ticketUrl, ticketLabel`;
+const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse, kurzbeschreibung, preis, nurAbendkasse, bild ${image}, ticketUrl, ticketLabel`;
 
 export function getEvents(): Promise<Veranstaltung[]> {
   return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) { ${eventFields} }`);
@@ -112,7 +115,7 @@ export async function getLineupEvent(): Promise<Veranstaltung | null> {
   const upcoming = await query<Veranstaltung[]>(`*[_type == "veranstaltung" && coalesce(ende, beginn) >= now()]
     | order(beginn asc) {
       ${eventFields},
-      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, link, bild ${image} } }
+      lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, links, bild ${image} } }
     }`);
   return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0] ?? null;
 }
@@ -130,6 +133,11 @@ export async function getFestivalInfo(): Promise<FestivalInfo> {
 export function nextEvent(events: Veranstaltung[], now = Date.now()) {
   const upcoming = events.filter((event) => !isPast(event, now));
   return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0];
+}
+
+/** Vorverkauf über die Website: nicht bei „Nur Abendkasse“. */
+export function hasPresale(event: Pick<Veranstaltung, "nurAbendkasse">) {
+  return !event.nurAbendkasse;
 }
 
 export function isPast(event: Pick<Veranstaltung, "beginn" | "ende">, now = Date.now()) {

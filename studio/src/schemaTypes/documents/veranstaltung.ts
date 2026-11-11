@@ -64,7 +64,20 @@ export default defineType({
       description: 'Optional, z. B. „25 € Vorverkauf, 30 € Abendkasse“ oder „Eintritt frei“.',
       type: 'string',
     }),
-    defineField({name: 'ticketUrl', title: 'Ticket-Link', description: 'Optional.', type: 'url'}),
+    defineField({
+      name: 'nurAbendkasse',
+      title: 'Nur Abendkasse',
+      description: 'Kein Vorverkauf: Die Website zeigt „Tickets nur an der Abendkasse“ statt der Ticketbestellung.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'ticketUrl',
+      title: 'Ticket-Link',
+      description: 'Optional.',
+      type: 'url',
+      hidden: ({document}) => Boolean(document?.nurAbendkasse),
+    }),
     defineField({
       name: 'ticketLabel',
       title: 'Text auf dem Ticket-Button',

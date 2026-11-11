@@ -1,15 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { formatTime } from "../utils/format";
-import { ExternalLink } from "@lucide/astro";
+import { Globe } from "@lucide/astro";
+import { Icon } from "astro-icon/components";
 import { croppedImageUrl, shareImageUrl, srcSet } from "../utils/image";
-import { getLineupEvent, getSiteSettings, type Band } from "../utils/sanity";
+import { getLineupEvent, getSiteSettings, type Band, type BandLinkKey } from "../utils/sanity";
 import { NEW_TAB_HINT } from "../utils/site";
 
 const [event, settings] = await Promise.all([getLineupEvent(), getSiteSettings()]);
 const bands: Band[] = (event?.lineup ?? [])
   .filter((slot) => slot.band)
   .map((slot) => ({ ...slot.band!, spielzeit: slot.spielzeit }));
+const linkTypes: Array<{ key: BandLinkKey; label: string; icon?: string }> = [
+  { key: "website", label: "Website" },
+  { key: "facebook", label: "Facebook", icon: "simple-icons:facebook" },
+  { key: "instagram", label: "Instagram", icon: "simple-icons:instagram" },
+  { key: "spotify", label: "Spotify", icon: "simple-icons:spotify" },
+  { key: "bandcamp", label: "Bandcamp", icon: "simple-icons:bandcamp" },
+  { key: "youtube", label: "YouTube", icon: "simple-icons:youtube" },
+];
+const bandLinks = (band: Band) =>
+  band.platzhalter ? [] : linkTypes.filter((type) => band.links?.[type.key]).map((type) => ({ ...type, href: band.links![type.key]! }));
 ---
 
 <Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} image={event?.bild && shareImageUrl(event.bild)} settings={settings}>
@@ -42,15 +53,18 @@ const bands: Band[] = (event?.lineup ?? [])
 
             <div class="band-info">
               <span class="genre-tag">{band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}</span>
-              <h2>
-                {band.platzhalter ? "Wird noch bekannt gegeben" : band.link ? (
-                  <a class="band-link" href={band.link} target="_blank" rel="noreferrer">
-                    {band.name}
-                    <ExternalLink size={16} aria-hidden="true" />
-                    <span class="sr-only">{NEW_TAB_HINT}</span>
-                  </a>
-                ) : band.name}
-              </h2>
+              <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
+              {bandLinks(band).length > 0 && (
+                <ul class="band-links" aria-label={`Links zu ${band.name}`}>
+                  {bandLinks(band).map((link) => (
+                    <li>
+                      <a href={link.href} target="_blank" rel="noreferrer" title={link.label} aria-label={`${link.label} ${NEW_TAB_HINT}`}>
+                        {link.icon ? <Icon name={link.icon} size={18} /> : <Globe size={18} aria-hidden="true" />}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {band.spielzeit && <p>{formatTime(band.spielzeit)}</p>}
             </div>
           </article>
@@ -160,25 +174,24 @@ const bands: Band[] = (event?.lineup ?? [])
     text-transform: uppercase;
   }
 
-  .band-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: inherit;
-    text-decoration: none;
+  .band-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0 0 0 -0.45rem;
+    padding: 0;
+    list-style: none;
   }
-  .band-link :global(svg) {
-    flex: none;
+  .band-links a {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    color: #a1a1aa;
+    transition: color 150ms ease;
+  }
+  .band-links a:hover {
     color: var(--color-accent);
-  }
-  .band-link:hover {
-    color: var(--color-accent);
-  }
-  /* Die ganze Karte ist klickbar, wenn die Band einen Link hat. */
-  .band-link::after {
-    content: "";
-    position: absolute;
-    inset: 0;
   }
   .band-card h2 {
     margin: 0;

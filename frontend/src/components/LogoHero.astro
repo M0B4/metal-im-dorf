@@ -32,6 +32,9 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
             <span class="sr-only">{NEW_TAB_HINT}</span>
           </a>
         </p>
+        {next.nurAbendkasse ? (
+          <p class="hero-box-office"><Ticket size={16} aria-hidden="true" />Tickets an der Abendkasse</p>
+        ) : (
         <a
           class="metal-button"
           href={ticketHref}
@@ -41,6 +44,7 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
           Tickets
           {next.ticketUrl && <span class="sr-only">{NEW_TAB_HINT}</span>}
         </a>
+        )}
       </div>
     )}
   </div>
@@ -162,6 +166,18 @@ const ticketHref = next && (next.ticketUrl || sitePath(`/tickets?veranstaltung=$
 
   .hero-facts a:hover {
     color: var(--color-accent);
+  }
+
+  .logo-hero .hero-box-office {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .hero-next .metal-button {

@@ -20,7 +20,7 @@ export default defineConfig({
       apiVersion: "2026-03-26",
     }),
     sitemap(),
-    icon({ include: { "simple-icons": ["instagram", "facebook"] } }),
+    icon({ include: { "simple-icons": ["instagram", "facebook", "spotify", "bandcamp", "youtube"] } }),
   ],
   vite: {
     plugins: [tailwindcss()],

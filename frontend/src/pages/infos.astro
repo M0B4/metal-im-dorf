@@ -12,7 +12,9 @@ import {
   Utensils,
 } from "@lucide/astro";
 import {PortableText} from "astro-portabletext";
+import MediaLightbox from "../components/MediaLightbox.astro";
 import Layout from "../layouts/Layout.astro";
+import {imageUrl, srcSet} from "../utils/image";
 import {getFestivalInfo, getSiteSettings} from "../utils/sanity";
 import {sitePath} from "../utils/site";
 
@@ -49,6 +51,34 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
             <div class="info-copy">
               <h2>{section.title}</h2>
               <div class="prose prose-invert"><PortableText value={section.body} /></div>
+              {section.bilder?.length ? (
+                <div class="info-images">
+                  {section.bilder.map((image, index) => {
+                    const alt = image.alt || `${section.title} Bild ${index + 1}`;
+                    return (
+                      <button
+                        class="info-image"
+                        type="button"
+                        data-lightbox-group={`info-${section._key}`}
+                        data-full-src={imageUrl(image, 2000, 90)}
+                        data-alt={alt}
+                        data-caption={alt}
+                        aria-label={`${alt} vergrößern`}
+                      >
+                        <img
+                          src={imageUrl(image, 560)}
+                          srcset={srcSet(image, [280, 420, 560, 840])}
+                          sizes="(max-width: 760px) calc(50vw - 1.5rem), 260px"
+                          width={image.width}
+                          height={image.height}
+                          alt={alt}
+                          loading="lazy"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
               {href && section.linkLabel && <a href={href}>{section.linkLabel}</a>}
             </div>
           </article>
@@ -56,6 +86,8 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
       })}
     </div>
   </div>
+
+  <MediaLightbox />
 </Layout>
 
 <style>
@@ -122,6 +154,36 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
 
   .info-copy :global(p:last-child) {
     margin-bottom: 0;
+  }
+
+  .info-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .info-image {
+    display: block;
+    padding: 0;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-subtle);
+  }
+
+  .info-image:hover,
+  .info-image:focus-visible {
+    border-color: var(--color-accent);
+  }
+
+  .info-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
   }
 
   .info-copy a {

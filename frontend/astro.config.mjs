@@ -7,13 +7,18 @@ import tailwindcss from "@tailwindcss/vite";
 
 const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 
-// Statische Website für GitHub Pages unter https://m0b4.github.io/metal-im-dorf
+// Statische Website. Gebaut wird entweder von GitHub Pages (https://m0b4.github.io/metal-im-dorf)
+// oder von Cloudflare (Pages bzw. Workers Builds), das erkennt der Build an den Umgebungsvariablen.
+// Bei Cloudflare liegt die Seite im Wurzelverzeichnis; SITE_URL setzt die eigene Domain.
+const onCloudflare = Boolean(process.env.CF_PAGES || process.env.WORKERS_CI);
+const hosting = onCloudflare ? "cloudflare" : "github";
+
 export default defineConfig({
   output: "static",
-  site: "https://m0b4.github.io",
+  site: process.env.SITE_URL || (onCloudflare ? process.env.CF_PAGES_URL : undefined) || "https://m0b4.github.io",
   // CSS direkt in die Seite schreiben: kein zusätzlicher Request, der das erste Anzeigen blockiert.
   build: { inlineStylesheets: "always" },
-  base: process.env.NODE_ENV === "production" ? "/metal-im-dorf" : "/",
+  base: !onCloudflare && process.env.NODE_ENV === "production" ? "/metal-im-dorf" : "/",
   integrations: [
     sanity({
       projectId: env.PUBLIC_SANITY_STUDIO_PROJECT_ID || "hrgrzj9i",
@@ -26,5 +31,7 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    // Für die Datenschutzerklärung: welcher Hoster die Seite gerade ausliefert.
+    define: { "import.meta.env.HOSTING": JSON.stringify(hosting) },
   },
 });

@@ -5,10 +5,10 @@ import Layout from "../layouts/Layout.astro";
 import { getEvents, getNews, getSiteSettings, isPast } from "../utils/sanity";
 
 const [news, settings, events] = await Promise.all([getNews(), getSiteSettings(), getEvents()]);
-const nextEvent = events.find((event) => !isPast(event));
+const upcoming = events.filter((event) => !isPast(event));
 ---
 
 <Layout settings={settings}>
-  <LogoHero intro={settings.intro} event={nextEvent} />
+  <LogoHero intro={settings.intro} events={upcoming} />
   <NewsSection news={news} />
 </Layout>

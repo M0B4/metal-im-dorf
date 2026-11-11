@@ -1,15 +1,19 @@
 ---
-import { Ticket } from "@lucide/astro";
 import { formatDate } from "../utils/format";
 import type { Veranstaltung } from "../utils/sanity";
-import { NEW_TAB_HINT, SITE_NAME, sitePath } from "../utils/site";
+import { SITE_NAME, sitePath } from "../utils/site";
 
 interface Props {
   intro: string;
-  event?: Veranstaltung;
+  events: Veranstaltung[];
 }
 
-const { intro, event } = Astro.props;
+const { intro, events } = Astro.props;
+// Laufband: Liste so oft wiederholen, dass eine Hälfte breiter als der Bildschirm ist;
+// die zweite Hälfte ist eine Kopie, damit die Schleife ohne Sprung weiterläuft.
+const repeats = Math.max(1, Math.ceil(6 / Math.max(events.length, 1)));
+const loop = Array.from({ length: repeats }, () => events).flat();
+const duration = `${Math.max(20, loop.length * 9)}s`;
 ---
 
 <section class="logo-hero">
@@ -21,22 +25,29 @@ const { intro, event } = Astro.props;
   </div>
 </section>
 
-{event && (
-  <aside class="next-event" aria-label="Nächste Veranstaltung">
-    <div class="shell--narrow next-event-inner">
-      <span class="next-event-label">Nächste Veranstaltung</span>
-      <a class="next-event-main" href={sitePath("/veranstaltungen")}>
-        <time datetime={event.beginn}>{formatDate(event.beginn)}</time>
-        <strong>{event.titel}</strong>
-        {event.ort && <span>{event.ort}</span>}
-      </a>
-      {event.ticketUrl && (
-        <a class="next-event-ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
-          <Ticket size={16} aria-hidden="true" />
-          {event.ticketLabel || "Tickets"}
-          <span class="sr-only">{NEW_TAB_HINT}</span>
-        </a>
-      )}
+{events.length > 0 && (
+  <aside class="event-ticker" aria-label="Kommende Veranstaltungen">
+    <span class="event-ticker-label">Kommende Veranstaltungen</span>
+    <div class="event-ticker-viewport">
+      <div class="event-ticker-track" style={`--ticker-duration: ${duration}`}>
+        {[0, 1].map((copy) => (
+          <ul class="event-ticker-list" aria-hidden={copy === 1 ? "true" : undefined}>
+            {loop.map((event, index) => (
+              <li>
+                <a
+                  href={sitePath("/veranstaltungen")}
+                  tabindex={copy === 1 || index >= events.length ? -1 : undefined}
+                  aria-hidden={copy === 0 && index >= events.length ? "true" : undefined}
+                >
+                  <time datetime={event.beginn}>{formatDate(event.beginn)}</time>
+                  <strong>{event.titel}</strong>
+                  {event.ort && <span>{event.ort}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
     </div>
   </aside>
 )}
@@ -86,68 +97,120 @@ const { intro, event } = Astro.props;
     line-height: 1.6;
   }
 
-  .next-event {
-    background: #0c0c0c;
-    border-block: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .next-event-inner {
+  /* Laufband mit allen kommenden Veranstaltungen. Hover/Fokus hält es an, bei „weniger Bewegung“ steht es still. */
+  .event-ticker {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1.25rem;
-    padding-block: 0.9rem;
+    align-items: stretch;
+    overflow: hidden;
+    background: #0c0c0c;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .next-event-label {
+  .event-ticker-label {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: none;
+    align-items: center;
+    padding: 0.9rem clamp(0.75rem, 3vw, 1.5rem);
     color: var(--color-accent);
+    background: #0c0c0c;
+    box-shadow: 12px 0 16px -6px #0c0c0c;
     font-family: var(--font-display);
     font-size: 1rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
-  .next-event-main {
-    display: flex;
+  .event-ticker-viewport {
     flex: 1;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.75rem;
     min-width: 0;
+    overflow: hidden;
+  }
+
+  .event-ticker-track {
+    display: flex;
+    width: max-content;
+    animation: event-ticker var(--ticker-duration, 30s) linear infinite;
+  }
+
+  .event-ticker:hover .event-ticker-track,
+  .event-ticker:focus-within .event-ticker-track {
+    animation-play-state: paused;
+  }
+
+  .event-ticker-list {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .event-ticker-list li {
+    display: flex;
+    align-items: center;
+  }
+
+  .event-ticker-list li::after {
+    content: "✦";
+    color: var(--color-accent);
+    font-size: 0.7rem;
+  }
+
+  .event-ticker-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.9rem 1.5rem;
     color: #f4f4f5;
     text-decoration: none;
+    white-space: nowrap;
   }
 
-  .next-event-main:hover strong {
+  .event-ticker-list a:hover strong {
     color: var(--color-accent);
   }
 
-  .next-event-main time,
-  .next-event-main span {
+  .event-ticker-list time,
+  .event-ticker-list span {
     color: #a1a1aa;
     font-size: 0.9rem;
   }
 
-  .next-event-main strong {
+  .event-ticker-list strong {
     font-weight: 700;
     transition: color 150ms ease;
   }
 
-  .next-event-ticket {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.85rem;
-    color: var(--color-accent-contrast);
-    background: var(--color-accent);
-    border-radius: var(--radius-subtle);
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-decoration: none;
-    text-transform: uppercase;
+  @keyframes event-ticker {
+    to {
+      transform: translateX(-50%);
+    }
   }
 
-  .next-event-ticket:hover {
-    filter: brightness(1.1);
+  @media (prefers-reduced-motion: reduce) {
+    .event-ticker-track {
+      animation: none;
+    }
+
+    .event-ticker-viewport {
+      overflow-x: auto;
+    }
+
+    .event-ticker-list[aria-hidden="true"] {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .event-ticker-label {
+      font-size: 0;
+    }
+
+    .event-ticker-label::before {
+      content: "Termine";
+      font-size: 0.95rem;
+    }
   }
 </style>

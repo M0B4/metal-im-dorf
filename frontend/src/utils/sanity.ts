@@ -77,12 +77,14 @@ export interface FestivalInfo {
 export async function getSiteSettings(): Promise<SiteSettings> {
   const s = await query<{
     intro?: string;
+    akzentfarbe?: string;
     email?: string;
     instagramUrl?: string;
     facebookUrl?: string;
     notice?: SiteSettings["notice"];
   } | null>(`*[_id == "siteSettings"][0]{
     "intro": hero.intro,
+    akzentfarbe,
     "email": contact.email,
     "instagramUrl": contact.instagramUrl,
     "facebookUrl": contact.facebookUrl,
@@ -91,6 +93,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
   return {
     intro: s?.intro || defaultSiteSettings.intro,
+    akzentfarbe: s?.akzentfarbe || undefined,
     email: s?.email || defaultSiteSettings.email,
     instagramUrl: s?.instagramUrl || defaultSiteSettings.instagramUrl,
     facebookUrl: s?.facebookUrl || defaultSiteSettings.facebookUrl,

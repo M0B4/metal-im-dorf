@@ -19,9 +19,8 @@ const bands: Band[] = (event?.lineup ?? [])
 
     {bands.length ? (
       <section class="band-grid" aria-label="Line-Up">
-        {bands.map((band, index) => (
+        {bands.map((band) => (
           <article class:list={["band-card panel", band.platzhalter && "band-card--placeholder"]}>
-            <div class="band-slot">{String(index + 1).padStart(2, "0")}</div>
             {!band.platzhalter && band.bild ? (
               <div class="band-image-wrapper">
                 <img
@@ -42,7 +41,7 @@ const bands: Band[] = (event?.lineup ?? [])
             <div class="band-info">
               <span class="genre-tag">{band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}</span>
               <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
-              <p>{band.spielzeit ? formatTime(band.spielzeit) : "TBA"}</p>
+              {band.spielzeit && <p>{formatTime(band.spielzeit)}</p>}
             </div>
           </article>
         ))}
@@ -96,18 +95,6 @@ const bands: Band[] = (event?.lineup ?? [])
     border-style: dashed;
   }
 
-  .band-slot {
-    position: absolute;
-    top: 0.55rem;
-    left: 0.55rem;
-    z-index: 2;
-    padding: 0.22rem 0.34rem;
-    color: var(--color-accent-contrast);
-    background: var(--color-accent);
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    font-weight: 900;
-  }
 
   .band-image-wrapper {
     aspect-ratio: 4 / 3;

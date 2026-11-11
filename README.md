@@ -27,9 +27,9 @@ npm run build    # Website bauen (frontend/dist)
 
 Ein Push auf `master` veröffentlicht die Website über `.github/workflows/deploy.yml`. Das Studio wird mit `npm run deploy -w studio` aktualisiert.
 
-### Umzug zu Cloudflare Pages
+### Cloudflare (metal-im-dorf.de)
 
-Der Build erkennt Cloudflare an `CF_PAGES` bzw. `WORKERS_CI` und baut dann ohne Unterordner `/metal-im-dorf`. Die Datenschutzerklärung nennt automatisch Cloudflare statt GitHub als Hoster, robots.txt und Sitemap zeigen auf die richtige Adresse. Einstellungen im Cloudflare-Projekt: Build-Befehl `npm run build -w frontend`, Ausgabeordner `frontend/dist`, Umgebungsvariable `SITE_URL` mit der endgültigen Adresse (z. B. `https://metal-im-dorf.de`). Vor dem Livegang den Vertrag zur Auftragsverarbeitung von Cloudflare im Dashboard bestätigen.
+Die Website läuft als Cloudflare Worker „metal-im-dorf“ (`wrangler.jsonc`, `worker/index.js`). Bei jedem Push auf `master` baut Workers Builds die Seite und veröffentlicht sie unter https://metal-im-dorf.de; www.metal-im-dorf.de leitet dorthin um. Der Build erkennt Cloudflare an `WORKERS_CI` und baut dann ohne Unterordner `/metal-im-dorf`, die Datenschutzerklärung nennt Cloudflare als Hoster. Den Vertrag zur Auftragsverarbeitung von Cloudflare im Dashboard bestätigen.
 
 ### Sofort veröffentlichen (optional)
 

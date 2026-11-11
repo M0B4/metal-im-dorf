@@ -5,8 +5,9 @@ const kategorien = [
   {title: 'Nebenveranstaltung', value: 'nebenveranstaltung'},
 ]
 
-// Kommende Veranstaltungen stehen oben auf der Seite „Veranstaltungen“, vergangene
-// wandern automatisch mit ihrem Plakat zu „Vergangene Veranstaltungen“.
+// Alle Veranstaltungen, frühere wie kommende. Das Datum entscheidet: kommende stehen oben auf der
+// Seite „Veranstaltungen“, vergangene wandern automatisch mit Plakat und Jahr in den Rückblick.
+// Bei alten Veranstaltungen ohne genaues Datum reicht der 1. Januar des Jahres.
 export default defineType({
   name: 'veranstaltung',
   title: 'Veranstaltung',
@@ -45,7 +46,7 @@ export default defineType({
           return !ende || !beginn || ende >= beginn ? true : 'Das Ende muss nach dem Beginn liegen.'
         }),
     }),
-    defineField({name: 'ort', title: 'Ort', type: 'string', validation: (rule) => rule.required()}),
+    defineField({name: 'ort', title: 'Ort', description: 'Für kommende Veranstaltungen.', type: 'string'}),
     defineField({name: 'adresse', title: 'Adresse', description: 'Optional, für den Karten-Link.', type: 'string'}),
     defineField({name: 'bild', title: 'Plakat', type: 'image'}),
     defineField({name: 'kurzbeschreibung', title: 'Kurzer Text', description: 'Optional.', type: 'text', rows: 3}),

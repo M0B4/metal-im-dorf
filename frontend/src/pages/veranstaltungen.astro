@@ -6,10 +6,10 @@ import TicketForm from "../components/TicketForm.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDate, formatTime, yearOf } from "../utils/format";
 import { imageUrl } from "../utils/image";
-import { getArchive, getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
+import { getEvents, getSiteSettings, isPast, type Kategorie } from "../utils/sanity";
 import { ADDRESS, NEW_TAB_HINT, SITE_NAME, siteUrl } from "../utils/site";
 
-const [events, archive, settings] = await Promise.all([getEvents(), getArchive(), getSiteSettings()]);
+const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
 
 const kategorieLabel = (kategorie: Kategorie) =>
@@ -17,30 +17,17 @@ const kategorieLabel = (kategorie: Kategorie) =>
 const mapsUrl = (...parts: Array<string | undefined>) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;
 
-// Vergangene Veranstaltungen plus Archiv-Plakate früherer Jahre. Ein Archiv-Eintrag
-// ersetzt eine vergangene Veranstaltung derselben Kategorie im selben Jahr.
-const inArchive = (year: number, kategorie: Kategorie) =>
-  archive.some((entry) => entry.jahr === year && entry.kategorie === kategorie);
-const past = [
-  ...events
-    .filter((event) => isPast(event) && !inArchive(yearOf(event.beginn), event.kategorie))
-    .map((event) => ({
-      id: event._id,
-      year: yearOf(event.beginn),
-      sort: event.beginn,
-      kategorie: event.kategorie,
-      title: event.titel,
-      image: event.bild,
-    })),
-  ...archive.map((entry) => ({
-    id: entry._id,
-    year: entry.jahr,
-    sort: `${entry.jahr}`,
-    kategorie: entry.kategorie,
-    title: entry.titel || String(entry.jahr),
-    image: entry.plakat,
-  })),
-].sort((a, b) => b.year - a.year || b.sort.localeCompare(a.sort));
+// Vergangen ist, was laut Datum vorbei ist: neueste zuerst.
+const past = events
+  .filter((event) => isPast(event))
+  .reverse()
+  .map((event) => ({
+    id: event._id,
+    year: yearOf(event.beginn),
+    kategorie: event.kategorie,
+    title: event.titel,
+    image: event.bild,
+  }));
 
 // Strukturierte Daten, damit Suchmaschinen die Termine direkt anzeigen können.
 const jsonLd = JSON.stringify(

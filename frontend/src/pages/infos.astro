@@ -17,12 +17,14 @@ import {PortableText} from "astro-portabletext";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Layout from "../layouts/Layout.astro";
 import {imageUrl, srcSet} from "../utils/image";
-import {getEvents, getFestivalInfo, getSiteSettings, nextEvent} from "../utils/sanity";
+import {getEvents, getFestivalInfo, getSiteSettings, isPast} from "../utils/sanity";
 import {ADDRESS, mapsUrl, NEW_TAB_HINT, sitePath} from "../utils/site";
 
 const [info, settings, events] = await Promise.all([getFestivalInfo(), getSiteSettings(), getEvents()]);
-// Ort und Kartenlink kommen von der nächsten Veranstaltung (wie im Logo-Bereich), sonst die feste Festivaladresse.
-const next = nextEvent(events);
+// Ort und Kartenlink kommen vom Metal-im-Dorf-Hauptfestival (das nächste, sonst das letzte),
+// Nebenveranstaltungen zählen hier nicht. Ohne Ort gilt die feste Festivaladresse.
+const festivals = events.filter((event) => event.kategorie === "hauptfestival");
+const next = festivals.find((event) => !isPast(event)) ?? festivals.at(-1);
 const place = next?.ort ? [next.ort, next.adresse].filter((part): part is string => Boolean(part)) : ADDRESS;
 const placeUrl = (next?.ort && next.kartenLink) || mapsUrl(...place);
 const icons = {

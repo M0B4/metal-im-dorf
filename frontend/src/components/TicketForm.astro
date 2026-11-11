@@ -17,91 +17,69 @@ const useService = WEB3FORMS_ACCESS_KEY.length > 0;
 const eventLabel = (event: Veranstaltung) => `${event.titel} (${formatDate(event.beginn)})`;
 ---
 
-<section id="tickets" class="ticket-section" aria-labelledby="tickets-title">
-  <h2 id="tickets-title" class="section-title">Tickets bestellen</h2>
-  <p class="ticket-lede">
-    Schick uns deine Bestellung, wir melden uns per E-Mail mit allen Infos zu Bezahlung und Abholung.
-    Du kannst uns auch direkt an <a href={`mailto:${email}`}>{email}</a> schreiben.
+<form
+  class="ticket-form panel"
+  method="post"
+  action={useService ? "https://api.web3forms.com/submit" : `mailto:${email}`}
+  enctype={useService ? undefined : "text/plain"}
+  data-mode={useService ? "service" : "mail"}
+  data-email={email}
+>
+  {useService && (
+    <>
+      <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+      <input type="hidden" name="subject" value="Ticketbestellung über die Website" />
+      <input type="hidden" name="from_name" value="Metal im Dorf Website" />
+      <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    </>
+  )}
+
+  <div class="field">
+    <label for="ticket-event">Veranstaltung</label>
+    <select id="ticket-event" name="Veranstaltung" required>
+      {events.map((event) => (
+        <option value={eventLabel(event)} data-event-id={event._id}>{eventLabel(event)}</option>
+      ))}
+    </select>
+  </div>
+
+  <div class="field field-small">
+    <label for="ticket-count">Anzahl Tickets</label>
+    <input id="ticket-count" name="Anzahl" type="number" min="1" max="20" value="1" inputmode="numeric" required />
+  </div>
+
+  <div class="field">
+    <label for="ticket-name">Name</label>
+    <input id="ticket-name" name="name" type="text" autocomplete="name" required />
+  </div>
+
+  <div class="field">
+    <label for="ticket-email">E-Mail</label>
+    <input id="ticket-email" name="email" type="email" autocomplete="email" required />
+  </div>
+
+  <div class="field field-wide">
+    <label for="ticket-message">Nachricht <span class="optional">(optional)</span></label>
+    <textarea id="ticket-message" name="Nachricht" rows="4"></textarea>
+  </div>
+
+  <p class="ticket-privacy field-wide">
+    {useService
+      ? "Deine Angaben werden über den Formulardienst Web3Forms an uns gesendet und nur für deine Bestellung genutzt."
+      : "Beim Absenden öffnet sich dein Mailprogramm mit der fertigen Bestellung, du musst sie nur noch abschicken."}
+    {" "}Mehr dazu in der <a href={sitePath("/datenschutz")}>Datenschutzerklärung</a>.
   </p>
 
-  <form
-    class="ticket-form panel"
-    method="post"
-    action={useService ? "https://api.web3forms.com/submit" : `mailto:${email}`}
-    enctype={useService ? undefined : "text/plain"}
-    data-mode={useService ? "service" : "mail"}
-    data-email={email}
-  >
-    {useService && (
-      <>
-        <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
-        <input type="hidden" name="subject" value="Ticketbestellung über die Website" />
-        <input type="hidden" name="from_name" value="Metal im Dorf Website" />
-        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      </>
-    )}
-
-    <div class="field">
-      <label for="ticket-event">Veranstaltung</label>
-      <select id="ticket-event" name="Veranstaltung" required>
-        {events.map((event) => (
-          <option value={eventLabel(event)} data-event-id={event._id}>{eventLabel(event)}</option>
-        ))}
-      </select>
-    </div>
-
-    <div class="field field-small">
-      <label for="ticket-count">Anzahl Tickets</label>
-      <input id="ticket-count" name="Anzahl" type="number" min="1" max="20" value="1" inputmode="numeric" required />
-    </div>
-
-    <div class="field">
-      <label for="ticket-name">Name</label>
-      <input id="ticket-name" name="name" type="text" autocomplete="name" required />
-    </div>
-
-    <div class="field">
-      <label for="ticket-email">E-Mail</label>
-      <input id="ticket-email" name="email" type="email" autocomplete="email" required />
-    </div>
-
-    <div class="field field-wide">
-      <label for="ticket-message">Nachricht <span class="optional">(optional)</span></label>
-      <textarea id="ticket-message" name="Nachricht" rows="4"></textarea>
-    </div>
-
-    <p class="ticket-privacy field-wide">
-      {useService
-        ? "Deine Angaben werden über den Formulardienst Web3Forms an uns gesendet und nur für deine Bestellung genutzt."
-        : "Beim Absenden öffnet sich dein Mailprogramm mit der fertigen Bestellung, du musst sie nur noch abschicken."}
-      {" "}Mehr dazu in der <a href={sitePath("/datenschutz")}>Datenschutzerklärung</a>.
-    </p>
-
-    <div class="ticket-actions field-wide">
-      <button class="metal-button" type="submit">
-        <Send size={16} aria-hidden="true" />
-        Bestellung senden
-      </button>
-      <p class="ticket-status" role="status" aria-live="polite"></p>
-    </div>
-  </form>
-</section>
+  <div class="ticket-actions field-wide">
+    <button class="metal-button" type="submit">
+      <Send size={16} aria-hidden="true" />
+      Bestellung senden
+    </button>
+    <p class="ticket-status" role="status" aria-live="polite"></p>
+  </div>
+</form>
 
 <style>
-  .ticket-section {
-    display: grid;
-    gap: 1.25rem;
-    scroll-margin-top: 5rem;
-  }
-
-  .ticket-lede {
-    max-width: 62ch;
-    margin: 0;
-    color: #c8c8cf;
-    line-height: 1.65;
-  }
-
-  .ticket-lede a,
   .ticket-privacy a {
     color: var(--color-accent);
   }
@@ -212,13 +190,12 @@ const eventLabel = (event: Veranstaltung) => `${event.titel} (${formatDate(event
   const status = form?.querySelector<HTMLElement>(".ticket-status");
   const submit = form?.querySelector<HTMLButtonElement>("button[type=submit]");
 
-  // „Tickets bestellen“-Links an den Veranstaltungen wählen die passende Veranstaltung vor.
-  document.querySelectorAll<HTMLAnchorElement>("[data-ticket-event]").forEach((link) => {
-    link.addEventListener("click", () => {
-      const option = select?.querySelector<HTMLOptionElement>(`option[data-event-id="${link.dataset.ticketEvent}"]`);
-      if (option && select) select.value = option.value;
-    });
-  });
+  // Der Button an einer Veranstaltung verlinkt auf /tickets/?veranstaltung=<id> und wählt sie hier vor.
+  const preselect = new URLSearchParams(window.location.search).get("veranstaltung");
+  const option = preselect
+    ? select?.querySelector<HTMLOptionElement>(`option[data-event-id="${CSS.escape(preselect)}"]`)
+    : null;
+  if (option && select) select.value = option.value;
 
   const setStatus = (text: string, error = false) => {
     if (!status) return;

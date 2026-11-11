@@ -1,0 +1,42 @@
+---
+import TicketForm from "../components/TicketForm.astro";
+import Layout from "../layouts/Layout.astro";
+import { getEvents, getSiteSettings, isPast } from "../utils/sanity";
+import { sitePath } from "../utils/site";
+
+const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
+const upcoming = events.filter((event) => !isPast(event));
+---
+
+<Layout title="Tickets" description="Tickets für Metal im Dorf per E-Mail bestellen." settings={settings}>
+  <section class="shell tickets-page">
+    <header class="page-header">
+      <h1 class="page-title">Tickets</h1>
+      <p class="page-lede">
+        Schick uns deine Bestellung, wir melden uns per E-Mail mit allen Infos zu Bezahlung und Abholung.
+        Du kannst uns auch direkt an <a href={`mailto:${settings.email}`}>{settings.email}</a> schreiben.
+      </p>
+    </header>
+
+    {upcoming.length ? (
+      <TicketForm events={upcoming} email={settings.email} />
+    ) : (
+      <p class="placeholder">
+        Gerade gibt es keine Veranstaltung mit Ticketverkauf. Alle Termine findest du unter
+        <a href={sitePath("/veranstaltungen")}>Veranstaltungen</a>.
+      </p>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .tickets-page {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .page-lede a,
+  .placeholder a {
+    color: var(--color-accent);
+  }
+</style>

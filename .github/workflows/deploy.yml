@@ -1,18 +1,21 @@
 name: Website veröffentlichen
 
 # Die Website läuft auf Cloudflare (metal-im-dorf.de). Bei jedem Push auf master baut Cloudflare
-# selbst (Workers Builds). Dieser Workflow baut zusätzlich neu, wenn sich nur Inhalte in Sanity
-# geändert haben: per Klick (Actions → Run workflow), per Sanity-Webhook oder einmal täglich,
-# damit vergangene Veranstaltungen in den Rückblick rutschen.
+# selbst (Workers Builds). Dieser Workflow baut zusätzlich neu, damit Änderungen in Sanity online
+# gehen: nach jedem Veröffentlichen in Sanity (Webhook), jeden Tag um 12 Uhr deutscher Zeit und
+# per Klick (Actions → Website veröffentlichen → Run workflow).
 
 on:
   push:
     branches: [master]
   workflow_dispatch:
+  # Sanity-Webhook (siehe README): baut 30 Minuten nach der letzten Veröffentlichung neu.
   repository_dispatch:
     types: [sanity-content-update]
+  # Cron läuft in UTC: 10 Uhr UTC = 12 Uhr Sommerzeit, 11 Uhr UTC = 12 Uhr Winterzeit.
+  # Der erste Schritt lässt nur den Lauf durch, bei dem es in Deutschland 12 Uhr ist.
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 10,11 * * *'
 
 jobs:
   cloudflare:
@@ -24,14 +27,31 @@ jobs:
     env:
       WORKERS_CI: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - id: zeit
+        run: |
+          stunde=$(TZ=Europe/Berlin date +%H)
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "$stunde" = "12" ]; then
+            echo "bauen=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "In Deutschland ist es $stunde Uhr, der Lauf zur anderen UTC-Stunde baut."
+          fi
+      # Nach einer Änderung in Sanity 30 Minuten warten. Kommt in der Zeit eine weitere Änderung,
+      # bricht der neue Lauf diesen ab (concurrency) und wartet wieder 30 Minuten.
+      - if: github.event_name == 'repository_dispatch'
+        run: sleep 1800
+      - if: steps.zeit.outputs.bauen == 'ja'
+        uses: actions/checkout@v4
+      - if: steps.zeit.outputs.bauen == 'ja'
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: npx wrangler@4 deploy
+      - if: steps.zeit.outputs.bauen == 'ja'
+        run: npm ci
+      - if: steps.zeit.outputs.bauen == 'ja'
+        run: npm run build
+      - if: steps.zeit.outputs.bauen == 'ja'
+        run: npx wrangler@4 deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 

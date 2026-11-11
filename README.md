@@ -33,12 +33,14 @@ Die Website läuft als Cloudflare Worker „metal-im-dorf“ (`wrangler.jsonc`, 
 
 ### Inhalte aus Sanity neu veröffentlichen
 
-Änderungen in Sanity erscheinen erst nach einem neuen Build. Der Workflow `.github/workflows/deploy.yml` baut täglich um 3 Uhr (UTC) neu und lässt sich jederzeit unter *Actions → Website veröffentlichen → Run workflow* starten. Er braucht das Repository-Secret `CLOUDFLARE_API_TOKEN` (Cloudflare → My Profile → API Tokens → Vorlage „Edit Cloudflare Workers“).
+Änderungen in Sanity erscheinen erst nach einem neuen Build. Der Workflow `.github/workflows/deploy.yml` baut jeden Tag um 12 Uhr deutscher Zeit neu und lässt sich jederzeit unter *Actions → Website veröffentlichen → Run workflow* starten. Er braucht das Repository-Secret `CLOUDFLARE_API_TOKEN` (Cloudflare → My Profile → API Tokens → Vorlage „Edit Cloudflare Workers“).
 
-Für sofortige Updates in Sanity unter *API → Webhooks* einen Webhook für veröffentlichte Dokumente anlegen:
+Automatisch 30 Minuten nach der letzten Veröffentlichung in Sanity (weitere Änderungen in der Zeit verschieben den Neubau): unter sanity.io/manage → Projekt → *API → Webhooks* einen Webhook anlegen:
 
-- URL: `https://api.github.com/repos/M0B4/metal-im-dorf/dispatches`
-- Header: `Authorization: Bearer <GitHub-Token mit Zugriff auf Actions>` und `Accept: application/vnd.github+json`
-- Payload: `{ "event_type": "sanity-content-update" }`
+- URL: `https://api.github.com/repos/M0B4/metal-im-dorf/dispatches`, Methode `POST`, Dataset `production`
+- Trigger on: Create, Update, Delete; Drafts nicht einschließen
+- Projection: `{"event_type": "sanity-content-update"}`
+- HTTP-Header: `Authorization: Bearer <GitHub-Token>` und `Accept: application/vnd.github+json`
+- GitHub-Token: Fine-grained Token nur für dieses Repository mit der Berechtigung *Contents: Read and write*
 
 Die alte Adresse m0b4.github.io/metal-im-dorf leitet per GitHub Pages auf metal-im-dorf.de um (`.github/redirect`).

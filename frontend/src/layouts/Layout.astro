@@ -7,16 +7,18 @@ import "../styles/global.css";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteNotice from "../components/SiteNotice.astro";
-import { SITE_DESCRIPTION, SITE_NAME, sitePath, type SiteSettings } from "../utils/site";
+import { SITE_DESCRIPTION, SITE_NAME, sitePath, siteUrl, type SiteSettings } from "../utils/site";
 
 interface Props {
   /** Seitentitel ohne Website-Namen; leer auf der Startseite. */
   title?: string;
   description?: string;
+  /** Absolute URL des Vorschaubilds beim Teilen (WhatsApp, Facebook …). */
+  image?: string;
   settings: SiteSettings;
 }
 
-const { title, description = SITE_DESCRIPTION, settings } = Astro.props;
+const { title, description = SITE_DESCRIPTION, image = siteUrl("/og-image.jpg"), settings } = Astro.props;
 const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
@@ -25,7 +27,8 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#050505" />
     <link rel="icon" href={sitePath("/favicon.ico")} sizes="any" />
     <link rel="icon" type="image/png" sizes="64x64" href={sitePath("/favicon.png")} />
     <link rel="apple-touch-icon" sizes="180x180" href={sitePath("/apple-touch-icon.png")} />
@@ -35,18 +38,25 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
     <meta property="og:url" content={Astro.url} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <slot name="head" />
     <title>{fullTitle}</title>
   </head>
   <body style={`--rough-texture-url: url("${sitePath("/rough-texture.webp")}")`}>
+    <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
     <SiteHeader currentPath={currentPath} />
     <SiteNotice notice={settings.notice} />
-    <main class="site-main"><slot /></main>
+    <main class="site-main" id="inhalt" tabindex="-1"><slot /></main>
     <SiteFooter settings={settings} />
   </body>
 </html>
 
 <style>
   .site-main {
+    outline: none;
     min-height: 72vh;
     padding: clamp(1.25rem, 3vw, 2.5rem) 0 clamp(3rem, 7vw, 6rem);
   }

@@ -2,7 +2,7 @@
 import { Ticket } from "@lucide/astro";
 import { formatDate } from "../utils/format";
 import type { Veranstaltung } from "../utils/sanity";
-import { SITE_NAME, sitePath } from "../utils/site";
+import { NEW_TAB_HINT, SITE_NAME, sitePath } from "../utils/site";
 
 interface Props {
   intro: string;
@@ -15,7 +15,7 @@ const { intro, event } = Astro.props;
 <section class="logo-hero">
   <div class="logo-hero-content">
     <h1>
-      <img class="logo-hero-logo" src={sitePath("/logo.svg")} alt={SITE_NAME} fetchpriority="high" />
+      <img class="logo-hero-logo" src={sitePath("/logo.svg")} alt={SITE_NAME} width="560" height="157" fetchpriority="high" />
     </h1>
     {intro && <p>{intro}</p>}
   </div>
@@ -34,6 +34,7 @@ const { intro, event } = Astro.props;
         <a class="next-event-ticket" href={event.ticketUrl} target="_blank" rel="noreferrer">
           <Ticket size={16} aria-hidden="true" />
           {event.ticketLabel || "Tickets"}
+          <span class="sr-only">{NEW_TAB_HINT}</span>
         </a>
       )}
     </div>

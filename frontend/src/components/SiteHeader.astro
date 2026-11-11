@@ -30,7 +30,7 @@ function isActive(path: string) {
       class:list={["brand", isHome && "brand--deferred"]}
       aria-label={`${SITE_NAME} Startseite`}
     >
-      <img src={sitePath("/logo.svg")} alt={SITE_NAME} />
+      <img src={sitePath("/logo.svg")} alt={SITE_NAME} width="126" height="35" />
     </a>
 
     <button
@@ -63,12 +63,19 @@ function isActive(path: string) {
   const toggle = document.querySelector<HTMLButtonElement>("#navToggle");
   const menu = document.querySelector<HTMLElement>("#navMenu");
 
+  const mobileMenu = window.matchMedia("(max-width: 760px)");
+  // Solange das Vollbild-Menü offen ist, bleibt der Rest der Seite für Tastatur und Screenreader gesperrt.
+  const background = () =>
+    Array.from(document.querySelectorAll<HTMLElement>("body > :not(.site-header), .site-header .brand"));
+
   const setOpen = (open: boolean) => {
     menu?.classList.toggle("is-open", open);
     toggle?.classList.toggle("is-open", open);
     toggle?.setAttribute("aria-expanded", String(open));
     toggle?.setAttribute("aria-label", open ? "Hauptmenü schließen" : "Hauptmenü öffnen");
     document.body.classList.toggle("nav-open", open);
+    background().forEach((element) => (element.inert = open));
+    if (open) menu?.querySelector<HTMLElement>(".nav-link")?.focus();
   };
 
   // Kleines Logo erst zeigen, wenn das große Hero-Logo aus dem Bild gescrollt ist.
@@ -85,9 +92,24 @@ function isActive(path: string) {
     deferredBrand?.classList.add("is-visible");
   }
 
-  toggle?.addEventListener("click", () => setOpen(!menu?.classList.contains("is-open")));
+  const isOpen = () => menu?.classList.contains("is-open") ?? false;
+
+  toggle?.addEventListener("click", () => setOpen(!isOpen()));
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setOpen(false);
+    if (event.key !== "Escape" || !isOpen()) return;
+    setOpen(false);
+    toggle?.focus();
+  });
+  // Tab vom letzten Menüpunkt zurück zum Schließen-Knopf statt ins Leere.
+  menu?.addEventListener("keydown", (event) => {
+    const links = Array.from(menu.querySelectorAll<HTMLElement>(".nav-link"));
+    if (event.key === "Tab" && !event.shiftKey && document.activeElement === links.at(-1) && isOpen()) {
+      event.preventDefault();
+      toggle?.focus();
+    }
+  });
+  mobileMenu.addEventListener("change", (event) => {
+    if (!event.matches && isOpen()) setOpen(false);
   });
 </script>
 

@@ -1,11 +1,5 @@
-<div
-  id="media-lightbox"
-  class="media-lightbox hidden"
-  aria-hidden="true"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Bildergalerie"
->
+<!-- Natives <dialog>: hält den Fokus im Bild, sperrt die Seite dahinter, Esc schließt. -->
+<dialog id="media-lightbox" class="media-lightbox" aria-label="Bildergalerie">
   <div class="media-lightbox-dialog">
     <button class="media-lightbox-control media-lightbox-close" type="button" aria-label="Schließen">×</button>
     <button class="media-lightbox-control media-lightbox-prev" type="button" aria-label="Vorheriges Bild">←</button>
@@ -18,7 +12,7 @@
     </figure>
     <button class="media-lightbox-control media-lightbox-next" type="button" aria-label="Nächstes Bild">→</button>
   </div>
-</div>
+</dialog>
 
 <script>
   interface LightboxItem {
@@ -27,7 +21,7 @@
     caption: string;
   }
 
-  const lightbox = document.querySelector<HTMLElement>("#media-lightbox");
+  const lightbox = document.querySelector<HTMLDialogElement>("#media-lightbox");
   const image = lightbox?.querySelector<HTMLImageElement>(".media-lightbox-image");
   const caption = lightbox?.querySelector<HTMLElement>(".media-lightbox-caption-text");
   const counter = lightbox?.querySelector<HTMLElement>(".media-lightbox-counter");
@@ -78,20 +72,21 @@
     trigger = element;
 
     render();
-    lightbox.classList.remove("hidden");
-    lightbox.setAttribute("aria-hidden", "false");
+    lightbox.showModal();
     document.body.classList.add("lightbox-open");
     closeButton?.focus();
   }
 
   function close() {
-    if (!lightbox) return;
-    lightbox.classList.add("hidden");
-    lightbox.setAttribute("aria-hidden", "true");
+    lightbox?.close();
+  }
+
+  // Läuft auch, wenn der Browser den Dialog selbst schließt (Esc).
+  lightbox?.addEventListener("close", () => {
     document.body.classList.remove("lightbox-open");
     if (image) image.src = "";
     trigger?.focus();
-  }
+  });
 
   function move(offset: number) {
     if (!items.length) return;
@@ -109,10 +104,7 @@
       return;
     }
 
-    if (
-      !lightbox?.classList.contains("hidden") &&
-      !target.closest(".media-lightbox-stage, .media-lightbox-control")
-    ) {
+    if (lightbox?.open && !target.closest(".media-lightbox-stage, .media-lightbox-control")) {
       close();
     }
   });
@@ -122,8 +114,7 @@
   nextButton?.addEventListener("click", () => move(1));
 
   document.addEventListener("keydown", (event) => {
-    if (lightbox?.classList.contains("hidden")) return;
-    if (event.key === "Escape") close();
+    if (!lightbox?.open) return;
     if (event.key === "ArrowLeft") move(-1);
     if (event.key === "ArrowRight") move(1);
   });

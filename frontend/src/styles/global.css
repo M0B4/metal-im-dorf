@@ -55,6 +55,30 @@ img {
   max-width: 100%;
 }
 
+/* Einheitlich sichtbarer Tastaturfokus auf dunklem Grund. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border-radius: var(--radius-subtle);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
 ::selection {
   color: var(--color-accent-contrast);
   background: var(--color-accent);
@@ -163,7 +187,12 @@ body.lightbox-open {
   z-index: 1000;
   display: grid;
   width: 100vw;
+  max-width: none;
   height: 100dvh;
+  max-height: none;
+  margin: 0;
+  color: inherit;
+  border: 0;
   place-items: center;
   padding: 0.75rem;
   overflow: auto;
@@ -171,8 +200,12 @@ body.lightbox-open {
   backdrop-filter: blur(10px);
 }
 
-.media-lightbox.hidden {
+.media-lightbox:not([open]) {
   display: none;
+}
+
+.media-lightbox::backdrop {
+  background: transparent;
 }
 
 .media-lightbox-dialog {

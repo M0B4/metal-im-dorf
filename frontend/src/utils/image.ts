@@ -13,6 +13,6 @@ export function croppedImageUrl(source: SanityImageSource, width: number, qualit
   return builder.image(source).width(width).auto("format").quality(quality).url();
 }
 
-export function srcSet(source: SanityImageSource, widths: number[], cropped = false) {
-  return widths.map((w) => `${(cropped ? croppedImageUrl : imageUrl)(source, w)} ${w}w`).join(", ");
+export function srcSet(source: SanityImageSource, widths: number[], cropped = false, quality?: number) {
+  return widths.map((w) => `${(cropped ? croppedImageUrl : imageUrl)(source, w, quality)} ${w}w`).join(", ");
 }

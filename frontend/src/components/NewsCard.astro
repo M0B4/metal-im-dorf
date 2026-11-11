@@ -72,6 +72,10 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
                 >
                   <img
                     src={imageUrl(image, 760)}
+                    srcset={srcSet(image, [380, 560, 760])}
+                    sizes="(max-width: 640px) 100vw, 380px"
+                    width={image.width}
+                    height={image.height}
                     alt={alt}
                     loading="lazy"
                   />
@@ -145,7 +149,6 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
   .news-gallery-item:hover,
   .news-gallery-item:focus-visible {
     border-color: var(--color-accent);
-    outline: none;
   }
 
   .news-media img,
@@ -247,7 +250,6 @@ const hasMore = galleryImages.length > 0 || preview.length > 260;
     color: var(--color-accent-contrast);
     background: var(--color-accent);
     border-color: var(--color-accent);
-    outline: none;
   }
 
   @media (max-width: 640px) {

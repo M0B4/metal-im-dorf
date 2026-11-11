@@ -9,11 +9,6 @@ interface Props {
 }
 
 const { intro, events } = Astro.props;
-// Laufband: Liste so oft wiederholen, dass eine Hälfte breiter als der Bildschirm ist;
-// die zweite Hälfte ist eine Kopie, damit die Schleife ohne Sprung weiterläuft.
-const repeats = Math.max(1, Math.ceil(6 / Math.max(events.length, 1)));
-const loop = Array.from({ length: repeats }, () => events).flat();
-const duration = `${Math.max(20, loop.length * 9)}s`;
 ---
 
 <section class="logo-hero">
@@ -27,30 +22,43 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
 
 {events.length > 0 && (
   <aside class="event-ticker" aria-label="Kommende Veranstaltungen">
-    <span class="event-ticker-label">Kommende Veranstaltungen</span>
-    <div class="event-ticker-viewport">
-      <div class="event-ticker-track" style={`--ticker-duration: ${duration}`}>
-        {[0, 1].map((copy) => (
-          <ul class="event-ticker-list" aria-hidden={copy === 1 ? "true" : undefined}>
-            {loop.map((event, index) => (
-              <li>
-                <a
-                  href={sitePath("/veranstaltungen")}
-                  tabindex={copy === 1 || index >= events.length ? -1 : undefined}
-                  aria-hidden={copy === 0 && index >= events.length ? "true" : undefined}
-                >
-                  <time datetime={event.beginn}>{formatDate(event.beginn)}</time>
-                  <strong>{event.titel}</strong>
-                  {event.ort && <span>{event.ort}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ))}
+    <div class="shell--narrow event-ticker-inner">
+      <span class="event-ticker-label">Kommende Veranstaltungen</span>
+      <div class="event-ticker-viewport">
+        <!-- Jede Veranstaltung genau einmal: die Liste läuft von rechts herein und links hinaus, dann von vorn. -->
+        <ul class="event-ticker-list">
+          {events.map((event) => (
+            <li>
+              <a href={sitePath("/veranstaltungen")}>
+                <time datetime={event.beginn}>{formatDate(event.beginn)}</time>
+                <strong>{event.titel}</strong>
+                {event.ort && <span>{event.ort}</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </aside>
 )}
+
+<script>
+  // Gleichmäßiges, ruhiges Tempo unabhängig von der Anzahl der Veranstaltungen (Pixel pro Sekunde).
+  const SPEED = 35;
+  document.querySelectorAll<HTMLElement>(".event-ticker-list").forEach((list) => {
+    const viewport = list.parentElement;
+    if (!viewport) return;
+    const update = () => {
+      const distance = viewport.clientWidth + list.scrollWidth;
+      list.style.setProperty("--ticker-from", `${viewport.clientWidth}px`);
+      list.style.setProperty("--ticker-duration", `${distance / SPEED}s`);
+      // Beim Laden steht die Liste schon links am Anfang, statt erst von rechts hereinzulaufen.
+      list.style.setProperty("--ticker-delay", `${-viewport.clientWidth / SPEED}s`);
+    };
+    update();
+    new ResizeObserver(update).observe(viewport);
+  });
+</script>
 
 <style>
   /* Logo-Bereich als eigene Fläche: halbtransparent heller (das Muster scheint durch), Akzent-Schein hinter dem Logo, Akzentlinie unten. */
@@ -97,25 +105,23 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
     line-height: 1.6;
   }
 
-  /* Laufband mit allen kommenden Veranstaltungen. Hover/Fokus hält es an, bei „weniger Bewegung“ steht es still. */
+  /* Laufband mit allen kommenden Veranstaltungen, so breit wie die News. Hover/Fokus hält es an,
+     bei „weniger Bewegung“ steht es still und lässt sich seitlich scrollen. */
   .event-ticker {
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
     background: #0c0c0c;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .event-ticker-label {
-    position: relative;
-    z-index: 1;
+  .event-ticker-inner {
     display: flex;
-    flex: none;
     align-items: center;
-    padding: 0.9rem clamp(0.75rem, 3vw, 1.5rem);
+    gap: 1rem;
+  }
+
+  .event-ticker-label {
+    flex: none;
+    padding-block: 0.9rem;
     color: var(--color-accent);
-    background: #0c0c0c;
-    box-shadow: 12px 0 16px -6px #0c0c0c;
     font-family: var(--font-display);
     font-size: 1rem;
     letter-spacing: 0.04em;
@@ -127,24 +133,21 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
     flex: 1;
     min-width: 0;
     overflow: hidden;
-  }
-
-  .event-ticker-track {
-    display: flex;
-    width: max-content;
-    animation: event-ticker var(--ticker-duration, 30s) linear infinite;
-  }
-
-  .event-ticker:hover .event-ticker-track,
-  .event-ticker:focus-within .event-ticker-track {
-    animation-play-state: paused;
+    mask-image: linear-gradient(90deg, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
   }
 
   .event-ticker-list {
     display: flex;
+    width: max-content;
     margin: 0;
     padding: 0;
     list-style: none;
+    animation: event-ticker var(--ticker-duration, 30s) linear var(--ticker-delay, 0s) infinite;
+  }
+
+  .event-ticker:hover .event-ticker-list,
+  .event-ticker:focus-within .event-ticker-list {
+    animation-play-state: paused;
   }
 
   .event-ticker-list li {
@@ -152,7 +155,7 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
     align-items: center;
   }
 
-  .event-ticker-list li::after {
+  .event-ticker-list li + li::before {
     content: "✦";
     color: var(--color-accent);
     font-size: 0.7rem;
@@ -162,10 +165,14 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
     display: flex;
     align-items: baseline;
     gap: 0.6rem;
-    padding: 0.9rem 1.5rem;
+    padding: 0.9rem 1.25rem;
     color: #f4f4f5;
     text-decoration: none;
     white-space: nowrap;
+  }
+
+  .event-ticker-list li:first-child a {
+    padding-left: 0;
   }
 
   .event-ticker-list a:hover strong {
@@ -184,22 +191,23 @@ const duration = `${Math.max(20, loop.length * 9)}s`;
   }
 
   @keyframes event-ticker {
+    from {
+      transform: translateX(var(--ticker-from, 100%));
+    }
+
     to {
-      transform: translateX(-50%);
+      transform: translateX(-100%);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .event-ticker-track {
+    .event-ticker-list {
       animation: none;
     }
 
     .event-ticker-viewport {
       overflow-x: auto;
-    }
-
-    .event-ticker-list[aria-hidden="true"] {
-      display: none;
+      mask-image: none;
     }
   }
 

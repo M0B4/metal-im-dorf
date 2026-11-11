@@ -97,6 +97,10 @@ export default defineType({
       ],
     }),
   ],
+  orderings: [
+    {title: 'Datum, neueste zuerst', name: 'beginnDesc', by: [{field: 'beginn', direction: 'desc'}]},
+    {title: 'Datum, älteste zuerst', name: 'beginnAsc', by: [{field: 'beginn', direction: 'asc'}]},
+  ],
   preview: {
     select: {title: 'titel', beginn: 'beginn', ort: 'ort', media: 'bild'},
     prepare: ({title, beginn, ort, media}) => ({

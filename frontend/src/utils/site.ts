@@ -53,4 +53,9 @@ export function siteUrl(path = "") {
 }
 
 /** Hinweis für Screenreader bei Links, die einen neuen Tab öffnen. */
+/** Link zur Kartensuche in Google Maps. */
+export function mapsUrl(...parts: Array<string | undefined>) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.filter(Boolean).join(", "))}`;
+}
+
 export const NEW_TAB_HINT = "(öffnet in neuem Tab)";

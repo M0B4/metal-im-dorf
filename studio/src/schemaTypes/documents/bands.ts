@@ -24,6 +24,21 @@ export default defineType({
       initialValue: false,
     }),
     defineField({name: 'genre', title: 'Genre', type: 'string'}),
+    defineField({
+      name: 'links',
+      title: 'Links',
+      description: 'Alle optional. Erscheinen im Line-Up als kleine Icons unter dem Bandnamen.',
+      type: 'object',
+      options: {collapsible: true, collapsed: false},
+      fields: [
+        defineField({name: 'website', title: 'Website', type: 'url'}),
+        defineField({name: 'facebook', title: 'Facebook', type: 'url'}),
+        defineField({name: 'instagram', title: 'Instagram', type: 'url'}),
+        defineField({name: 'spotify', title: 'Spotify', type: 'url'}),
+        defineField({name: 'bandcamp', title: 'Bandcamp', type: 'url'}),
+        defineField({name: 'youtube', title: 'YouTube', type: 'url'}),
+      ],
+    }),
     defineField({name: 'bild', title: 'Bandfoto', type: 'image', options: {hotspot: true}}),
   ],
   preview: {

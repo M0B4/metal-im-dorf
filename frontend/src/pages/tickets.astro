@@ -1,11 +1,11 @@
 ---
 import TicketForm from "../components/TicketForm.astro";
 import Layout from "../layouts/Layout.astro";
-import { getEvents, getSiteSettings, isPast } from "../utils/sanity";
+import { getEvents, getSiteSettings, hasPresale, isPast } from "../utils/sanity";
 import { sitePath } from "../utils/site";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
-const upcoming = events.filter((event) => !isPast(event));
+const upcoming = events.filter((event) => !isPast(event) && hasPresale(event));
 ---
 
 <Layout title="Tickets" description="Tickets für Metal im Dorf per E-Mail bestellen." settings={settings}>
@@ -22,7 +22,7 @@ const upcoming = events.filter((event) => !isPast(event));
       <TicketForm events={upcoming} email={settings.email} />
     ) : (
       <p class="placeholder">
-        Gerade gibt es keine Veranstaltung mit Ticketverkauf. Alle Termine findest du unter
+        Gerade gibt es keine Veranstaltung mit Vorverkauf. Alle Termine findest du unter
         <a href={sitePath("/veranstaltungen")}>Veranstaltungen</a>.
       </p>
     )}

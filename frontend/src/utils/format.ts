@@ -13,6 +13,25 @@ export function formatDate(value?: string) {
   return date.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric", timeZone: TIME_ZONE });
 }
 
+/** "4.–5. Juni 2027", "30. Mai – 1. Juni 2027" oder "4. Juni 2027" bei eintägigen Veranstaltungen. */
+export function formatDateRange(beginn?: string, ende?: string) {
+  const start = toDate(beginn);
+  const end = toDate(ende);
+  if (!start) return "";
+  const parts = (date: Date) =>
+    Object.fromEntries(
+      new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "long", year: "numeric", timeZone: TIME_ZONE })
+        .formatToParts(date)
+        .map((part) => [part.type, part.value]),
+    );
+  const a = parts(start);
+  const b = end ? parts(end) : a;
+  if (a.day === b.day && a.month === b.month && a.year === b.year) return formatDate(beginn);
+  if (a.month === b.month && a.year === b.year) return `${a.day}.–${b.day}. ${b.month} ${b.year}`;
+  if (a.year === b.year) return `${a.day}. ${a.month} – ${b.day}. ${b.month} ${b.year}`;
+  return `${formatDate(beginn)} – ${formatDate(ende)}`;
+}
+
 /** "20:00 Uhr" für Datums-Zeitwerte oder "18:30"-Angaben aus der Running Order. */
 export function formatTime(value?: string) {
   if (!value) return "";

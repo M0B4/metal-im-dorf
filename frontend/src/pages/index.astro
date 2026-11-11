@@ -2,13 +2,15 @@
 import LogoHero from "../components/LogoHero.astro";
 import NewsSection from "../components/NewsSection.astro";
 import Layout from "../layouts/Layout.astro";
-import { getEvents, getNews, getSiteSettings, isPast } from "../utils/sanity";
+import { shareImageUrl } from "../utils/image";
+import { getEvents, getNews, getSiteSettings, isPast, nextEvent } from "../utils/sanity";
 
 const [news, settings, events] = await Promise.all([getNews(), getSiteSettings(), getEvents()]);
 const upcoming = events.filter((event) => !isPast(event));
+const next = nextEvent(events);
 ---
 
-<Layout settings={settings}>
-  <LogoHero intro={settings.intro} events={upcoming} />
+<Layout settings={settings} image={next?.bild && shareImageUrl(next.bild)}>
+  <LogoHero intro={settings.intro} events={upcoming} next={next} />
   <NewsSection news={news} />
 </Layout>

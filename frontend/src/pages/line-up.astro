@@ -1,16 +1,29 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { formatTime } from "../utils/format";
-import { croppedImageUrl, srcSet } from "../utils/image";
-import { getLineupEvent, getSiteSettings, type Band } from "../utils/sanity";
+import { Globe } from "@lucide/astro";
+import { Icon } from "astro-icon/components";
+import { croppedImageUrl, shareImageUrl, srcSet } from "../utils/image";
+import { getLineupEvent, getSiteSettings, type Band, type BandLinkKey } from "../utils/sanity";
+import { NEW_TAB_HINT } from "../utils/site";
 
 const [event, settings] = await Promise.all([getLineupEvent(), getSiteSettings()]);
 const bands: Band[] = (event?.lineup ?? [])
   .filter((slot) => slot.band)
   .map((slot) => ({ ...slot.band!, spielzeit: slot.spielzeit }));
+const linkTypes: Array<{ key: BandLinkKey; label: string; icon?: string }> = [
+  { key: "website", label: "Website" },
+  { key: "facebook", label: "Facebook", icon: "simple-icons:facebook" },
+  { key: "instagram", label: "Instagram", icon: "simple-icons:instagram" },
+  { key: "spotify", label: "Spotify", icon: "simple-icons:spotify" },
+  { key: "bandcamp", label: "Bandcamp", icon: "simple-icons:bandcamp" },
+  { key: "youtube", label: "YouTube", icon: "simple-icons:youtube" },
+];
+const bandLinks = (band: Band) =>
+  band.platzhalter ? [] : linkTypes.filter((type) => band.links?.[type.key]).map((type) => ({ ...type, href: band.links![type.key]! }));
 ---
 
-<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} settings={settings}>
+<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} image={event?.bild && shareImageUrl(event.bild)} settings={settings}>
   <div class="shell page">
     <header class="page-header">
       <h1 class="page-title">Line-Up</h1>
@@ -41,6 +54,17 @@ const bands: Band[] = (event?.lineup ?? [])
             <div class="band-info">
               <span class="genre-tag">{band.platzhalter ? "Ankündigung folgt" : band.genre || "Metal"}</span>
               <h2>{band.platzhalter ? "Wird noch bekannt gegeben" : band.name}</h2>
+              {bandLinks(band).length > 0 && (
+                <ul class="band-links" aria-label={`Links zu ${band.name}`}>
+                  {bandLinks(band).map((link) => (
+                    <li>
+                      <a href={link.href} target="_blank" rel="noreferrer" title={link.label} aria-label={`${link.label} ${NEW_TAB_HINT}`}>
+                        {link.icon ? <Icon name={link.icon} size={18} /> : <Globe size={18} aria-hidden="true" />}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {band.spielzeit && <p>{formatTime(band.spielzeit)}</p>}
             </div>
           </article>
@@ -150,6 +174,25 @@ const bands: Band[] = (event?.lineup ?? [])
     text-transform: uppercase;
   }
 
+  .band-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0 0 0 -0.45rem;
+    padding: 0;
+    list-style: none;
+  }
+  .band-links a {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    color: #a1a1aa;
+    transition: color 150ms ease;
+  }
+  .band-links a:hover {
+    color: var(--color-accent);
+  }
   .band-card h2 {
     margin: 0;
     color: #fff;

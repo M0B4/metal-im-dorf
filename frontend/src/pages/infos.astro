@@ -17,10 +17,14 @@ import {PortableText} from "astro-portabletext";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Layout from "../layouts/Layout.astro";
 import {imageUrl, srcSet} from "../utils/image";
-import {getFestivalInfo, getSiteSettings} from "../utils/sanity";
+import {getEvents, getFestivalInfo, getSiteSettings, nextEvent} from "../utils/sanity";
 import {ADDRESS, mapsUrl, NEW_TAB_HINT, sitePath} from "../utils/site";
 
-const [info, settings] = await Promise.all([getFestivalInfo(), getSiteSettings()]);
+const [info, settings, events] = await Promise.all([getFestivalInfo(), getSiteSettings(), getEvents()]);
+// Ort und Kartenlink kommen von der nächsten Veranstaltung (wie im Logo-Bereich), sonst die feste Festivaladresse.
+const next = nextEvent(events);
+const place = next?.ort ? [next.ort, next.adresse].filter((part): part is string => Boolean(part)) : ADDRESS;
+const placeUrl = (next?.ort && next.kartenLink) || mapsUrl(...place);
 const icons = {
   info: Info,
   route: Route,
@@ -48,9 +52,9 @@ const anchor = (section: { _key: string; title: string }) =>
     <header class="page-header">
       <h1 class="page-title">{info.title}</h1>
       {info.intro && <p class="page-lede">{info.intro}</p>}
-      <a class="info-map" href={mapsUrl(...ADDRESS)} target="_blank" rel="noreferrer">
+      <a class="info-map" href={placeUrl} target="_blank" rel="noreferrer">
         <MapPin size={18} aria-hidden="true" />
-        {ADDRESS.join(", ")}
+        {place.join(", ")}
         <span class="info-map-hint">In Google Maps öffnen</span>
         <span class="sr-only">{NEW_TAB_HINT}</span>
       </a>

@@ -51,6 +51,44 @@ export default defineType({
         defineField({name: 'facebookUrl', title: 'Facebook-Link', type: 'url'}),
       ],
     }),
+    defineField({
+      name: 'impressum',
+      title: 'Impressum',
+      description:
+        'Pflichtangaben für Impressum und Datenschutz. Leere Felder zeigen die bisherigen Angaben (Metal im Dorf, Opfermoor Niederdorla).',
+      type: 'object',
+      options: {collapsible: true},
+      fields: [
+        defineField({
+          name: 'veranstalter',
+          title: 'Veranstalter',
+          description: 'Verein oder Person, die das Festival veranstaltet, z. B. „Metal im Dorf e. V.“.',
+          type: 'string',
+        }),
+        defineField({
+          name: 'anschrift',
+          title: 'Anschrift',
+          description: 'Ladungsfähige Postanschrift, eine Zeile pro Zeile (Straße und Hausnummer, PLZ und Ort).',
+          type: 'text',
+          rows: 3,
+        }),
+        defineField({
+          name: 'vertreten',
+          title: 'Vertreten durch',
+          description: 'Optional, bei einem Verein z. B. der Vorstand mit Namen.',
+          type: 'string',
+        }),
+        defineField({name: 'telefon', title: 'Telefon', description: 'Optional.', type: 'string'}),
+        defineField({
+          name: 'verantwortlich',
+          title: 'Verantwortlich für den Inhalt',
+          description:
+            'Name der Person nach § 18 Abs. 2 MStV. Ihre Anschrift ist die oben eingetragene, sonst Name und Anschrift hier in eigenen Zeilen.',
+          type: 'text',
+          rows: 3,
+        }),
+      ],
+    }),
   ],
   preview: {prepare: () => ({title: 'Website-Einstellungen'})},
 })

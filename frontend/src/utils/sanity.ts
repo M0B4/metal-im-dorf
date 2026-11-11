@@ -89,14 +89,19 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     instagramUrl?: string;
     facebookUrl?: string;
     notice?: SiteSettings["notice"];
+    impressum?: { veranstalter?: string; anschrift?: string; vertreten?: string; telefon?: string; verantwortlich?: string };
   } | null>(`*[_id == "siteSettings"][0]{
     "intro": hero.intro,
     "akzentfarbe": select(defined(akzentfarbe.hex) => akzentfarbe.hex, akzentfarbe),
     "email": contact.email,
     "instagramUrl": contact.instagramUrl,
     "facebookUrl": contact.facebookUrl,
-    notice
+    notice,
+    impressum
   }`);
+  const lines = (text?: string) => (text ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+  const imp = s?.impressum;
+  const anschrift = lines(imp?.anschrift);
 
   return {
     intro: s?.intro || defaultSiteSettings.intro,
@@ -105,6 +110,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     instagramUrl: s?.instagramUrl || defaultSiteSettings.instagramUrl,
     facebookUrl: s?.facebookUrl || defaultSiteSettings.facebookUrl,
     notice: { ...defaultSiteSettings.notice, ...s?.notice },
+    impressum: {
+      veranstalter: imp?.veranstalter?.trim() || defaultSiteSettings.impressum.veranstalter,
+      anschrift: anschrift.length ? anschrift : defaultSiteSettings.impressum.anschrift,
+      vertreten: imp?.vertreten?.trim() || undefined,
+      telefon: imp?.telefon?.trim() || undefined,
+      verantwortlich: lines(imp?.verantwortlich),
+    },
   };
 }
 

@@ -3,7 +3,7 @@
 // kein Tracking, Schriften lokal, Bilder vom Sanity-CDN). Vor dem Livegang rechtlich prüfen lassen.
 import Layout from "../layouts/Layout.astro";
 import { getSiteSettings } from "../utils/sanity";
-import { ADDRESS, SITE_NAME, WEB3FORMS_ACCESS_KEY } from "../utils/site";
+import { SITE_NAME, WEB3FORMS_ACCESS_KEY } from "../utils/site";
 
 const settings = await getSiteSettings();
 const onCloudflare = import.meta.env.HOSTING === "cloudflare";
@@ -24,8 +24,7 @@ const onCloudflare = import.meta.env.HOSTING === "cloudflare";
       <section>
         <h2>Verantwortlich</h2>
         <p>
-          {SITE_NAME}<br />
-          {ADDRESS.map((line) => <>{line}<br /></>)}
+          {[settings.impressum.veranstalter, ...settings.impressum.anschrift].map((line) => <>{line}<br /></>)}
           E-Mail: <a href={`mailto:${settings.email}`}>{settings.email}</a>
         </p>
       </section>

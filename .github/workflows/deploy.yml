@@ -9,7 +9,7 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
-  # Sanity-Webhook (siehe README): baut nach jedem Veröffentlichen neu.
+  # Sanity-Webhook (siehe README): baut 30 Minuten nach der letzten Veröffentlichung neu.
   repository_dispatch:
     types: [sanity-content-update]
   # Cron läuft in UTC: 10 Uhr UTC = 12 Uhr Sommerzeit, 11 Uhr UTC = 12 Uhr Winterzeit.
@@ -35,6 +35,10 @@ jobs:
           else
             echo "In Deutschland ist es $stunde Uhr, der Lauf zur anderen UTC-Stunde baut."
           fi
+      # Nach einer Änderung in Sanity 30 Minuten warten. Kommt in der Zeit eine weitere Änderung,
+      # bricht der neue Lauf diesen ab (concurrency) und wartet wieder 30 Minuten.
+      - if: github.event_name == 'repository_dispatch'
+        run: sleep 1800
       - if: steps.zeit.outputs.bauen == 'ja'
         uses: actions/checkout@v4
       - if: steps.zeit.outputs.bauen == 'ja'

@@ -2,13 +2,16 @@ name: Website veröffentlichen
 
 # Die Website läuft auf Cloudflare (metal-im-dorf.de). Bei jedem Push auf master baut Cloudflare
 # selbst (Workers Builds). Dieser Workflow baut zusätzlich neu, damit Änderungen in Sanity online
-# gehen: jeden Tag um 12 Uhr deutscher Zeit und per Klick (Actions → Website veröffentlichen →
-# Run workflow).
+# gehen: nach jedem Veröffentlichen in Sanity (Webhook), jeden Tag um 12 Uhr deutscher Zeit und
+# per Klick (Actions → Website veröffentlichen → Run workflow).
 
 on:
   push:
     branches: [master]
   workflow_dispatch:
+  # Sanity-Webhook (siehe README): baut nach jedem Veröffentlichen neu.
+  repository_dispatch:
+    types: [sanity-content-update]
   # Cron läuft in UTC: 10 Uhr UTC = 12 Uhr Sommerzeit, 11 Uhr UTC = 12 Uhr Winterzeit.
   # Der erste Schritt lässt nur den Lauf durch, bei dem es in Deutschland 12 Uhr ist.
   schedule:

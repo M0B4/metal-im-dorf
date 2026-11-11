@@ -1,5 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import { formatDateRange } from "../utils/format";
+import { getEvents, isPast, ticketLink } from "../utils/sanity";
 import { NEW_TAB_HINT, SITE_NAME, STUDIO_URL, sitePath, type SiteSettings } from "../utils/site";
 
 interface Props {
@@ -7,6 +9,9 @@ interface Props {
 }
 
 const { settings } = Astro.props;
+// Jede Seite endet mit einem Hinweis auf das nächste Metal-im-Dorf-Festival.
+const festival = (await getEvents()).find((event) => event.kategorie === "hauptfestival" && !isPast(event));
+const ticket = festival && ticketLink(festival);
 const links = [
   { label: "Impressum", href: sitePath("/impressum") },
   { label: "Datenschutz", href: sitePath("/datenschutz") },
@@ -16,6 +21,23 @@ const links = [
 
 <footer class="site-footer">
   <div class="shell--narrow footer-inner">
+    <a class="footer-logo" href={sitePath()} aria-label={`${SITE_NAME} Startseite`}>
+      <img src={sitePath("/logo.svg")} alt="" width="126" height="35" loading="lazy" />
+    </a>
+
+    {festival && (
+      <p class="footer-next">
+        <strong>{festival.titel}</strong>
+        <span>{formatDateRange(festival.beginn, festival.ende)}</span>
+        {festival.ort && <span>{festival.ort}</span>}
+        {ticket && (
+          <a href={ticket.href} {...(ticket.external ? { target: "_blank", rel: "noreferrer" } : {})}>
+            Tickets{ticket.external && <span class="sr-only"> {NEW_TAB_HINT}</span>}
+          </a>
+        )}
+      </p>
+    )}
+
     {(settings.instagramUrl || settings.facebookUrl) && (
       <div class="footer-socials" role="group" aria-label="Social Media">
         {settings.instagramUrl && (
@@ -55,6 +77,55 @@ const links = [
     text-align: center;
   }
 
+  .footer-logo img {
+    display: block;
+    width: auto;
+    height: 2.4rem;
+    opacity: 0.9;
+  }
+
+  .footer-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.25rem 0.9rem;
+    margin: 0 0 0.5rem;
+    color: var(--color-text-soft);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Festivalname in eigener Zeile, darunter Datum · Ort · Tickets. */
+  .footer-next strong {
+    flex-basis: 100%;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  .footer-next span + span::before,
+  .footer-next span + a::before {
+    content: "·";
+    margin-right: 0.9rem;
+    color: var(--color-accent);
+  }
+
+  .footer-next a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .footer-next a::before {
+    display: inline-block;
+    color: var(--color-accent);
+  }
+
+  .footer-next a:hover {
+    text-decoration: underline;
+  }
+
   .footer-socials {
     display: flex;
     gap: 1.25rem;
@@ -88,7 +159,7 @@ const links = [
 
   .footer-copy {
     margin: 0.5rem 0 0;
-    color: #85858e;
+    color: var(--muted);
     font-size: 0.85rem;
   }
 </style>

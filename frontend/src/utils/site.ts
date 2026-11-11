@@ -39,8 +39,8 @@ export const defaultSiteSettings: SiteSettings = {
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 /**
- * Pfad innerhalb der Website, berücksichtigt den GitHub-Pages-Unterordner.
- * Seitenpfade enden immer mit "/", sonst leitet GitHub Pages bei jedem Klick erst um.
+ * Pfad innerhalb der Website, berücksichtigt den Unterordner bei GitHub Pages.
+ * Seitenpfade enden immer mit "/", sonst leitet der Hoster bei jedem Klick erst um.
  */
 export function sitePath(path = "") {
   const [, pathname = "", rest = ""] = path.match(/^([^?#]*)(.*)$/) ?? [];

@@ -16,7 +16,7 @@ const { news } = Astro.props;
 
 <section id="news" class="shell--narrow news-feed" aria-labelledby="news-title">
   <header class="feed-heading">
-    <h2 id="news-title">News</h2>
+    <h2 id="news-title" class="section-title">News</h2>
   </header>
 
   {news.length > 0 ? (
@@ -83,21 +83,6 @@ const { news } = Astro.props;
     scroll-margin-top: 5rem;
   }
 
-  .feed-heading {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--color-accent);
-  }
-
-  .feed-heading h2 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
-    line-height: 1;
-  }
 
   .news-item[hidden] {
     display: none;

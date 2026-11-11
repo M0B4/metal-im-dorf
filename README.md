@@ -27,6 +27,10 @@ npm run build    # Website bauen (frontend/dist)
 
 Ein Push auf `master` veröffentlicht die Website über `.github/workflows/deploy.yml`. Das Studio wird mit `npm run deploy -w studio` aktualisiert.
 
+### Umzug zu Cloudflare Pages
+
+Der Build erkennt Cloudflare an `CF_PAGES` bzw. `WORKERS_CI` und baut dann ohne Unterordner `/metal-im-dorf`. Die Datenschutzerklärung nennt automatisch Cloudflare statt GitHub als Hoster, robots.txt und Sitemap zeigen auf die richtige Adresse. Einstellungen im Cloudflare-Projekt: Build-Befehl `npm run build -w frontend`, Ausgabeordner `frontend/dist`, Umgebungsvariable `SITE_URL` mit der endgültigen Adresse (z. B. `https://metal-im-dorf.de`). Vor dem Livegang den Vertrag zur Auftragsverarbeitung von Cloudflare im Dashboard bestätigen.
+
 ### Sofort veröffentlichen (optional)
 
 Ohne Zusatz baut GitHub die Seite alle zehn Minuten neu. Für sofortige Updates in Sanity unter *API → Webhooks* einen Webhook für veröffentlichte Dokumente anlegen:

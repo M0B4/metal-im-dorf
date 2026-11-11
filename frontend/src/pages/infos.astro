@@ -11,6 +11,7 @@ import {
   TentTree,
   Ticket,
   Utensils,
+  ZoomIn,
 } from "@lucide/astro";
 import {PortableText} from "astro-portabletext";
 import MediaLightbox from "../components/MediaLightbox.astro";
@@ -33,10 +34,17 @@ const icons = {
   contact: Mail,
 };
 const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url;
+// Sprungziel aus der Überschrift, z. B. "Anreise & Gelände" → "anreise-gelaende".
+const anchor = (section: { _key: string; title: string }) =>
+  section.title
+    .toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || section._key;
 ---
 
 <Layout title={info.title} description={info.intro} settings={settings}>
-  <div class="shell info-page">
+  <div class="shell--narrow info-page">
     <header class="page-header">
       <h1 class="page-title">{info.title}</h1>
       {info.intro && <p class="page-lede">{info.intro}</p>}
@@ -48,47 +56,57 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
       </a>
     </header>
 
-    <div class="info-grid">
+    {info.sections.length > 1 && (
+      <nav class="info-jump" aria-label="Abschnitte">
+        {info.sections.map((section) => (
+          <a href={`#${anchor(section)}`}>{section.title}</a>
+        ))}
+      </nav>
+    )}
+
+    <div class="info-sections">
       {info.sections.map((section) => {
         const IconComponent = icons[section.icon as keyof typeof icons] || Info;
         const href = resolveLink(section.linkUrl);
+        const images = section.bilder ?? [];
         return (
-          <article class="info-card">
-            <div class="info-icon"><IconComponent size={24} stroke-width={1.8} aria-hidden="true" /></div>
-            <div class="info-copy">
-              <h2>{section.title}</h2>
-              <div class="prose prose-invert"><PortableText value={section.body} /></div>
-              {section.bilder?.length ? (
-                <div class="info-images">
-                  {section.bilder.map((image, index) => {
-                    const alt = image.alt || `${section.title} Bild ${index + 1}`;
-                    return (
-                      <button
-                        class="info-image"
-                        type="button"
-                        data-lightbox-group={`info-${section._key}`}
-                        data-full-src={imageUrl(image, 2000, 90)}
-                        data-alt={alt}
-                        data-caption={alt}
-                        aria-label={`${alt} vergrößern`}
-                      >
-                        <img
-                          src={imageUrl(image, 560)}
-                          srcset={srcSet(image, [280, 420, 560, 840])}
-                          sizes="(max-width: 760px) calc(50vw - 1.5rem), 260px"
-                          width={image.width}
-                          height={image.height}
-                          alt={alt}
-                          loading="lazy"
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : null}
-              {href && section.linkLabel && <a href={href}>{section.linkLabel}</a>}
-            </div>
-          </article>
+          <section class="info-section" id={anchor(section)} aria-labelledby={`${anchor(section)}-titel`}>
+            <h2 id={`${anchor(section)}-titel`}>
+              <IconComponent size={26} stroke-width={1.8} aria-hidden="true" />
+              {section.title}
+            </h2>
+            <div class="info-text prose prose-invert"><PortableText value={section.body} /></div>
+            {href && section.linkLabel && <a class="info-link" href={href}>{section.linkLabel}</a>}
+            {images.length > 0 && (
+              <div class:list={["info-images", images.length === 1 && "info-images--single"]}>
+                {images.map((image, index) => {
+                  const alt = image.alt || `${section.title} Bild ${index + 1}`;
+                  return (
+                    <button
+                      class="info-image"
+                      type="button"
+                      data-lightbox-group={`info-${section._key}`}
+                      data-full-src={imageUrl(image, 2400, 90)}
+                      data-alt={alt}
+                      data-caption={alt}
+                      aria-label={`${alt} vergrößern`}
+                    >
+                      <img
+                        src={imageUrl(image, 1200)}
+                        srcset={srcSet(image, [480, 720, 960, 1200, 1600])}
+                        sizes={images.length === 1 ? "(max-width: 900px) calc(100vw - 2rem), 900px" : "(max-width: 700px) calc(100vw - 2rem), 450px"}
+                        width={image.width}
+                        height={image.height}
+                        alt={alt}
+                        loading="lazy"
+                      />
+                      <span class="info-image-hint" aria-hidden="true"><ZoomIn size={16} />Vergrößern</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         );
       })}
     </div>
@@ -131,70 +149,101 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
   .info-map:hover .info-map-hint {
     text-decoration: underline;
   }
-  .info-grid {
+  /* Sprungmenü zu den Abschnitten */
+  .info-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .info-jump a {
+    padding: 0.45rem 0.8rem;
+    color: var(--color-text-soft);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-subtle);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+
+  .info-jump a:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* Abschnitte untereinander, Pläne und Bilder groß in voller Breite. */
+  .info-sections {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
     border-top: 1px solid var(--border);
   }
 
-  .info-card {
+  .info-section {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-content: start;
-    gap: 1rem;
-    padding: clamp(1.4rem, 3vw, 2rem) clamp(0rem, 2vw, 1.5rem);
+    gap: 0.9rem;
+    padding-block: clamp(1.75rem, 4vw, 2.75rem);
     border-bottom: 1px solid var(--border);
+    scroll-margin-top: 5rem;
   }
 
-  .info-card:nth-child(odd) {
-    padding-left: 0;
-    padding-right: clamp(1rem, 3vw, 2rem);
+  .info-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+    line-height: 1.05;
   }
 
-  .info-card:nth-child(even) {
-    padding-left: clamp(1rem, 3vw, 2rem);
-    padding-right: 0;
-    border-left: 1px solid var(--border);
-  }
-
-  .info-icon {
-    display: block;
-    width: 2.25rem;
-    height: 2.25rem;
+  .info-section h2 :global(svg) {
+    flex: none;
     color: var(--color-accent);
   }
 
-  .info-copy h2 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.1rem, 2vw, 1.35rem);
-    line-height: 1.1;
+  .info-text {
+    max-width: 65ch;
+    color: var(--color-text-soft);
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
-  .info-copy .prose {
-    margin-top: 0.7rem;
-    color: var(--muted);
-    font-size: 0.94rem;
-    line-height: 1.65;
-  }
-
-  .info-copy :global(p) {
+  .info-text :global(p) {
     margin: 0 0 0.65rem;
   }
 
-  .info-copy :global(p:last-child) {
+  .info-text :global(p:last-child) {
     margin-bottom: 0;
+  }
+
+  .info-link {
+    justify-self: start;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .info-link:hover {
+    text-decoration: underline;
   }
 
   .info-images {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+
+  .info-images--single {
+    grid-template-columns: 1fr;
   }
 
   .info-image {
+    position: relative;
     display: block;
     padding: 0;
     overflow: hidden;
@@ -202,6 +251,7 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
     background: #0a0a0a;
     border: 1px solid var(--border);
     border-radius: var(--radius-subtle);
+    transition: border-color 150ms ease;
   }
 
   .info-image:hover,
@@ -209,42 +259,30 @@ const resolveLink = (url?: string) => url?.startsWith("/") ? sitePath(url) : url
     border-color: var(--color-accent);
   }
 
+  /* Pläne vollständig zeigen, nicht beschneiden. */
   .info-image img {
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
   }
 
-  .info-copy a {
-    display: inline-block;
-    margin-top: 1rem;
-    color: var(--color-accent);
-    font-family: var(--font-mono);
+  .info-image-hint {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    color: #fff;
+    background: rgba(5, 5, 5, 0.75);
+    border-radius: var(--radius-subtle);
     font-size: 0.8rem;
-    font-weight: 900;
-    text-decoration: none;
-    text-transform: uppercase;
+    font-weight: 600;
   }
 
-  .info-copy a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 760px) {
-    .info-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .info-card:nth-child(n) {
-      padding-inline: 0;
-      border-left: 0;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .info-card {
+  @media (max-width: 700px) {
+    .info-images {
       grid-template-columns: 1fr;
     }
   }

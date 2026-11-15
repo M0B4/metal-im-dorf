@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {altField} from '../altField'
 
 export default defineType({
   name: 'band',
@@ -39,7 +40,13 @@ export default defineType({
         defineField({name: 'youtube', title: 'YouTube', type: 'url'}),
       ],
     }),
-    defineField({name: 'bild', title: 'Bandfoto', type: 'image', options: {hotspot: true}}),
+    defineField({
+      name: 'bild',
+      title: 'Bandfoto',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [altField('Die vier Bandmitglieder vor einer Backsteinwand')],
+    }),
   ],
   preview: {
     select: {name: 'name', genre: 'genre', platzhalter: 'platzhalter', media: 'bild'},

@@ -9,6 +9,7 @@ import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteNotice from "../components/SiteNotice.astro";
+import { SHARE_IMAGE } from "../utils/image";
 import { accentStyle, SITE_DESCRIPTION, SITE_NAME, sitePath, siteUrl, type SiteSettings } from "../utils/site";
 
 interface Props {
@@ -17,10 +18,16 @@ interface Props {
   description?: string;
   /** Absolute URL des Vorschaubilds beim Teilen (WhatsApp, Facebook …). */
   image?: string;
+  /** Beschreibung des Vorschaubilds. */
+  imageAlt?: string;
+  /** Seite nicht in Suchmaschinen aufnehmen (404). */
+  noindex?: boolean;
   settings: SiteSettings;
 }
 
-const { title, description = SITE_DESCRIPTION, image = siteUrl("/og-image.jpg"), settings } = Astro.props;
+const { title, description = SITE_DESCRIPTION, image, imageAlt, noindex = false, settings } = Astro.props;
+const shareImage = image || siteUrl("/og-image.jpg");
+const shareImageAlt = image ? imageAlt : `Logo ${SITE_NAME}`;
 const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
@@ -37,7 +44,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
     <!-- Hauptschriften früh laden, damit Überschriften beim Laden nicht springen. -->
     <link rel="preload" href={antonLatin} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
-    <link rel="canonical" href={Astro.url} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={Astro.url} />}
     <meta name="description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url} />
@@ -45,7 +52,10 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:locale" content="de_DE" />
-    <meta property="og:image" content={image} />
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content={String(SHARE_IMAGE.width)} />
+    <meta property="og:image:height" content={String(SHARE_IMAGE.height)} />
+    {shareImageAlt && <meta property="og:image:alt" content={shareImageAlt} />}
     <meta name="twitter:card" content="summary_large_image" />
     <slot name="head" />
     <title>{fullTitle}</title>

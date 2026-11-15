@@ -6,7 +6,7 @@ import { sitePath } from "../utils/site";
 const settings = await getSiteSettings();
 ---
 
-<Layout title="Seite nicht gefunden" settings={settings}>
+<Layout title="Seite nicht gefunden" noindex settings={settings}>
   <section class="shell error-page">
     <p class="error-code" aria-hidden="true">404</p>
     <h1 class="page-title">Hier spielt gerade keine Band</h1>

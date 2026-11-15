@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { formatTime } from "../utils/format";
+import { formatDate, formatTime } from "../utils/format";
 import { Globe } from "@lucide/astro";
 import { Icon } from "astro-icon/components";
 import { croppedImageUrl, shareImageUrl, srcSet } from "../utils/image";
@@ -21,9 +21,17 @@ const linkTypes: Array<{ key: BandLinkKey; label: string; icon?: string }> = [
 ];
 const bandLinks = (band: Band) =>
   band.platzhalter ? [] : linkTypes.filter((type) => band.links?.[type.key]).map((type) => ({ ...type, href: band.links![type.key]! }));
+
+// Beschreibung für Google und Vorschauen beim Teilen, mit Datum, Ort und den bekannten Bands.
+const names = bands.filter((band) => !band.platzhalter && band.name).map((band) => band.name!);
+const shown = names.length > 6 ? [...names.slice(0, 6), "weitere"] : names;
+const bandList = shown.length > 1 ? `${shown.slice(0, -1).join(", ")} und ${shown.at(-1)}` : shown[0];
+const description = event
+  ? `Line-Up ${event.titel}, ${formatDate(event.beginn)}${event.ort ? `, ${event.ort}` : ""}${bandList ? `: ${bandList}.` : "."}`
+  : "Die Bands bei Metal im Dorf.";
 ---
 
-<Layout title="Line-Up" description={`Die Bands bei ${event?.titel ?? "Metal im Dorf"}.`} image={event?.bild && shareImageUrl(event.bild)} settings={settings}>
+<Layout title="Line-Up" description={description} image={event?.bild && shareImageUrl(event.bild)} imageAlt={event ? event.bild?.alt || `Plakat ${event.titel}` : undefined} settings={settings}>
   <div class="shell page">
     <header class="page-header">
       <h1 class="page-title">Line-Up</h1>
@@ -40,7 +48,7 @@ const bandLinks = (band: Band) =>
                   src={croppedImageUrl(band.bild, 640)}
                   srcset={srcSet(band.bild, [320, 480, 640, 800], true)}
                   sizes="(max-width: 760px) 50vw, (max-width: 1180px) 33vw, 380px"
-                  alt={band.name}
+                  alt={band.bild.alt || band.name}
                   class="band-image"
                   loading={index < 3 ? "eager" : "lazy"}
                   fetchpriority={index === 0 ? "high" : undefined}

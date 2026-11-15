@@ -14,9 +14,22 @@ export function croppedImageUrl(source: SanityImageSource, width: number, qualit
   return builder.image(source).width(width).fit("max").auto("format").quality(quality).url();
 }
 
+/** Maße aller Vorschaubilder beim Teilen (auch public/og-image.jpg). */
+export const SHARE_IMAGE = { width: 1200, height: 630 };
+
 /** Vorschaubild beim Teilen (WhatsApp, Facebook …): JPEG, weil nicht jede App WebP/AVIF zeigt. */
 export function shareImageUrl(source: SanityImageSource) {
-  return builder.image(source).ignoreImageParams().width(1200).fit("max").format("jpg").quality(82).url();
+  // Querformat 1200×630, das Plakat steht vollständig und mittig auf Schwarz statt abgeschnitten zu werden.
+  return builder
+    .image(source)
+    .ignoreImageParams()
+    .width(SHARE_IMAGE.width)
+    .height(SHARE_IMAGE.height)
+    .fit("fill")
+    .bg("050505")
+    .format("jpg")
+    .quality(82)
+    .url();
 }
 
 export function srcSet(source: SanityImageSource, widths: number[], cropped = false, quality?: number) {

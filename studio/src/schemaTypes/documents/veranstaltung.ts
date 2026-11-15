@@ -1,4 +1,5 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
+import {altField} from '../altField'
 
 const kategorien = [
   {title: 'Hauptfestival', value: 'hauptfestival'},
@@ -63,7 +64,12 @@ export default defineType({
         'Optional. In Google Maps den Ort suchen, auf „Teilen“ tippen und den Link hier einfügen. Leer = Link wird aus Ort und Adresse erstellt.',
       type: 'url',
     }),
-    defineField({name: 'bild', title: 'Plakat', type: 'image'}),
+    defineField({
+      name: 'bild',
+      title: 'Plakat',
+      type: 'image',
+      fields: [altField('Plakat Metal im Dorf VI mit allen Bands, 5. Juni 2027')],
+    }),
     defineField({name: 'kurzbeschreibung', title: 'Kurzer Text', description: 'Optional.', type: 'text', rows: 3}),
     defineField({
       name: 'preis',

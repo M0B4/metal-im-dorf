@@ -55,7 +55,7 @@ export default defineType({
       name: 'impressum',
       title: 'Impressum',
       description:
-        'Pflichtangaben für Impressum und Datenschutz. Leere Felder zeigen die bisherigen Angaben (Metal im Dorf, Opfermoor Niederdorla).',
+        'Pflichtangaben für Impressum und den Abschnitt „Verantwortlich“ im Datenschutz. Leere Felder zeigen die bisherigen Angaben (Metal im Dorf, Opfermoor Niederdorla).',
       type: 'object',
       options: {collapsible: true},
       fields: [

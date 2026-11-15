@@ -4,7 +4,7 @@ import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from './src/schemaTypes'
 
 // Diese Dokumente gibt es nur einmal: sie öffnen direkt und können nicht neu angelegt werden.
-const singletons = ['siteSettings', 'festivalInfo']
+const singletons = ['siteSettings', 'festivalInfo', 'datenschutz']
 
 export default defineConfig({
   name: 'metal-im-dorf',
@@ -40,6 +40,10 @@ export default defineConfig({
               .title('Festival-Infos')
               .id('festivalInfo')
               .child(S.document().schemaType('festivalInfo').documentId('festivalInfo')),
+            S.listItem()
+              .title('Datenschutz')
+              .id('datenschutz')
+              .child(S.document().schemaType('datenschutz').documentId('datenschutz')),
             S.listItem()
               .title('Website-Einstellungen')
               .id('siteSettings')

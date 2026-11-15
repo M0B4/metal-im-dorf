@@ -81,6 +81,24 @@ export interface FestivalInfo {
   }>;
 }
 
+export interface Datenschutz {
+  einleitung?: string;
+  abschnitte: Array<{ _key: string; titel: string; text: PortableTextBlock[] }>;
+  stand?: string;
+}
+
+/** Texte der Datenschutzseite aus dem Studio. Leere Abschnitte bedeuten: eingebauter Text. */
+export async function getDatenschutz(): Promise<Datenschutz> {
+  const doc = await query<Partial<Datenschutz> | null>(
+    `*[_id == "datenschutz"][0]{ einleitung, "abschnitte": abschnitte[defined(titel) && count(text) > 0], stand }`,
+  );
+  return {
+    einleitung: doc?.einleitung?.trim() || undefined,
+    abschnitte: doc?.abschnitte ?? [],
+    stand: doc?.stand?.trim() || undefined,
+  };
+}
+
 export async function getSiteSettings(): Promise<SiteSettings> {
   const s = await query<{
     intro?: string;

@@ -91,10 +91,18 @@ const doc = {
   ],
 }
 
-const client = getCliClient({apiVersion: '2025-01-01'})
-if (await client.getDocument('datenschutz')) {
-  console.log('Das Dokument „Datenschutz“ gibt es schon, nichts geändert.')
-} else {
-  await client.createIfNotExists(doc)
-  console.log('Dokument „Datenschutz“ mit dem bisherigen Text angelegt und veröffentlicht.')
+// sanity exec übersetzt nach CommonJS, dort gibt es kein await auf oberster Ebene.
+async function main() {
+  const client = getCliClient({apiVersion: '2025-01-01'})
+  if (await client.getDocument('datenschutz')) {
+    console.log('Das Dokument „Datenschutz“ gibt es schon, nichts geändert.')
+  } else {
+    await client.createIfNotExists(doc)
+    console.log('Dokument „Datenschutz“ mit dem bisherigen Text angelegt und veröffentlicht.')
+  }
 }
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})

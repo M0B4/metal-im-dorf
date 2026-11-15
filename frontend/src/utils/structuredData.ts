@@ -71,7 +71,7 @@ export function eventJsonLd(event: Veranstaltung, settings: SiteSettings) {
   const start = new Date(event.beginn);
   const preis = priceOf(event.preis);
   const ticket = ticketLink(event);
-  const performers = (event.bands ?? []).filter((band) => band?.name && !band.platzhalter);
+  const performers = (event.bands ?? []).filter((band): band is NonNullable<typeof band> => Boolean(band?.name && !band.platzhalter));
 
   return {
     "@context": "https://schema.org",

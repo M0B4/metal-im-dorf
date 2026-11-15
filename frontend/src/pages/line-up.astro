@@ -31,7 +31,7 @@ const description = event
   : "Die Bands bei Metal im Dorf.";
 ---
 
-<Layout title="Line-Up" description={description} image={event?.bild && shareImageUrl(event.bild)} imageAlt={event && (event.bild?.alt || `Plakat ${event.titel}`)} settings={settings}>
+<Layout title="Line-Up" description={description} image={event?.bild && shareImageUrl(event.bild)} imageAlt={event ? event.bild?.alt || `Plakat ${event.titel}` : undefined} settings={settings}>
   <div class="shell page">
     <header class="page-header">
       <h1 class="page-title">Line-Up</h1>

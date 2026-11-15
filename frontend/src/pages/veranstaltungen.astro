@@ -3,7 +3,7 @@ import { Mail, MapPin, Ticket } from "@lucide/astro";
 import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
-import { formatDateRange, formatTime, yearOf } from "../utils/format";
+import { formatDate, formatDateRange, formatTime, yearOf } from "../utils/format";
 import { shareImageUrl } from "../utils/image";
 import { getEvents, getSiteSettings, isPast, nextEvent, ticketLink, type Kategorie } from "../utils/sanity";
 import { ADDRESS, mapsUrl, NEW_TAB_HINT } from "../utils/site";
@@ -14,7 +14,16 @@ const upcoming = events.filter((event) => !isPast(event));
 
 const kategorieLabel = (kategorie: Kategorie) =>
   kategorie === "nebenveranstaltung" ? "Nebenveranstaltung" : "Hauptfestival";
-const share = nextEvent(events)?.bild;
+const nextOne = nextEvent(events);
+const share = nextOne?.bild;
+
+// Beschreibung für Google und Vorschauen beim Teilen: die nächsten Termine mit Ort.
+const termine = upcoming
+  .slice(0, 3)
+  .map((event) => `${event.titel} am ${formatDate(event.beginn)}${event.ort ? ` (${event.ort})` : ""}`);
+const description = termine.length
+  ? `Kommende Termine von Metal im Dorf: ${termine.join(", ")}.`
+  : "Kommende und vergangene Veranstaltungen von Metal im Dorf.";
 
 // Vergangen ist, was laut Datum vorbei ist: neueste zuerst.
 const past = events
@@ -32,7 +41,7 @@ const past = events
 const jsonLd = jsonLdString(upcoming.map((event) => eventJsonLd(event, settings)));
 ---
 
-<Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." image={share && shareImageUrl(share)} settings={settings}>
+<Layout title="Veranstaltungen" description={description} image={share && shareImageUrl(share)} imageAlt={nextOne && (share?.alt || `Plakat ${nextOne.titel}`)} settings={settings}>
   {upcoming.length > 0 && <script is:inline slot="head" type="application/ld+json" set:html={jsonLd} />}
   <h1 class="sr-only">Veranstaltungen</h1>
   <div class="shell events-page">

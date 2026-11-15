@@ -4,9 +4,10 @@ import MediaLightbox from "../components/MediaLightbox.astro";
 import Poster from "../components/Poster.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDateRange, formatTime, yearOf } from "../utils/format";
-import { imageUrl, shareImageUrl } from "../utils/image";
+import { shareImageUrl } from "../utils/image";
 import { getEvents, getSiteSettings, isPast, nextEvent, ticketLink, type Kategorie } from "../utils/sanity";
-import { ADDRESS, mapsUrl, NEW_TAB_HINT, SITE_NAME, siteUrl } from "../utils/site";
+import { ADDRESS, mapsUrl, NEW_TAB_HINT } from "../utils/site";
+import { eventJsonLd, jsonLdString } from "../utils/structuredData";
 
 const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
 const upcoming = events.filter((event) => !isPast(event));
@@ -28,28 +29,7 @@ const past = events
   }));
 
 // Strukturierte Daten, damit Suchmaschinen die Termine direkt anzeigen können.
-const jsonLd = JSON.stringify(
-  upcoming.map((event) => ({
-    "@context": "https://schema.org",
-    "@type": "MusicEvent",
-    name: event.titel,
-    startDate: event.beginn,
-    ...(event.ende && { endDate: event.ende }),
-    eventStatus: "https://schema.org/EventScheduled",
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    location: {
-      "@type": "Place",
-      name: event.ort || ADDRESS[0],
-      address: event.adresse || ADDRESS[1],
-    },
-    ...(event.bild && { image: [imageUrl(event.bild, 1200)] }),
-    ...(event.kurzbeschreibung && { description: event.kurzbeschreibung }),
-    ...(ticketLink(event) && { offers: { "@type": "Offer", url: new URL(ticketLink(event)!.href, siteUrl()).href } }),
-    ...(event.einlass && { doorTime: event.einlass }),
-    organizer: { "@type": "Organization", name: SITE_NAME, url: siteUrl() },
-    url: siteUrl("/veranstaltungen"),
-  })),
-).replace(/</g, "\\u003c");
+const jsonLd = jsonLdString(upcoming.map((event) => eventJsonLd(event, settings)));
 ---
 
 <Layout title="Veranstaltungen" description="Kommende und vergangene Veranstaltungen von Metal im Dorf." image={share && shareImageUrl(share)} settings={settings}>
@@ -135,7 +115,7 @@ const jsonLd = JSON.stringify(
               <figure class="past-item" data-category={item.kategorie}>
                 <Poster
                   image={item.image}
-                  alt={`Plakat ${item.title}`}
+                  alt={item.image?.alt || `Plakat ${item.title}`}
                   fallback={String(item.year)}
                   group="vergangen"
                 />

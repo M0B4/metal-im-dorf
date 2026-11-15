@@ -1,4 +1,5 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
+import {altField} from '../altField'
 
 const today = () => new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Berlin'}).format(new Date())
 
@@ -28,6 +29,7 @@ export default defineType({
       title: 'Bild',
       description: 'Optional. Erscheint klein links neben dem Text, ein Klick vergrößert es.',
       type: 'image',
+      fields: [altField('Publikum vor der Bühne am Opfermoor')],
     }),
     defineField({
       name: 'inhalt',
@@ -58,6 +60,7 @@ export default defineType({
       of: [
         defineArrayMember({
           type: 'image',
+          fields: [altField('Sänger von Venator auf der Bühne')],
           validation: (rule) =>
             rule.custom((image: {asset?: unknown} | undefined) =>
               image?.asset ? true : 'Bitte ein Bild hochladen oder den leeren Eintrag löschen.',

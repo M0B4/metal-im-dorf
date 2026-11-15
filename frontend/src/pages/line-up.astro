@@ -40,7 +40,7 @@ const bandLinks = (band: Band) =>
                   src={croppedImageUrl(band.bild, 640)}
                   srcset={srcSet(band.bild, [320, 480, 640, 800], true)}
                   sizes="(max-width: 760px) 50vw, (max-width: 1180px) 33vw, 380px"
-                  alt={band.name}
+                  alt={band.bild.alt || band.name}
                   class="band-image"
                   loading={index < 3 ? "eager" : "lazy"}
                   fetchpriority={index === 0 ? "high" : undefined}

@@ -65,6 +65,8 @@ export interface Veranstaltung {
   bild?: SanityImage;
   ticketUrl?: string;
   lineup?: Array<{ _key: string; spielzeit?: string; band?: Band }>;
+  /** Bands im Line-Up, nur für die strukturierten Daten. */
+  bands?: Array<Pick<Band, "name" | "platzhalter" | "links"> | null>;
 }
 
 export interface FestivalInfo {
@@ -148,7 +150,9 @@ const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse,
   "vorverkauf": coalesce(vorverkauf, select(nurAbendkasse == true => "abendkasse", defined(ticketUrl) => "extern", "formular"))`;
 
 export function getEvents(): Promise<Veranstaltung[]> {
-  return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) { ${eventFields} }`);
+  return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) {
+    ${eventFields}, "bands": lineup[].band->{ name, platzhalter, links }
+  }`);
 }
 
 /** Nächste kommende Veranstaltung mit Line-Up, das Hauptfestival hat Vorrang. */

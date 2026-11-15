@@ -3,7 +3,7 @@
 export const SITE_NAME = "Metal im Dorf";
 export const SITE_DESCRIPTION = "News, Termine und Line-Up vom Metal im Dorf Festival am Opfermoor.";
 export const STUDIO_URL = "https://metal-im-dorf.sanity.studio/";
-export const ADDRESS = ["Opfermoor Niederdorla", "An der Oberrothe, 99988 Niederdorla"];
+export const ADDRESS = ["Opfermoor Niederdorla", "An der Oberrothe, 99986 Niederdorla"];
 
 /**
  * Zugangsschlüssel von Web3Forms (web3forms.com) für das Ticketformular. Der Schlüssel ist öffentlich

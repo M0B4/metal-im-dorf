@@ -100,6 +100,9 @@ export function eventJsonLd(event: Veranstaltung, settings: SiteSettings) {
         // Ohne Vorverkauf (nur Abendkasse) führt der Link zur Veranstaltungsseite mit allen Infos.
         url: ticket ? new URL(ticket.href, siteUrl()).href : eventUrl,
         ...(preis && { price: preis, priceCurrency: "EUR" }),
+        // Seit wann es Tickets gibt: ein genaues Vorverkaufsdatum wird nicht gepflegt, daher gilt der Tag,
+        // an dem die Veranstaltung angelegt wurde (so lange steht sie auch auf der Website).
+        ...(event._createdAt && { validFrom: berlinIso(new Date(event._createdAt)) }),
         availability: "https://schema.org/InStock",
       },
     }),

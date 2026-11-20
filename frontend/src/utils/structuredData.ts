@@ -3,6 +3,7 @@
 // Prüfen lässt sich das Ergebnis mit https://search.google.com/test/rich-results
 
 import { imageUrl } from "./image";
+import { formatDate } from "./format";
 import { ticketLink, type BandLinkKey, type Veranstaltung } from "./sanity";
 import { ADDRESS, SITE_NAME, siteUrl, type SiteSettings } from "./site";
 
@@ -71,6 +72,10 @@ export function eventJsonLd(event: Veranstaltung, settings: SiteSettings) {
   const start = new Date(event.beginn);
   const preis = priceOf(event.preis);
   const ticket = ticketLink(event);
+  const eventUrl = siteUrl("/veranstaltungen");
+  // Google erwartet eine Beschreibung; ohne Kurzbeschreibung reicht ein Satz aus Name, Datum und Ort.
+  const description =
+    event.kurzbeschreibung || `${event.titel} am ${formatDate(event.beginn)}${event.ort ? `, ${event.ort}` : ""}.`;
   const performers = (event.bands ?? []).filter((band): band is NonNullable<typeof band> => Boolean(band?.name && !band.platzhalter));
 
   return {
@@ -88,11 +93,12 @@ export function eventJsonLd(event: Veranstaltung, settings: SiteSettings) {
       address: atDefaultPlace ? postalAddress(ADDRESS[1]) : postalAddress(event.adresse, event.ort),
     },
     ...(event.bild && { image: [imageUrl(event.bild, 1200)] }),
-    ...(event.kurzbeschreibung && { description: event.kurzbeschreibung }),
+    description,
     ...((ticket || preis) && {
       offers: {
         "@type": "Offer",
-        ...(ticket && { url: new URL(ticket.href, siteUrl()).href }),
+        // Ohne Vorverkauf (nur Abendkasse) führt der Link zur Veranstaltungsseite mit allen Infos.
+        url: ticket ? new URL(ticket.href, siteUrl()).href : eventUrl,
         ...(preis && { price: preis, priceCurrency: "EUR" }),
         availability: "https://schema.org/InStock",
       },
@@ -104,7 +110,7 @@ export function eventJsonLd(event: Veranstaltung, settings: SiteSettings) {
       }),
     }),
     organizer: organization(settings),
-    url: siteUrl("/veranstaltungen"),
+    url: eventUrl,
   };
 }
 

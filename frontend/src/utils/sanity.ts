@@ -65,6 +65,8 @@ export interface Veranstaltung {
   bild?: SanityImage;
   ticketUrl?: string;
   lineup?: Array<{ _key: string; spielzeit?: string; band?: Band }>;
+  /** Wann die Veranstaltung in Sanity angelegt wurde, nur für die strukturierten Daten. */
+  _createdAt?: string;
   /** Bands im Line-Up, nur für die strukturierten Daten. */
   bands?: Array<Pick<Band, "name" | "platzhalter" | "links"> | null>;
 }
@@ -151,7 +153,7 @@ const eventFields = `_id, titel, kategorie, beginn, ende, einlass, ort, adresse,
 
 export function getEvents(): Promise<Veranstaltung[]> {
   return query(`*[_type == "veranstaltung" && defined(beginn)] | order(beginn asc) {
-    ${eventFields}, "bands": lineup[].band->{ name, platzhalter, links }
+    ${eventFields}, _createdAt, "bands": lineup[].band->{ name, platzhalter, links }
   }`);
 }
 

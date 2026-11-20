@@ -157,14 +157,15 @@ export function getEvents(): Promise<Veranstaltung[]> {
   }`);
 }
 
-/** Nächste kommende Veranstaltung mit Line-Up, das Hauptfestival hat Vorrang. */
+/** Nächstes kommendes Hauptfestival für die Line-Up-Seite. Bands von Nebenveranstaltungen erscheinen dort nie
+ *  (sie stehen nur in den strukturierten Daten der Veranstaltungsseite). */
 export async function getLineupEvent(): Promise<Veranstaltung | null> {
-  const upcoming = await query<Veranstaltung[]>(`*[_type == "veranstaltung" && coalesce(ende, beginn) >= now()]
-    | order(beginn asc) {
+  const next = await query<Veranstaltung | null>(`*[_type == "veranstaltung" && kategorie == "hauptfestival" && coalesce(ende, beginn) >= now()]
+    | order(beginn asc) [0] {
       ${eventFields},
       lineup[] { _key, spielzeit, band-> { _id, name, genre, platzhalter, links, ${image("bild")} } }
     }`);
-  return upcoming.find((event) => event.kategorie === "hauptfestival") ?? upcoming[0] ?? null;
+  return next ?? null;
 }
 
 export async function getFestivalInfo(): Promise<FestivalInfo> {
